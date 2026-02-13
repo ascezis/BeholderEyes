@@ -1,0 +1,2304 @@
+[
+  {
+    "key": "aarakocra",
+    "label": "Ааракокра",
+    "labelEn": "Aarakocra",
+    "size": "Средний",
+    "speedFt": 25,
+    "abilityBonuses": {
+      "dex": 2,
+      "wis": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "aarakocra_mpmm",
+    "label": "Ааракокра",
+    "labelEn": "Aarakocra MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "aasimar",
+    "label": "Аасимар",
+    "labelEn": "Aasimar",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 2
+    },
+    "subraces": [
+      {
+        "key": "aasimar-sub-0",
+        "label": "Аасимар (защитник)",
+        "labelEn": "Protector",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "wis": 1
+        }
+      },
+      {
+        "key": "aasimar-sub-1",
+        "label": "Аасимар (каратель)",
+        "labelEn": "Scourge",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "con": 1
+        }
+      },
+      {
+        "key": "aasimar-sub-2",
+        "label": "Аасимар (павший)",
+        "labelEn": "Fallen",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "aasimar_mpmm",
+    "label": "Аасимар",
+    "labelEn": "Aasimar MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "aven",
+    "label": "Авен",
+    "labelEn": "Aven",
+    "size": "Средний",
+    "speedFt": 25,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "aven-sub-0",
+        "label": "Ибисоголовый",
+        "labelEn": "Ibis-Headed",
+        "size": "Средний",
+        "speedFt": 25,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "aven-sub-1",
+        "label": "Ястребоголовый",
+        "labelEn": "Hawk-Headed",
+        "size": "Средний",
+        "speedFt": 25,
+        "abilityBonuses": {}
+      }
+    ]
+  },
+  {
+    "key": "autognome",
+    "label": "Автогном",
+    "labelEn": "Autognome",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "bugbear",
+    "label": "Багбир",
+    "labelEn": "Bugbear",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "bugbear_mpmm",
+    "label": "Багбир",
+    "labelEn": "Bugbear MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "bearfolk",
+    "label": "Бирфолк",
+    "labelEn": "Bearfolk",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "bearfolk-sub-0",
+        "label": "Бирфолк (гризлишкурый)",
+        "labelEn": "Grizzlyfur",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 1
+        }
+      },
+      {
+        "key": "bearfolk-sub-1",
+        "label": "Бирфолк (очищенный)",
+        "labelEn": "Refined",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "wis": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "vedalken",
+    "label": "Ведалкен",
+    "labelEn": "Vedalken",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "verdan",
+    "label": "Вердан",
+    "labelEn": "Verdan",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "reborn",
+    "label": "Возрождённый",
+    "labelEn": "Reborn",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "simic_hybrid",
+    "label": "Гибрид Симиков",
+    "labelEn": "Simic Hybrid",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "gith",
+    "label": "Гит",
+    "labelEn": "Gith",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "int": 1
+    },
+    "subraces": [
+      {
+        "key": "gith-sub-0",
+        "label": "Гитъянки",
+        "labelEn": "Githyanki",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "int": 1
+        }
+      },
+      {
+        "key": "gith-sub-1",
+        "label": "Гитцераи",
+        "labelEn": "Githzerai",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "int": 1,
+          "wis": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "githzerai_mpmm",
+    "label": "Гитцераи",
+    "labelEn": "Githzerai MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "githyanki_mpmm",
+    "label": "Гитъянки",
+    "labelEn": "Githyanki MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "giff",
+    "label": "Гифф",
+    "labelEn": "Giff",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "deep_gnome_mpmm",
+    "label": "Глубинный гном",
+    "labelEn": "Deep Gnome MPMM",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "glitchling",
+    "label": "Глючный",
+    "labelEn": "Glitchling",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "gnoll",
+    "label": "Гнолл",
+    "labelEn": "Gnoll",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "gnoll-sub-0",
+        "label": "Гнолл (цивилизованный)",
+        "labelEn": "Civilized",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 1
+        }
+      },
+      {
+        "key": "gnoll-sub-1",
+        "label": "Гнолл (дикий)",
+        "labelEn": "Wild",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "wis": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "gnome",
+    "label": "Гном",
+    "labelEn": "Gnome",
+    "size": "Маленький",
+    "speedFt": 25,
+    "abilityBonuses": {
+      "int": 2
+    },
+    "subraces": [
+      {
+        "key": "gnome-sub-0",
+        "label": "Гном (лесной)",
+        "labelEn": "Forest",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "int": 2,
+          "dex": 1
+        }
+      },
+      {
+        "key": "gnome-sub-1",
+        "label": "Гном (скальный)",
+        "labelEn": "Rock",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "int": 2,
+          "con": 1
+        }
+      },
+      {
+        "key": "gnome-sub-2",
+        "label": "Гном (глубинный)",
+        "labelEn": "Deep",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "int": 2,
+          "dex": 1
+        }
+      },
+      {
+        "key": "gnome-sub-3",
+        "label": "Гном (из Ниймхейма)",
+        "labelEn": "Nyheim",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "int": 2
+        }
+      },
+      {
+        "key": "gnome-sub-4",
+        "label": "Гном (метка письма)",
+        "labelEn": "Mark of Scribing",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "int": 2,
+          "cha": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "goblin",
+    "label": "Гоблин",
+    "labelEn": "Goblin",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 2,
+      "con": 2
+    },
+    "subraces": [
+      {
+        "key": "goblin-sub-0",
+        "label": "Гоблин (батири)",
+        "labelEn": "Batiri",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "dex": 2,
+          "con": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "goblin_mpmm",
+    "label": "Гоблин",
+    "labelEn": "Goblin MPMM",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "goliath",
+    "label": "Голиаф",
+    "labelEn": "Goliath",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "goliath_mpmm",
+    "label": "Голиаф",
+    "labelEn": "Goliath MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "mushroom",
+    "label": "Грибнит",
+    "labelEn": "Mushroom",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "grung",
+    "label": "Грунг",
+    "labelEn": "Grung",
+    "size": "Маленький",
+    "speedFt": 25,
+    "abilityBonuses": {
+      "dex": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "dhampir",
+    "label": "Дампир",
+    "labelEn": "Dhampir",
+    "size": "Средний",
+    "speedFt": 35,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "dhampir_midgard",
+    "label": "Дампир (из Мидгарда)",
+    "labelEn": "Dhampir Midgard",
+    "size": "Средний",
+    "speedFt": 35,
+    "abilityBonuses": {
+      "cha": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "dwarf",
+    "label": "Дварф",
+    "labelEn": "Dwarf",
+    "size": "Средний",
+    "speedFt": 25,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "dwarf-sub-0",
+        "label": "Дварф (горный)",
+        "labelEn": "Mountain",
+        "size": "Средний",
+        "speedFt": 25,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "dwarf-sub-1",
+        "label": "Дварф (холмовой)",
+        "labelEn": "Hil",
+        "size": "Средний",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "wis": 1
+        }
+      },
+      {
+        "key": "dwarf-sub-2",
+        "label": "Дварф (дуэргар)",
+        "labelEn": "Duergar",
+        "size": "Средний",
+        "speedFt": 25,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "dwarf-sub-3",
+        "label": "Дварф (щитовой)",
+        "labelEn": "Shield",
+        "size": "Средний",
+        "speedFt": 25,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "dwarf-sub-4",
+        "label": "Дварф (золотой)",
+        "labelEn": "Gold",
+        "size": "Средний",
+        "speedFt": 25,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "dwarf-sub-5",
+        "label": "Дварф (метка опеки)",
+        "labelEn": "Mark of Warding",
+        "size": "Средний",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "int": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "genasi",
+    "label": "Дженази",
+    "labelEn": "Genasi",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": [
+      {
+        "key": "genasi-sub-0",
+        "label": "Дженази (воздушный)",
+        "labelEn": "Air",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2,
+          "dex": 1
+        }
+      },
+      {
+        "key": "genasi-sub-1",
+        "label": "Дженази (земляной)",
+        "labelEn": "Earth",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      },
+      {
+        "key": "genasi-sub-2",
+        "label": "Дженази (огненный)",
+        "labelEn": "Fire",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2,
+          "int": 1
+        }
+      },
+      {
+        "key": "genasi-sub-3",
+        "label": "Дженази (водный)",
+        "labelEn": "Water",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2,
+          "wis": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "genasi_water_mpmm",
+    "label": "Дженази воды",
+    "labelEn": "Genasi Water MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "genasi_air_mpmm",
+    "label": "Дженази воздуха",
+    "labelEn": "Genasi Air MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 35,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "genasi_earthr_mpmm",
+    "label": "Дженази земли",
+    "labelEn": "Genasi Earthr MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "genasi_fair_mpmm",
+    "label": "Дженази огня",
+    "labelEn": "Genasi Fair MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "dragonborn",
+    "label": "Драконорождённый",
+    "labelEn": "Dragonborn",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 2
+    },
+    "subraces": [
+      {
+        "key": "dragonborn-sub-0",
+        "label": "Драконорождённый (цветной)",
+        "labelEn": "Chromatic",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "dragonborn-sub-1",
+        "label": "Драконорождённый (драгоцветный)",
+        "labelEn": "Gem",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "dragonborn-sub-2",
+        "label": "Драконорождённый (металлический)",
+        "labelEn": "Metallic",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      }
+    ]
+  },
+  {
+    "key": "duergar_mpmm",
+    "label": "Дуэргар",
+    "labelEn": "Duergar MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "changeling",
+    "label": "Изменяющиеся",
+    "labelEn": "Changeling",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "changeling_mpmm",
+    "label": "Изменяющийся",
+    "labelEn": "Changeling MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "kalashtar",
+    "label": "Калаштар",
+    "labelEn": "Kalashtar",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "wis": 2,
+      "cha": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "kender",
+    "label": "Кендер",
+    "labelEn": "Kender",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "kenku",
+    "label": "Кенку",
+    "labelEn": "Kenku",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 2,
+      "wis": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "kenku_mpmm",
+    "label": "Кенку",
+    "labelEn": "Kenku MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "centaur",
+    "label": "Кентавр",
+    "labelEn": "Centaur",
+    "size": "Средний",
+    "speedFt": 40,
+    "abilityBonuses": {
+      "str": 4,
+      "wis": 1
+    },
+    "subraces": [
+      {
+        "key": "centaur-sub-0",
+        "label": "Кентавр (из Мидгарда)",
+        "labelEn": "Centaur HH",
+        "size": "Большой",
+        "speedFt": 40,
+        "abilityBonuses": {
+          "str": 4,
+          "wis": 1
+        }
+      },
+      {
+        "key": "centaur-sub-1",
+        "label": "Кентавр (из Одиссеи)",
+        "labelEn": "Centaur ODL",
+        "size": "Средний",
+        "speedFt": 40,
+        "abilityBonuses": {
+          "str": 4,
+          "wis": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "centaur_mpmm",
+    "label": "Кентавр",
+    "labelEn": "Centaur MPMM",
+    "size": "Средний",
+    "speedFt": 40,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "kobold",
+    "label": "Кобольд",
+    "labelEn": "Kobold",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 2
+    },
+    "subraces": [
+      {
+        "key": "kobold-sub-0",
+        "label": "Кобольд (из Мидгарда)",
+        "labelEn": "Kobold Midgard",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "dex": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "kobold_mpmm",
+    "label": "Кобольд",
+    "labelEn": "Kobold MPMM",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "warforged",
+    "label": "Кованый",
+    "labelEn": "Warforged",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": [
+      {
+        "key": "warforged-sub-0",
+        "label": "Кованый (из Мидгарда)",
+        "labelEn": "Warforged HH",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "leonin",
+    "label": "Леонин",
+    "labelEn": "Leonin",
+    "size": "Средний",
+    "speedFt": 35,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "locathah",
+    "label": "Локата",
+    "labelEn": "Locathah",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "loxodon",
+    "label": "Локсодон",
+    "labelEn": "Loxodon",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2,
+      "wis": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "lizardfolk",
+    "label": "Людоящер",
+    "labelEn": "Lizardfolk",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2,
+      "wis": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "lizardfolk_mpmm",
+    "label": "Людоящер",
+    "labelEn": "Lizardfolk MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "medusa",
+    "label": "Медуза",
+    "labelEn": "Medusa",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 4,
+      "int": 1
+    },
+    "subraces": []
+  },
+  {
+    "key": "minotaur",
+    "label": "Минотавр",
+    "labelEn": "Minotaur",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "minotaur-sub-0",
+        "label": "Минотавр (из Мидгарда)",
+        "labelEn": "Minotaur HH",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "minotaur-sub-1",
+        "label": "Минотавр (из Одиссеи)",
+        "labelEn": "Minotaur ODL",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "str": 4,
+          "con": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "minotaur_mpmm",
+    "label": "Минотавр",
+    "labelEn": "Minotaur MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "sea_elf_mpmm",
+    "label": "Морской эльф",
+    "labelEn": "Sea Elf MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "naga",
+    "label": "Нага",
+    "labelEn": "Naga",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "undead",
+    "label": "Нежить",
+    "labelEn": "Undead",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": [
+      {
+        "key": "undead-sub-0",
+        "label": "Нежить (скелет)",
+        "labelEn": "Skeleton",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      },
+      {
+        "key": "undead-sub-1",
+        "label": "Нежить (восставший [ревенант])",
+        "labelEn": "Revenant",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      },
+      {
+        "key": "undead-sub-2",
+        "label": "Нежить (гуль)",
+        "labelEn": "Ghoul",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      },
+      {
+        "key": "undead-sub-3",
+        "label": "Нежить (мумия)",
+        "labelEn": "Mummy",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      },
+      {
+        "key": "undead-sub-4",
+        "label": "Нежить (призрак)",
+        "labelEn": "Ghost",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "nymph",
+    "label": "Нимфа",
+    "labelEn": "Nymph",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 2
+    },
+    "subraces": [
+      {
+        "key": "nymph-sub-0",
+        "label": "Нимфа (аура)",
+        "labelEn": "Aura",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "nymph-sub-1",
+        "label": "Нимфа (дриада)",
+        "labelEn": "Dryad",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "nymph-sub-2",
+        "label": "Нимфа (наяда)",
+        "labelEn": "Naiad",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "nymph-sub-3",
+        "label": "Нимфа (нереида)",
+        "labelEn": "Nereid",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "nymph-sub-4",
+        "label": "Нимфа (ореада)",
+        "labelEn": "Oreada",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "orc",
+    "label": "Орк",
+    "labelEn": "Orc",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "orc_mpmm",
+    "label": "Орк",
+    "labelEn": "Orc MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "plasmoid",
+    "label": "Плазмоид",
+    "labelEn": "Plasmoid",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "half-orc",
+    "label": "Полуорк",
+    "labelEn": "Half-Orc",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": [
+      {
+        "key": "half-orc-sub-0",
+        "label": "Полуорк (метка поиска)",
+        "labelEn": "Mark of Finding",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "halfling",
+    "label": "Полурослик",
+    "labelEn": "Halfling",
+    "size": "Маленький",
+    "speedFt": 25,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "halfling-sub-0",
+        "label": "Полурослик (коренастый)",
+        "labelEn": "Stout",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "con": 1
+        }
+      },
+      {
+        "key": "halfling-sub-1",
+        "label": "Полурослик (легконогий)",
+        "labelEn": "Lightfoot",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "cha": 1
+        }
+      },
+      {
+        "key": "halfling-sub-2",
+        "label": "Полурослик (винтерфолк)",
+        "labelEn": "Winterfolk",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "halfling-sub-3",
+        "label": "Полурослик (призрачный)",
+        "labelEn": "Ghostwise",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "wis": 1
+        }
+      },
+      {
+        "key": "halfling-sub-4",
+        "label": "Полурослик (сильный сердцем)",
+        "labelEn": "Strongheart",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "con": 1
+        }
+      },
+      {
+        "key": "halfling-sub-5",
+        "label": "Полурослик (метка исцеления)",
+        "labelEn": "Mark of Healing",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "wis": 1
+        }
+      },
+      {
+        "key": "halfling-sub-6",
+        "label": "Полурослик (метка гостеприимства)",
+        "labelEn": "Mark of Hospitality",
+        "size": "Маленький",
+        "speedFt": 25,
+        "abilityBonuses": {
+          "cha": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "half-elf",
+    "label": "Полуэльф",
+    "labelEn": "Half-Elf",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 2
+    },
+    "subraces": [
+      {
+        "key": "half-elf-sub-0",
+        "label": "Полуэльф тёмный (полудроу)",
+        "labelEn": "Half drow",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "half-elf-sub-1",
+        "label": "Полуэльф (лесной)",
+        "labelEn": "Forest",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "half-elf-sub-2",
+        "label": "Полуэльф (водный)",
+        "labelEn": "Water",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "half-elf-sub-3",
+        "label": "Полуэльф (солнечный или лунный)",
+        "labelEn": "Sun or Moon",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "half-elf-sub-4",
+        "label": "Полуэльф (метка обнаружения)",
+        "labelEn": "Variant Mark of Detection",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "wis": 1
+        }
+      },
+      {
+        "key": "half-elf-sub-5",
+        "label": "Полуэльф (метка бури)",
+        "labelEn": "Mark of Storm",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "hexblood",
+    "label": "Порчекровные",
+    "labelEn": "Hexblood",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "awakened",
+    "label": "Пробужденный",
+    "labelEn": "Awakened",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "ravenfolk",
+    "label": "Рэвенфолк",
+    "labelEn": "Ravenfolk",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "ratfolk",
+    "label": "Рэтфолк",
+    "labelEn": "Ratfolk",
+    "size": "Маленький",
+    "speedFt": 25,
+    "abilityBonuses": {
+      "dex": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "satyr_odl",
+    "label": "Сатир",
+    "labelEn": "Satyr ODL",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 4,
+      "cha": 1
+    },
+    "subraces": []
+  },
+  {
+    "key": "satyr",
+    "label": "Сатир",
+    "labelEn": "Satyr",
+    "size": "Средний",
+    "speedFt": 35,
+    "abilityBonuses": {
+      "cha": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "satyr_mpmm",
+    "label": "Сатир",
+    "labelEn": "Satyr MPMM",
+    "size": "Средний",
+    "speedFt": 35,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "mindflayer",
+    "label": "Свежеватель разума",
+    "labelEn": "Mindflayer",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "int": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "your_origin",
+    "label": "Своё происхождение",
+    "labelEn": "Your Origin",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "silva",
+    "label": "Сильва",
+    "labelEn": "Silva",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "wis": 2
+    },
+    "subraces": [
+      {
+        "key": "silva-sub-0",
+        "label": "Сильва (лесная)",
+        "labelEn": "Forest",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "wis": 2,
+          "dex": 1
+        }
+      },
+      {
+        "key": "silva-sub-1",
+        "label": "Сильва (из джунглей)",
+        "labelEn": "Jungle",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "wis": 2,
+          "con": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "siren",
+    "label": "Сирена",
+    "labelEn": "Siren",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 4,
+      "dex": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "owlin",
+    "label": "Совлин",
+    "labelEn": "Owlin",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "tabaxi",
+    "label": "Табакси",
+    "labelEn": "Tabaxi",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 2,
+      "cha": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "tabaxi_mpmm",
+    "label": "Табакси",
+    "labelEn": "Tabaxi MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "shadow_fey",
+    "label": "Теневая фея",
+    "labelEn": "Shadow fey",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 1
+    },
+    "subraces": []
+  },
+  {
+    "key": "teratect",
+    "label": "Тератект",
+    "labelEn": "Teratect",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "teratect-sub-0",
+        "label": "Восьминогие",
+        "labelEn": "Octopus",
+        "size": "Средний",
+        "speedFt": 40,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "teratect-sub-1",
+        "label": "Двуногие",
+        "labelEn": "Bipeds",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      }
+    ]
+  },
+  {
+    "key": "tiefling",
+    "label": "Тифлинг",
+    "labelEn": "Tiefling",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "tiefling-sub-0",
+        "label": "Тифлинг (Асмодей)",
+        "labelEn": "Asmodeus",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "int": 1,
+          "cha": 4
+        }
+      },
+      {
+        "key": "tiefling-sub-1",
+        "label": "Тифлинг (Вельзевул)",
+        "labelEn": "Baalzebul",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "int": 2
+        }
+      },
+      {
+        "key": "tiefling-sub-2",
+        "label": "Тифлинг (Диспатер)",
+        "labelEn": "Dispater",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "dex": 2
+        }
+      },
+      {
+        "key": "tiefling-sub-3",
+        "label": "Тифлинг (Фьёрна)",
+        "labelEn": "Fierna",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "wis": 2
+        }
+      },
+      {
+        "key": "tiefling-sub-4",
+        "label": "Тифлинг (Гласия)",
+        "labelEn": "Glasya",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "dex": 2
+        }
+      },
+      {
+        "key": "tiefling-sub-5",
+        "label": "Тифлинг (Левистус)",
+        "labelEn": "Levistus",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "con": 2
+        }
+      },
+      {
+        "key": "tiefling-sub-6",
+        "label": "Тифлинг (Маммон)",
+        "labelEn": "Mammon",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "int": 2
+        }
+      },
+      {
+        "key": "tiefling-sub-7",
+        "label": "Тифлинг (Мефистофель)",
+        "labelEn": "Mephistopheles",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2,
+          "int": 2
+        }
+      },
+      {
+        "key": "tiefling-sub-8",
+        "label": "Тифлинг (Зариэль)",
+        "labelEn": "Zariel",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "tiefling-sub-9",
+        "label": "Тифлинг (язык дьявола)",
+        "labelEn": "Variant Devils Tongue",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "tiefling-sub-10",
+        "label": "Тифлинг (адское пламя)",
+        "labelEn": "Variant Hellfire",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "tiefling-sub-11",
+        "label": "Тифлинг (крылатый)",
+        "labelEn": "Variant Winged",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      }
+    ]
+  },
+  {
+    "key": "smoldering",
+    "label": "Тлеющий",
+    "labelEn": "Smoldering",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "smoldering-sub-0",
+        "label": "Странник",
+        "labelEn": "Wanderer",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "smoldering-sub-1",
+        "label": "Страж",
+        "labelEn": "Guardian",
+        "size": "Большой",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      }
+    ]
+  },
+  {
+    "key": "tortle",
+    "label": "Тортл",
+    "labelEn": "Tortle",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "wis": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "tortle_mpmm",
+    "label": "Тортл",
+    "labelEn": "Tortle MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "thri-kreen",
+    "label": "Три-крин",
+    "labelEn": "Thri-kreen",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "triton",
+    "label": "Тритон",
+    "labelEn": "Triton",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "triton_mpmm",
+    "label": "Тритон",
+    "labelEn": "Triton MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "trollkin",
+    "label": "Троллкин",
+    "labelEn": "Trollkin",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2
+    },
+    "subraces": [
+      {
+        "key": "trollkin-sub-0",
+        "label": "Троллкин (шепчущие в ночи)",
+        "labelEn": "Whispers in the night",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2,
+          "wis": 1
+        }
+      },
+      {
+        "key": "trollkin-sub-1",
+        "label": "Троллкин (камнешкурые)",
+        "labelEn": "Stonehide",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "fairyblood",
+    "label": "Феекровные",
+    "labelEn": "Fairyblood",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 2
+    },
+    "subraces": [
+      {
+        "key": "fairyblood-sub-0",
+        "label": "Сильфы (Неборождённые)",
+        "labelEn": "Sylphs",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      },
+      {
+        "key": "fairyblood-sub-1",
+        "label": "Драйши (Землерождённые)",
+        "labelEn": "Dryshi",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "cha": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "firbolg",
+    "label": "Фирболг",
+    "labelEn": "Firbolg",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "wis": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "firbolg_mpmm",
+    "label": "Фирболг",
+    "labelEn": "Firbolg MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "fairy",
+    "label": "Фэйри",
+    "labelEn": "Fairy",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "fairy_mpmm",
+    "label": "Фэйри",
+    "labelEn": "Fairy MPMM",
+    "size": "Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "hadozee",
+    "label": "Хадози",
+    "labelEn": "Hadozee",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "harengon",
+    "label": "Харенгон",
+    "labelEn": "Harengon",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "harengon_mpmm",
+    "label": "Харенгон",
+    "labelEn": "Harengon MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "khenra",
+    "label": "Хенра",
+    "labelEn": "Khenra",
+    "size": "Средний",
+    "speedFt": 35,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "hobgoblin",
+    "label": "Хобгоблин",
+    "labelEn": "Hobgoblin",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "con": 2,
+      "int": 2
+    },
+    "subraces": [
+      {
+        "key": "hobgoblin-sub-0",
+        "label": "Хобгоблин (из Эберона)",
+        "labelEn": "Hobgoblin ERLW",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2,
+          "int": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "hobgoblin_mpmm",
+    "label": "Хобгоблин",
+    "labelEn": "Hobgoblin MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "human",
+    "label": "Человек",
+    "labelEn": "Human",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "human-sub-0",
+        "label": "Человек (дамарец)",
+        "labelEn": "Damaran",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-1",
+        "label": "Человек (иллусканец)",
+        "labelEn": "Illuskan",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-2",
+        "label": "Человек (калишит)",
+        "labelEn": "Calishite",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-3",
+        "label": "Человек (мулан)",
+        "labelEn": "Mulan",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-4",
+        "label": "Человек (рашеми)",
+        "labelEn": "Rashemi",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-5",
+        "label": "Человек (тетирец)",
+        "labelEn": "Tethyrian",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-6",
+        "label": "Человек (тёрами)",
+        "labelEn": "Terami",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-7",
+        "label": "Человек (чондатанец)",
+        "labelEn": "Chondathan",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-8",
+        "label": "Человек (шу)",
+        "labelEn": "Shu",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-9",
+        "label": "Человек (аркайун)",
+        "labelEn": "Arkayun",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-10",
+        "label": "Человек (бедин)",
+        "labelEn": "Bedin",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-11",
+        "label": "Человек (ффолк)",
+        "labelEn": "Ffolk",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-12",
+        "label": "Человек (гур)",
+        "labelEn": "Gur",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-13",
+        "label": "Человек (халруаан)",
+        "labelEn": "Halruaan",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-14",
+        "label": "Человек (имаскари)",
+        "labelEn": "Imaskari",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-15",
+        "label": "Человек (нар)",
+        "labelEn": "Nar",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-16",
+        "label": "Человек (шаарец)",
+        "labelEn": "Shaar",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-17",
+        "label": "Человек (туйган)",
+        "labelEn": "Tuigan",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-18",
+        "label": "Человек (улутиун)",
+        "labelEn": "Ulutiun",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-19",
+        "label": "Человек (чульты)",
+        "labelEn": "Chults",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "human-sub-20",
+        "label": "Человек (метка ухода)",
+        "labelEn": "Mark of Handling",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "wis": 2
+        }
+      },
+      {
+        "key": "human-sub-21",
+        "label": "Человек (метка поиска)",
+        "labelEn": "Mark of Finding",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "wis": 2
+        }
+      },
+      {
+        "key": "human-sub-22",
+        "label": "Человек (метка создания)",
+        "labelEn": "Mark of Making",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "int": 2
+        }
+      },
+      {
+        "key": "human-sub-23",
+        "label": "Человек (метка прохода)",
+        "labelEn": "Mark of Passage",
+        "size": "Средний",
+        "speedFt": 35,
+        "abilityBonuses": {
+          "dex": 2
+        }
+      },
+      {
+        "key": "human-sub-24",
+        "label": "Человек (метка стража)",
+        "labelEn": "Mark of Sentinel",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      },
+      {
+        "key": "human-sub-25",
+        "label": "Человек (вариант)",
+        "labelEn": "Human (Variant)",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      }
+    ]
+  },
+  {
+    "key": "shadar-kai_mpmm",
+    "label": "Шадар-кай",
+    "labelEn": "Shadar-Kai MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "shifter",
+    "label": "Шифтер",
+    "labelEn": "Shifter",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": [
+      {
+        "key": "shifter-sub-0",
+        "label": "Шифтер (Толстошкуры)",
+        "labelEn": "Beasthide",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "con": 2
+        }
+      },
+      {
+        "key": "shifter-sub-1",
+        "label": "Шифтер (Длинноклыки)",
+        "labelEn": "Longtooth",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {}
+      },
+      {
+        "key": "shifter-sub-2",
+        "label": "Шифтер (Остронюхи)",
+        "labelEn": "Wildhunt",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "wis": 2
+        }
+      },
+      {
+        "key": "shifter-sub-3",
+        "label": "Шифтер (Быстроноги)",
+        "labelEn": "Swiftstride",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2
+        }
+      }
+    ]
+  },
+  {
+    "key": "shifter_mpmm",
+    "label": "Шифтер",
+    "labelEn": "Shifter MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "eladrin_mpmm",
+    "label": "Эладрин",
+    "labelEn": "Eladrin MPMM",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "elf",
+    "label": "Эльф",
+    "labelEn": "Elf",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "dex": 2
+    },
+    "subraces": [
+      {
+        "key": "elf-sub-0",
+        "label": "Эльф (высший)",
+        "labelEn": "High",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2,
+          "int": 1
+        }
+      },
+      {
+        "key": "elf-sub-1",
+        "label": "Эльф (лесной)",
+        "labelEn": "Wood",
+        "size": "Средний",
+        "speedFt": 35,
+        "abilityBonuses": {
+          "dex": 2,
+          "wis": 1
+        }
+      },
+      {
+        "key": "elf-sub-2",
+        "label": "Эльф (дроу)",
+        "labelEn": "Drow",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2,
+          "cha": 1
+        }
+      },
+      {
+        "key": "elf-sub-3",
+        "label": "Эльф (морской)",
+        "labelEn": "Sea",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2,
+          "con": 1
+        }
+      },
+      {
+        "key": "elf-sub-4",
+        "label": "Эльф (шадар-кай)",
+        "labelEn": "Shadar-kai",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2
+        }
+      },
+      {
+        "key": "elf-sub-5",
+        "label": "Эльф (эладрин)",
+        "labelEn": "Eladrin",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2,
+          "cha": 1
+        }
+      },
+      {
+        "key": "elf-sub-6",
+        "label": "Эльф (солнечный)",
+        "labelEn": "Sun",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2
+        }
+      },
+      {
+        "key": "elf-sub-7",
+        "label": "Эльф (лунный)",
+        "labelEn": "Moon",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2
+        }
+      },
+      {
+        "key": "elf-sub-8",
+        "label": "Эльф (бледный)",
+        "labelEn": "Pallid",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2
+        }
+      },
+      {
+        "key": "elf-sub-9",
+        "label": "Эльф (метка тени)",
+        "labelEn": "Mark of Shadow",
+        "size": "Средний",
+        "speedFt": 30,
+        "abilityBonuses": {
+          "dex": 2,
+          "cha": 1
+        }
+      }
+    ]
+  },
+  {
+    "key": "astral_elf",
+    "label": "Эльф (астральный)",
+    "labelEn": "Astral Elf",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  },
+  {
+    "key": "yuan-ti",
+    "label": "Юань-ти",
+    "labelEn": "Yuan-ti",
+    "size": "Средний",
+    "speedFt": 30,
+    "abilityBonuses": {
+      "cha": 2,
+      "int": 2
+    },
+    "subraces": []
+  },
+  {
+    "key": "yuan-ti_mpmm",
+    "label": "Юань-ти",
+    "labelEn": "Yuan-Ti MPMM",
+    "size": "Средний или Маленький",
+    "speedFt": 30,
+    "abilityBonuses": {},
+    "subraces": []
+  }
+]

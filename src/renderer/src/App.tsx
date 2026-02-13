@@ -1,0 +1,7270 @@
+﻿
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { SegmentedControl } from '@mantine/core'
+import PlayerForm from './PlayerForm'
+import type { PlayerCharacterTemplateV1 } from './characterTemplate'
+import './styles.css'
+
+type ViewKey = 'home' | 'campaign' | 'combat' | 'reference'
+type ReferenceSection = 'ttg_classes' | 'ttg_races' | 'ttg_rules' | EntityKey
+
+type EntityKey = 'monsters' | 'spells' | 'items' | 'artifacts'
+
+type MonsterRow = {
+  id: number
+  name: string
+  name_ru: string | null
+  type: string | null
+  cr: string | null
+  source: string | null
+}
+
+type SpellRow = {
+  id: number
+  name: string
+  name_ru: string | null
+  school: string | null
+  level: number | null
+  source: string | null
+}
+
+type ItemRow = {
+  id: number
+  name: string
+  name_ru: string | null
+  type: string | null
+  rarity: number | null
+  source: string | null
+}
+
+type ArtifactRow = {
+  id: number
+  name: string
+  name_ru: string | null
+  rarity: number | null
+  source: string | null
+}
+
+type ListRow = MonsterRow | SpellRow | ItemRow | ArtifactRow
+
+type ListResponse<T> = {
+  total: number
+  items: T[]
+}
+
+type DetailResponse = {
+  id: number
+  name: string
+  name_ru: string | null
+  source: string | null
+  data: any
+} | null
+
+type TtgArchetype = {
+  slug?: string | null
+  name_ru?: string | null
+  name_en?: string | null
+  source_short?: string | null
+  source_name?: string | null
+  description_text?: string | null
+}
+
+type TtgClass = {
+  slug?: string | null
+  name_ru?: string | null
+  name_en?: string | null
+  source_short?: string | null
+  source_name?: string | null
+  hit_die?: string | null
+  archetype_label?: string | null
+  description_text?: string | null
+  sections?: Array<{ title?: string | null; content?: string | null }>
+  archetypes?: TtgArchetype[]
+}
+
+type TtgSubrace = {
+  name_ru?: string | null
+  name_en?: string | null
+  source_short?: string | null
+  source_name?: string | null
+  description_text?: string | null
+}
+
+type ReferenceRelated = {
+  title: string
+  subtitle?: string | null
+  text?: string | null
+}
+
+type TtgRace = {
+  slug?: string | null
+  name_ru?: string | null
+  name_en?: string | null
+  source_short?: string | null
+  source_name?: string | null
+  size?: string | null
+  speed?: string | null
+  darkvision?: string | null
+  description_text?: string | null
+  sections?: Array<{ title?: string | null; content?: string | null }>
+  subraces?: TtgSubrace[]
+}
+
+type TtgRule = {
+  slug?: string | null
+  name_ru?: string | null
+  name_en?: string | null
+  type?: string | null
+  source_short?: string | null
+  source_name?: string | null
+  description_text?: string | null
+  sections?: Array<{ title?: string | null; content?: string | null }>
+}
+
+type TtgEntry = TtgClass | TtgRace | TtgRule
+
+type ReferenceModal = {
+  kind?: 'ttg_class' | 'ttg_race' | 'ttg_rule' | 'entity'
+  slug?: string | null
+  title: string
+  subtitle?: string | null
+  columns?: Array<{ label: string; value: string }>
+  sections?: Array<{ title: string; content: string }>
+  related?: ReferenceRelated[]
+  text?: string | null
+}
+
+type MonsterEntry = { name?: string; text?: string }
+
+type MonsterLegendary = {
+  text?: string
+  list?: MonsterEntry[]
+}
+
+type MonsterLair = {
+  text?: string
+  list?: MonsterEntry[]
+}
+
+type Campaign = {
+  id: number
+  name: string
+}
+
+type Character = {
+  id: number
+  name: string
+  race: string | null
+  class: string | null
+  level: number | null
+  data: any
+}
+
+type SaveMods = {
+  str: number | null
+  dex: number | null
+  con: number | null
+  int: number | null
+  wis: number | null
+  cha: number | null
+}
+
+type CombatCondition = {
+  name: string
+  rounds: number | null
+}
+
+type CombatLogTone = 'normal' | 'crit' | 'fail'
+type ThemeMode = 'dark' | 'light'
+
+type CombatLogEntry = {
+  label: string
+  total: number | null
+  detail: string
+  tone: CombatLogTone
+}
+
+type CombatParticipant = {
+  id: string
+  kind: 'character' | 'monster'
+  sourceId?: number
+  name: string
+  targetId?: string | null
+  position?: { x: number; y: number } | null
+  size?: { width: number; height: number } | null
+  hpMax: number | null
+  hpCurrent: number | null
+  ac: number | null
+  initiative: number | null
+  attackBonus: number | null
+  damageExpr: string
+  effects: Array<{ name: string; rounds: number | null }>
+  conditions: CombatCondition[]
+  concentration: { name: string; rounds: number | null } | null
+  saves: SaveMods
+  actions?: Array<{
+    name: string
+    text: string
+    attackBonus: number | null
+    damageExpr: string | null
+    saveDc: number | null
+    saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
+  }>
+  notes: string
+}
+
+type CustomMonsterRow = {
+  id: number
+  name: string
+  cr: string | null
+  updated_at: string
+}
+
+type CustomMonsterDraft = {
+  name: string
+  size: string
+  type: string
+  alignment: string
+  ac: string
+  hp: string
+  speed: string
+  cr: string
+  str: string
+  dex: string
+  con: string
+  int: string
+  wis: string
+  cha: string
+  senses: string
+  languages: string
+  savesText: string
+  skillsText: string
+  vulnerabilities: string
+  resistances: string
+  immunities: string
+  conditionImmunities: string
+  traitsText: string
+  actionsText: string
+  reactionsText: string
+  legendaryText: string
+  lairText: string
+}
+
+type CustomMonsterActionDraft = {
+  id: string
+  name: string
+  attackKind: 'melee' | 'ranged' | 'spell' | 'melee_or_ranged'
+  attackBonus: string
+  rangeText: string
+  targetText: string
+  damageExpr: string
+  damageType: string
+  saveDc: string
+  saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
+  saveFailText: string
+  saveSuccessText: string
+  extraText: string
+}
+
+type InventoryEntry = {
+  name: string
+  qty: number
+  notes?: string
+  category?: 'manual' | 'item' | 'artifact'
+}
+
+type CharacterData = {
+  inventory: InventoryEntry[]
+  currency: { cp: number; sp: number; ep: number; gp: number; pp: number }
+  spells: Array<{ id?: number; name: string; summary?: string }>
+  items: Array<{ id?: number; name: string; summary?: string }>
+  artifacts: Array<{ id?: number; name: string; summary?: string }>
+  ammo: Array<{ name: string; qty: number }>
+  notes: string
+  combat: {
+    hpMax: number | null
+    hpCurrent: number | null
+    ac: number | null
+    speed: number | null
+    initiativeOverride: number | null
+  }
+  stats: {
+    str: { score: number | null; modOverride: number | null }
+    dex: { score: number | null; modOverride: number | null }
+    con: { score: number | null; modOverride: number | null }
+    int: { score: number | null; modOverride: number | null }
+    wis: { score: number | null; modOverride: number | null }
+    cha: { score: number | null; modOverride: number | null }
+  }
+  saves: {
+    str: { prof: boolean; override: number | null }
+    dex: { prof: boolean; override: number | null }
+    con: { prof: boolean; override: number | null }
+    int: { prof: boolean; override: number | null }
+    wis: { prof: boolean; override: number | null }
+    cha: { prof: boolean; override: number | null }
+  }
+  skills: {
+    acrobatics: { prof: boolean; override: number | null }
+    animalHandling: { prof: boolean; override: number | null }
+    arcana: { prof: boolean; override: number | null }
+    athletics: { prof: boolean; override: number | null }
+    deception: { prof: boolean; override: number | null }
+    history: { prof: boolean; override: number | null }
+    insight: { prof: boolean; override: number | null }
+    intimidation: { prof: boolean; override: number | null }
+    investigation: { prof: boolean; override: number | null }
+    medicine: { prof: boolean; override: number | null }
+    nature: { prof: boolean; override: number | null }
+    perception: { prof: boolean; override: number | null }
+    performance: { prof: boolean; override: number | null }
+    persuasion: { prof: boolean; override: number | null }
+    religion: { prof: boolean; override: number | null }
+    sleightOfHand: { prof: boolean; override: number | null }
+    stealth: { prof: boolean; override: number | null }
+    survival: { prof: boolean; override: number | null }
+  }
+}
+
+const defaultResponse: ListResponse<ListRow> = { total: 0, items: [] }
+
+const emptyCustomMonsterDraft: CustomMonsterDraft = {
+  name: '',
+  size: 'Medium',
+  type: '',
+  alignment: '',
+  ac: '',
+  hp: '',
+  speed: '',
+  cr: '',
+  str: '',
+  dex: '',
+  con: '',
+  int: '',
+  wis: '',
+  cha: '',
+  senses: '',
+  languages: '',
+  savesText: '',
+  skillsText: '',
+  vulnerabilities: '',
+  resistances: '',
+  immunities: '',
+  conditionImmunities: '',
+  traitsText: '',
+  actionsText: '',
+  reactionsText: '',
+  legendaryText: '',
+  lairText: ''
+}
+
+const customMonsterSizeOptions = ['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan'] as const
+
+const createEmptyCustomMonsterAction = (): CustomMonsterActionDraft => ({
+  id: `cma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  name: '',
+  attackKind: 'melee',
+  attackBonus: '',
+  rangeText: '',
+  targetText: '',
+  damageExpr: '',
+  damageType: '',
+  saveDc: '',
+  saveAbility: '',
+  saveFailText: '',
+  saveSuccessText: '',
+  extraText: ''
+})
+
+const entityLabels: Record<EntityKey, string> = {
+  monsters: 'Монстры',
+  spells: 'Заклинания',
+  items: 'Предметы',
+  artifacts: 'Артефакты'
+}
+
+const rarityLabel = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) return '—'
+  if (value === 0) return 'обычный'
+  if (value === 1) return 'необычный'
+  if (value === 2) return 'редкий'
+  if (value === 3) return 'очень редкий'
+  if (value === 4) return 'легендарный'
+  return 'особый'
+}
+
+const getDisplayName = (row: ListRow): string => row.name_ru ?? row.name
+
+const getSubtitle = (row: ListRow): string | null =>
+  row.name_ru && row.name ? row.name : null
+
+const getListMeta = (entity: EntityKey, row: ListRow): string[] => {
+  if (entity === 'monsters') {
+    const monster = row as MonsterRow
+    return [monster.type ?? 'Тип не указан', `КС: ${monster.cr ?? '—'}`]
+  }
+  if (entity === 'spells') {
+    const spell = row as SpellRow
+    const level = spell.level === 0 ? 'заговор' : `ур. ${spell.level ?? '—'}`
+    return [spell.school ?? 'школа неизвестна', level]
+  }
+  if (entity === 'items') {
+    const item = row as ItemRow
+    return [item.type ?? 'тип не указан', `редкость: ${rarityLabel(item.rarity)}`]
+  }
+  const art = row as ArtifactRow
+  return [`редкость: ${rarityLabel(art.rarity)}`]
+}
+
+const getDetailTitle = (detail: DetailResponse): string => {
+  if (!detail) return 'Выберите запись'
+  return detail.name_ru ?? detail.name
+}
+
+const normalizeEntries = (value: unknown): MonsterEntry[] => {
+  if (!value) return []
+  if (Array.isArray(value)) return value as MonsterEntry[]
+  if (typeof value === 'string') return [{ text: value }]
+  return [value as MonsterEntry]
+}
+
+const toText = (value: unknown): string => {
+  if (value === null || value === undefined) return '—'
+  if (typeof value === 'string') return value
+  if (typeof value === 'number') return String(value)
+  return '—'
+}
+
+const getLocaleValue = (data: any, key: string): string | null => {
+  const ruValue = data?.ru?.[key]
+  if (ruValue) return String(ruValue)
+  const enValue = data?.en?.[key]
+  if (enValue) return String(enValue)
+  return null
+}
+
+const getLocaleHtml = (data: any, key: string): string => {
+  const value = getLocaleValue(data, key)
+  return value ?? ''
+}
+
+const getDescriptionHtml = (data: any): string => {
+  const text =
+    getLocaleValue(data, 'text') ??
+    getLocaleValue(data, 'desc') ??
+    getLocaleValue(data, 'description') ??
+    getLocaleValue(data, 'fiction') ??
+    data?.fiction
+  if (text) return text
+  const entries = data?.entries ?? data?.ru?.entries ?? data?.en?.entries
+  if (Array.isArray(entries)) {
+    const parts = entries
+      .map((entry) => extractActionText(entry))
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+    if (parts.length > 0) {
+      return parts.map((part) => `<p>${part}</p>`).join('')
+    }
+  }
+  return ''
+}
+
+const formatMonsterSaves = (data: any): string | null => {
+  const source = data?.saves ?? data?.savingThrows ?? data?.saveThrows ?? null
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return null
+  const parts = abilityKeys
+    .map((key) => (typeof source[key] === 'number' ? `${abilityLabels[key]} ${formatMod(source[key])}` : null))
+    .filter(Boolean)
+  return parts.length > 0 ? parts.join(' · ') : null
+}
+
+const boolLabel = (value: unknown): string => {
+  if (value === true || value === 'true') return 'да'
+  if (value === false || value === 'false') return 'нет'
+  return '—'
+}
+
+const buildSpellSummary = (data: any): string => {
+  const level = getLocaleValue(data, 'level') ?? '—'
+  const school = getLocaleValue(data, 'school') ?? '—'
+  const casting = getLocaleValue(data, 'castingTime') ?? '—'
+  const range = getLocaleValue(data, 'range') ?? '—'
+  return `${level} · ${school} · ${casting} · ${range}`
+}
+
+const buildItemSummary = (data: any): string => {
+  const type = getLocaleValue(data, 'type') ?? '—'
+  const rarity = rarityLabel(data?.en?.rarity ?? data?.ru?.rarity)
+  const ac = data?.en?.ac ?? data?.ru?.ac
+  const damageVal = data?.en?.damageVal ?? data?.ru?.damageVal
+  const damageType = data?.en?.damageType ?? data?.ru?.damageType
+  const damage = damageVal ? `${damageVal} ${damageType ?? ''}`.trim() : null
+  const extras = [ac ? `КД ${ac}` : null, damage ? `урон ${damage}` : null]
+    .filter(Boolean)
+    .join(' · ')
+  return `${type} · ${rarity}${extras ? ` · ${extras}` : ''}`
+}
+
+const buildArtifactSummary = (data: any): string => {
+  const type = getLocaleValue(data, 'type') ?? '—'
+  const rarity = rarityLabel(data?.en?.rarity ?? data?.ru?.rarity)
+  const attune = data?.en?.attunement ?? data?.ru?.attunement
+  return `${type} · ${rarity}${attune ? ` · ${attune}` : ''}`
+}
+
+const parseDice = (expression: string) => {
+  const normalized = expression.replace(/\s+/g, '')
+  const match = normalized.match(/^(\d*)d(\d+)([+-]\d+)?$/i)
+  if (!match) return null
+  const count = match[1] ? Number(match[1]) : 1
+  const sides = Number(match[2])
+  const modifier = match[3] ? Number(match[3]) : 0
+  if (!count || !sides) return null
+  return { count, sides, modifier }
+}
+
+const scoreToMod = (score: number | null): number | null => {
+  if (score === null || Number.isNaN(score)) return null
+  return Math.floor((score - 10) / 2)
+}
+
+const formatMod = (value: number | null): string => {
+  if (value === null || Number.isNaN(value)) return '—'
+  return value >= 0 ? `+${value}` : String(value)
+}
+
+const abilityKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
+const abilityLabels: Record<(typeof abilityKeys)[number], string> = {
+  str: 'СИЛ',
+  dex: 'ЛВК',
+  con: 'ТЕЛ',
+  int: 'ИНТ',
+  wis: 'МДР',
+  cha: 'ХАР'
+}
+const saveLabelToKey: Record<string, (typeof abilityKeys)[number]> = {
+  СИЛ: 'str',
+  ЛВК: 'dex',
+  ТЕЛ: 'con',
+  ИНТ: 'int',
+  МДР: 'wis',
+  ХАР: 'cha'
+}
+const emptySaves: SaveMods = { str: null, dex: null, con: null, int: null, wis: null, cha: null }
+
+const getProfBonus = (level: number | null): number | null => {
+  if (!level || level < 1) return null
+  return 2 + Math.floor((level - 1) / 4)
+}
+
+const getStatMod = (data: CharacterData, key: (typeof abilityKeys)[number]): number | null => {
+  const stat = data.stats[key]
+  if (stat.modOverride !== null && stat.modOverride !== undefined) return stat.modOverride
+  return scoreToMod(stat.score)
+}
+
+const buildSaveModsFromCharacter = (data: CharacterData, level: number | null): SaveMods => {
+  const profBonus = getProfBonus(level)
+  return abilityKeys.reduce((acc, key) => {
+    const save = data.saves[key]
+    if (save.override !== null && save.override !== undefined) {
+      acc[key] = save.override
+      return acc
+    }
+    const base = getStatMod(data, key)
+    if (base === null) {
+      acc[key] = null
+      return acc
+    }
+    acc[key] = save.prof && profBonus !== null ? base + profBonus : base
+    return acc
+  }, {} as SaveMods)
+}
+
+const parseMonsterSaves = (data: any): SaveMods => {
+  const source = data?.saves ?? data?.savingThrows ?? data?.saveThrows ?? null
+  if (!source) return emptySaves
+  if (typeof source === 'object' && !Array.isArray(source)) {
+    return {
+      str: typeof source.str === 'number' ? source.str : emptySaves.str,
+      dex: typeof source.dex === 'number' ? source.dex : emptySaves.dex,
+      con: typeof source.con === 'number' ? source.con : emptySaves.con,
+      int: typeof source.int === 'number' ? source.int : emptySaves.int,
+      wis: typeof source.wis === 'number' ? source.wis : emptySaves.wis,
+      cha: typeof source.cha === 'number' ? source.cha : emptySaves.cha
+    }
+  }
+  return emptySaves
+}
+
+const parseMonsterHp = (value: unknown): number | null => {
+  if (typeof value === 'number') return value
+  if (typeof value !== 'string') return null
+  const match = value.match(/^\s*(\d+)/)
+  if (!match) return null
+  return Number(match[1])
+}
+
+const parseMonsterAc = (value: unknown): number | null => {
+  if (typeof value === 'number') return value
+  if (typeof value !== 'string') return null
+  const match = value.match(/^\s*(\d+)/)
+  if (!match) return null
+  return Number(match[1])
+}
+
+const extractActionText = (entry: any): string => {
+  if (!entry) return ''
+  if (typeof entry === 'string') return entry
+  if (typeof entry.text === 'string') return entry.text
+  if (Array.isArray(entry.entries)) return entry.entries.map(extractActionText).join(' ')
+  return ''
+}
+
+const normalizeActionText = (text: string) =>
+  stripHtml(text)
+    .replace(/[\u00A0\u202F]/g, ' ')
+    .replace(/[＋﹢]/g, '+')
+    .replace(/−/g, '-')
+    .replace(/(\d)\s*[кд]\s*(\d)/gi, '$1d$2')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+const parseActionAttackBonus = (text: string): number | null => {
+  const cleaned = normalizeActionText(text)
+  const beforeHit = cleaned.split(/Попадание:|Hit:/i)[0] ?? cleaned
+  const match =
+    beforeHit.match(/([+-]?\s*\d+)\s*(?:to hit|к\s*попаданию|к\s*попад|к\s*атаке|к\s*атак)/i) ??
+    beforeHit.match(/([+-]\s*\d+)/)
+  if (!match) return null
+  return Number(match[1].replace(/\s+/g, ''))
+}
+
+const parseActionDamageExpr = (text: string): string | null => {
+  const cleaned = normalizeActionText(text)
+  const afterHit = cleaned.split(/Попадание:|Hit:/i)[1] ?? ''
+  const paren = afterHit.match(/\(([^)]+)\)/)
+  if (paren) {
+    const diceInParen = paren[1].match(/(\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?)/i)
+    if (diceInParen) return diceInParen[1].replace(/\s+/g, '')
+  }
+  const hitMatch = afterHit.match(/(\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?)/i)
+  if (hitMatch) return hitMatch[1].replace(/\s+/g, '')
+  const diceMatch = cleaned.match(/(\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?)/i)
+  if (!diceMatch) return null
+  return diceMatch[1].replace(/\s+/g, '')
+}
+
+const htmlToPlainText = (value: string) =>
+  value
+    .replace(/<\s*br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<li>/gi, '- ')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\r/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+const stripHtml = (value: string) => value.replace(/<[^>]+>/g, '')
+
+const renderInlineTokens = (text: string, keyPrefix: string): ReactNode[] => {
+  const tokens = text.split(
+    /(\b\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?\b|\b[кk]\s*\d+\b|\bСл\s*\d+\b|(?:\+|-)\s*\d+\s*к\s*атаке)/gi
+  )
+  return tokens.map((token, index) => {
+    if (!token) return null
+    if (/^\b\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?\b$/i.test(token)) {
+      return (
+        <span key={`${keyPrefix}-dice-${index}`} className="detail__dice">
+          {token.replace(/\s+/g, '')}
+        </span>
+      )
+    }
+    if (/^\b[кk]\s*\d+\b$/i.test(token)) {
+      return (
+        <span key={`${keyPrefix}-die-${index}`} className="detail__dice">
+          {token.replace(/\s+/g, '')}
+        </span>
+      )
+    }
+    if (/^\bСл\s*\d+\b$/i.test(token)) {
+      return (
+        <span key={`${keyPrefix}-dc-${index}`} className="detail__dice detail__dice--dc">
+          {token.replace(/\s+/g, ' ')}
+        </span>
+      )
+    }
+    if (/^(?:\+|-)\s*\d+\s*к\s*атаке$/i.test(token)) {
+      return (
+        <span key={`${keyPrefix}-atk-${index}`} className="detail__dice detail__dice--atk">
+          {token.replace(/\s+/g, ' ')}
+        </span>
+      )
+    }
+    return <span key={`${keyPrefix}-text-${index}`}>{token}</span>
+  })
+}
+
+const renderInlineMarkdown = (text: string): ReactNode[] => {
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g)
+  return parts.map((part, index) => {
+    if (!part) return null
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={`inline-${index}`}>{renderInlineTokens(part.slice(2, -2), `strong-${index}`)}</strong>
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code key={`inline-${index}`}>{part.slice(1, -1)}</code>
+    }
+    if (part.startsWith('*') && part.endsWith('*')) {
+      return <em key={`inline-${index}`}>{renderInlineTokens(part.slice(1, -1), `em-${index}`)}</em>
+    }
+    return <span key={`inline-${index}`}>{renderInlineTokens(part, `plain-${index}`)}</span>
+  })
+}
+
+type SpellcastingTable = {
+  headers: string[]
+  rows: Array<{
+    level: string
+    prof: string
+    features: string
+    slots: string[]
+  }>
+}
+
+const normalizeDashToken = (value: string) => {
+  const token = value.trim()
+  if (/^[—–-]+$/.test(token)) return '—'
+  return token
+}
+
+const parseSpellcastingTable = (rawText: string): SpellcastingTable | null => {
+  const text = htmlToPlainText(rawText)
+    .replace(/вЂ./g, '—')
+    .replace(/[＋﹢]/g, '+')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!text) return null
+
+  const rowAnchor = /\b(?:1\d|20|[1-9])\s*\+\d\b/g
+  const starts: number[] = []
+  for (const match of text.matchAll(rowAnchor)) {
+    starts.push(match.index ?? -1)
+  }
+  if (starts.length < 3) return null
+
+  const slices = starts.map((start, index) => {
+    const end = index + 1 < starts.length ? starts[index + 1] : text.length
+    return text.slice(start, end).trim()
+  })
+
+  const rows: SpellcastingTable['rows'] = []
+  for (const slice of slices) {
+    const open = slice.match(/^((?:1\d|20|[1-9]))\s*(\+\d)\s+(.+)$/)
+    if (!open) continue
+    const level = open[1]
+    const prof = open[2]
+    const tail = open[3]
+    const tokens = tail.split(/\s+/).filter(Boolean)
+    const slotTokens: string[] = []
+    let idx = tokens.length - 1
+    while (idx >= 0 && slotTokens.length < 14) {
+      const token = tokens[idx]
+      if (!/^(\d+|[—–-]+)$/.test(token)) break
+      slotTokens.unshift(normalizeDashToken(token))
+      idx -= 1
+    }
+    if (slotTokens.length < 8) continue
+    const features = tokens.slice(0, idx + 1).join(' ').trim()
+    rows.push({
+      level,
+      prof,
+      features: features || '—',
+      slots: slotTokens
+    })
+  }
+
+  if (rows.length < 3) return null
+
+  const maxSlotColumns = rows.reduce(
+    (max, row) => (row.slots.length > max ? row.slots.length : max),
+    0
+  )
+  if (maxSlotColumns < 8) return null
+  const normalizedRows = rows.map((row) => ({
+    ...row,
+    slots: row.slots.length < maxSlotColumns
+      ? [...row.slots, ...Array.from({ length: maxSlotColumns - row.slots.length }, () => '—')]
+      : row.slots
+  }))
+
+  const columnHeaders =
+    maxSlotColumns === 11
+      ? ['Заг.', 'Изв.', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+      : maxSlotColumns === 10
+        ? ['Заг.', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+        : maxSlotColumns === 9
+          ? ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+          : Array.from({ length: maxSlotColumns }, (_, index) => `Кол.${index + 1}`)
+
+  return {
+    headers: ['Ур', 'БМ', 'Умения', ...columnHeaders],
+    rows: normalizedRows
+  }
+}
+
+const renderSpellcastingTable = (table: SpellcastingTable): ReactNode => (
+  <div className="detail-table-wrap">
+    <table className="detail-table">
+      <thead>
+        <tr>
+          {table.headers.map((header) => (
+            <th key={header}>{header}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {table.rows.map((row, index) => (
+          <tr key={`${row.level}-${index}`}>
+            <td>{row.level}</td>
+            <td>{row.prof}</td>
+            <td className="detail-table__features">{row.features}</td>
+            {row.slots.map((slot, slotIndex) => (
+              <td key={`${row.level}-${slotIndex}`}>{slot}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)
+
+const renderFormattedText = (rawText: string): ReactNode => {
+  const text = htmlToPlainText(rawText)
+    .replace(/\s((?:PHB|XGE|TCE|SCAG|DMG|MM|UA[0-9A-Za-z-]*))\s/g, '\n$1 ')
+    .replace(/(\d+\s*[-–]?\s*(?:й|ый|ой)\s+уровень[^.]{0,80})/gi, '\n$1')
+    .replace(/\s([а-яa-z]\))/gi, '\n$1')
+    .replace(/\s(\d+\))/g, '\n$1')
+    .replace(/\s-\s/g, '\n- ')
+    .replace(/([.!?])\s+(?=[A-ZА-ЯЁ])/g, '$1\n')
+    .replace(/([:;])\s+(?=[A-ZА-ЯЁ])/g, '$1\n')
+  if (!text) return null
+
+  const longLineSplit = (line: string): string[] => {
+    if (line.length <= 230) return [line]
+    const sentences = line.split(/(?<=[.!?])\s+/)
+    if (sentences.length <= 1) return [line]
+    const chunks: string[] = []
+    let current = ''
+    for (const sentence of sentences) {
+      const candidate = current ? `${current} ${sentence}` : sentence
+      if (candidate.length > 220 && current) {
+        chunks.push(current.trim())
+        current = sentence
+      } else {
+        current = candidate
+      }
+    }
+    if (current.trim()) chunks.push(current.trim())
+    return chunks.length > 0 ? chunks : [line]
+  }
+
+  const lines = text
+    .split('\n')
+    .flatMap((line) => longLineSplit(line.trim()))
+    .filter(Boolean)
+  const blocks: ReactNode[] = []
+  let paragraph: string[] = []
+  let list: string[] = []
+  let listKind: 'ul' | 'ol' = 'ul'
+
+  const flushParagraph = () => {
+    if (paragraph.length === 0) return
+    blocks.push(
+      <p key={`p-${blocks.length}`} className="detail__paragraph">
+        {renderInlineMarkdown(paragraph.join(' ').trim())}
+      </p>
+    )
+    paragraph = []
+  }
+
+  const flushList = () => {
+    if (list.length === 0) return
+    if (listKind === 'ol') {
+      blocks.push(
+        <ol key={`ol-${blocks.length}`} className="detail__list detail__list--ordered">
+          {list.map((item, index) => (
+            <li key={`li-${blocks.length}-${index}`}>{renderInlineMarkdown(item)}</li>
+          ))}
+        </ol>
+      )
+    } else {
+      blocks.push(
+        <ul key={`ul-${blocks.length}`} className="detail__list">
+          {list.map((item, index) => (
+            <li key={`li-${blocks.length}-${index}`}>{renderInlineMarkdown(item)}</li>
+          ))}
+        </ul>
+      )
+    }
+    list = []
+    listKind = 'ul'
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (!line) {
+      flushParagraph()
+      flushList()
+      continue
+    }
+    const heading = line.match(/^(#{1,4})\s+(.+)$/)
+    if (heading) {
+      flushParagraph()
+      flushList()
+      blocks.push(
+        <h4 key={`h-${blocks.length}`} className="detail__subheading">
+          {renderInlineMarkdown(heading[2])}
+        </h4>
+      )
+      continue
+    }
+    const bullet = line.match(/^[-*]\s+(.+)$/)
+    if (bullet) {
+      flushParagraph()
+      listKind = 'ul'
+      list.push(bullet[1])
+      continue
+    }
+    const ordered = line.match(/^(?:\d+|[а-яa-z])\)\s+(.+)$/i)
+    if (ordered) {
+      flushParagraph()
+      listKind = 'ol'
+      list.push(ordered[1])
+      continue
+    }
+    flushList()
+    paragraph.push(line)
+  }
+
+  flushParagraph()
+  flushList()
+  return blocks
+}
+
+const renderSectionContent = (title: string, content: string): ReactNode => {
+  const table = parseSpellcastingTable(content)
+  if (table && (/использование заклинаний/i.test(title) || table.rows.length >= 8)) {
+    return renderSpellcastingTable(table)
+  }
+  return renderFormattedText(content)
+}
+
+const getRuleSectionBucket = (title: string): 'base' | 'mechanic' | 'exception' => {
+  const lower = title.toLowerCase()
+  if (/исключ|особ|огранич|примеч|редк|штраф|запрет/.test(lower)) return 'exception'
+  if (/провер|брос|ата|урон|эффект|расч|формул|спас|иници|движ|дистан/.test(lower)) return 'mechanic'
+  return 'base'
+}
+
+const injectParagraphBreaks = (raw: string): string => {
+  const text = htmlToPlainText(raw).replace(/\s+/g, ' ').trim()
+  if (!text) return ''
+  const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean)
+  if (sentences.length <= 2) return text
+
+  const paragraphs: string[] = []
+  let current: string[] = []
+  let chars = 0
+
+  for (const sentence of sentences) {
+    current.push(sentence)
+    chars += sentence.length
+    if (current.length >= 3 || chars >= 420) {
+      paragraphs.push(current.join(' ').trim())
+      current = []
+      chars = 0
+    }
+  }
+
+  if (current.length > 0) {
+    paragraphs.push(current.join(' ').trim())
+  }
+
+  return paragraphs.join('\n\n')
+}
+
+const buildReferenceSections = (
+  rawText: string | null | undefined,
+  isClass: boolean
+): Array<{ title: string; content: string }> => {
+  const text = htmlToPlainText(rawText ?? '')
+  if (!text) return []
+
+  const classAnchors = [
+    { key: 'хиты', title: 'Хиты' },
+    { key: 'владение', title: 'Владения' },
+    { key: 'снаряжение', title: 'Снаряжение' },
+    { key: 'использование заклинаний', title: 'Использование заклинаний' },
+    { key: 'базовая характеристика заклинаний', title: 'Базовая характеристика заклинаний' },
+    { key: 'архетип', title: 'Архетипы' },
+    { key: 'особенности', title: 'Особенности' }
+  ]
+
+  const raceAnchors = [
+    { key: 'возраст', title: 'Возраст' },
+    { key: 'мировоззрение', title: 'Мировоззрение' },
+    { key: 'размер', title: 'Размер' },
+    { key: 'скорость', title: 'Скорость' },
+    { key: 'языки', title: 'Языки' },
+    { key: 'особенности', title: 'Особенности' }
+  ]
+
+  const anchors = isClass ? classAnchors : raceAnchors
+  const lower = text.toLowerCase()
+  const found = anchors
+    .map((anchor) => ({ ...anchor, index: lower.indexOf(anchor.key) }))
+    .filter((anchor) => anchor.index >= 0)
+    .sort((a, b) => a.index - b.index)
+    .filter((anchor, index, list) => index === 0 || anchor.index !== list[index - 1].index)
+
+  if (found.length === 0) {
+    return [{ title: 'Общее описание', content: injectParagraphBreaks(text) }]
+  }
+
+  const sections: Array<{ title: string; content: string }> = []
+  const firstIndex = found[0].index
+  if (firstIndex > 40) {
+    const intro = text.slice(0, firstIndex).trim()
+    if (intro) sections.push({ title: 'Общее описание', content: intro })
+  }
+
+  for (let i = 0; i < found.length; i += 1) {
+    const current = found[i]
+    const next = found[i + 1]
+    const start = current.index
+    const end = next ? next.index : text.length
+    const content = injectParagraphBreaks(text.slice(start, end).trim())
+    if (!content) continue
+    sections.push({ title: current.title, content })
+  }
+
+  const merged: Array<{ title: string; content: string }> = []
+  for (const section of sections) {
+    if (section.content.length < 36 && merged.length > 0) {
+      const prev = merged[merged.length - 1]
+      prev.content = `${prev.content}\n${section.content}`.trim()
+      continue
+    }
+    merged.push(section)
+  }
+
+  return merged.slice(0, 16)
+}
+
+const parseMonsterActions = (data: any): Array<{
+  name: string
+  text: string
+  attackBonus: number | null
+  damageExpr: string | null
+  saveDc: number | null
+  saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
+}> => {
+  const source = data?.action ?? data?.actions ?? []
+  if (!Array.isArray(source)) return []
+  return source
+    .map((action: any) => {
+      const name = action?.name ?? 'Действие'
+      const text = Array.isArray(action?.entries)
+        ? action.entries.map(extractActionText).join(' ')
+        : extractActionText(action)
+      const attackBonus = parseActionAttackBonus(text)
+      const damageExpr = parseActionDamageExpr(text)
+      const saveInfo = parseSaveFromText(text)
+      return {
+        name,
+        text,
+        attackBonus,
+        damageExpr,
+        saveDc: saveInfo.saveDc ? Number(saveInfo.saveDc) : null,
+        saveAbility: saveInfo.saveAbility
+      }
+    })
+    .filter((action) => action.text || action.name)
+}
+
+const parseSignedBonus = (value: string): number | null => {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const normalized = trimmed.replace(',', '.').replace('+', '')
+  const parsed = Number(normalized)
+  if (Number.isNaN(parsed)) return null
+  return parsed
+}
+
+const buildCharacterActions = (data: any) => {
+  const attacks = data?.sheet?.attacks
+  if (!Array.isArray(attacks)) return undefined
+  const mapped = attacks
+    .map((attack: any) => ({
+      name: String(attack?.name ?? '').trim() || 'Атака',
+      text: String(attack?.notes ?? '').trim(),
+      attackBonus: typeof attack?.attackBonus === 'string' ? parseSignedBonus(attack.attackBonus) : null,
+      damageExpr: typeof attack?.damage === 'string' ? attack.damage.trim() : null,
+      saveDc: null,
+      saveAbility: ''
+    }))
+    .filter((entry) => entry.name || entry.text || entry.damageExpr || entry.attackBonus !== null)
+  return mapped.length > 0 ? mapped : undefined
+}
+
+const parseOptionalInt = (value: string): number | null => {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const parsed = Number(trimmed)
+  if (Number.isNaN(parsed)) return null
+  return Math.round(parsed)
+}
+
+const scoreToSaveMod = (score: string): number | null => {
+  const parsed = parseOptionalInt(score)
+  if (parsed === null) return null
+  return Math.floor((parsed - 10) / 2)
+}
+
+const parseNamedMonsterEntries = (raw: string) => {
+  return raw
+    .split(/\r?\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const normalized = stripHtml(line)
+        .replace(/^\s*[-*]\s*/, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+      const match = normalized.match(/^([^:.;]{2,80})[:.]\s*(.+)$/)
+      if (match) {
+        return {
+          name: match[1].trim(),
+          entries: [match[2].trim()]
+        }
+      }
+      return {
+        name: 'Особенность',
+        entries: [normalized]
+      }
+    })
+}
+
+const toSignedBonus = (value: string): string | null => {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const parsed = Number(trimmed.replace(',', '.'))
+  if (Number.isNaN(parsed)) return null
+  const rounded = Math.round(parsed)
+  return rounded >= 0 ? `+${rounded}` : `${rounded}`
+}
+
+const attackKindLabel: Record<CustomMonsterActionDraft['attackKind'], string> = {
+  melee: 'Рукопашная атака оружием',
+  ranged: 'Дальнобойная атака оружием',
+  spell: 'Атака заклинанием',
+  melee_or_ranged: 'Рукопашная или дальнобойная атака оружием'
+}
+
+const parseAttackKindFromText = (
+  text: string
+): CustomMonsterActionDraft['attackKind'] => {
+  const cleaned = stripHtml(text).toLowerCase()
+  if (cleaned.includes('или дальнобой')) return 'melee_or_ranged'
+  if (cleaned.includes('атака заклинанием')) return 'spell'
+  if (cleaned.includes('дальнобой')) return 'ranged'
+  return 'melee'
+}
+
+const parseDamageTypeFromText = (text: string): string => {
+  const cleaned = stripHtml(text).toLowerCase()
+  const match = cleaned.match(
+    /\)\s*([а-яёa-z][а-яёa-z\s-]{1,24})\s+урона/i
+  )
+  if (!match) return ''
+  return match[1].trim()
+}
+
+const parseRangeFromText = (text: string): string => {
+  const cleaned = stripHtml(text).replace(/\s+/g, ' ').trim()
+  const match =
+    cleaned.match(/(?:досягаемость|дистанция)\s*:?([^.,;]+)/i) ??
+    cleaned.match(/reach|range\s*:?([^.,;]+)/i)
+  if (!match) return ''
+  return match[1].trim()
+}
+
+const parseTargetFromText = (text: string): string => {
+  const cleaned = stripHtml(text).replace(/\s+/g, ' ').trim()
+  const match = cleaned.match(/(?:одна|до\s+\d+|каждая|любая)\s+цель[^.,;]*/i)
+  if (match) return match[0].trim()
+  const matchAlt = cleaned.match(/target[^.,;]*/i)
+  if (!matchAlt) return ''
+  return matchAlt[0].trim()
+}
+
+const parseSaveFromText = (text: string): {
+  saveDc: string
+  saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
+} => {
+  const cleaned = stripHtml(text).replace(/\s+/g, ' ').trim()
+  const dcMatch = cleaned.match(/(?:сл|dc)\s*(\d{1,2})/i)
+  const abilities: Array<{ key: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'; regex: RegExp }> = [
+    { key: 'СИЛ', regex: /сил|strength/i },
+    { key: 'ЛВК', regex: /ловк|dexterity/i },
+    { key: 'ТЕЛ', regex: /тел|constitution/i },
+    { key: 'ИНТ', regex: /инт|intelligence/i },
+    { key: 'МДР', regex: /мдр|мудр|wisdom/i },
+    { key: 'ХАР', regex: /хар|charisma/i }
+  ]
+  const ability = abilities.find((item) => item.regex.test(cleaned))?.key ?? ''
+  return { saveDc: dcMatch?.[1] ?? '', saveAbility: ability }
+}
+
+const normalizeDamageExpr = (value: string): string | null => {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const normalized = trimmed
+    .replace(/[xх×]/gi, 'd')
+    .replace(/[＋﹢]/g, '+')
+    .replace(/−/g, '-')
+    .replace(/\s+/g, '')
+  return parseDice(normalized) ? normalized : null
+}
+
+const buildStructuredMonsterActions = (actions: CustomMonsterActionDraft[]) => {
+  const filtered = actions
+    .map((action) => ({
+      ...action,
+      name: action.name.trim(),
+      rangeText: action.rangeText.trim(),
+      targetText: action.targetText.trim(),
+      damageType: action.damageType.trim(),
+      saveDc: action.saveDc.trim(),
+      saveAbility: action.saveAbility,
+      saveFailText: action.saveFailText.trim(),
+      saveSuccessText: action.saveSuccessText.trim(),
+      extraText: action.extraText.trim(),
+      attackBonus: toSignedBonus(action.attackBonus),
+      damageExpr: normalizeDamageExpr(action.damageExpr)
+    }))
+    .filter((action) => action.name || action.attackBonus || action.damageExpr || action.extraText)
+
+  const entries = filtered.map((action) => {
+    const attackText = action.attackBonus
+      ? `${attackKindLabel[action.attackKind]}: ${action.attackBonus} к попаданию${
+          action.rangeText ? `, досягаемость/дистанция ${action.rangeText}` : ''
+        }${action.targetText ? `, ${action.targetText}` : ''}.`
+      : ''
+    const damageText = action.damageExpr
+      ? `Попадание: (${action.damageExpr}) ${action.damageType || ''} урона.`
+      : ''
+    const saveText =
+      action.saveDc && action.saveAbility
+        ? `Цель совершает спасбросок ${action.saveAbility} СЛ ${action.saveDc}.${
+            action.saveFailText ? ` При провале: ${action.saveFailText}.` : ''
+          }${action.saveSuccessText ? ` При успехе: ${action.saveSuccessText}.` : ''}`
+        : ''
+    const text = [attackText, damageText, action.extraText].filter(Boolean).join(' ').trim()
+    const fullText = [text, saveText].filter(Boolean).join(' ').trim()
+    return {
+      name: action.name || 'Действие',
+      entries: [fullText || 'Описание отсутствует']
+    }
+  })
+
+  return {
+    entries,
+    raw: filtered.map((action) => ({
+      name: action.name || 'Действие',
+      attackKind: action.attackKind,
+      attackBonus: action.attackBonus,
+      rangeText: action.rangeText,
+      targetText: action.targetText,
+      damageExpr: action.damageExpr,
+      damageType: action.damageType,
+      saveDc: action.saveDc,
+      saveAbility: action.saveAbility,
+      saveFailText: action.saveFailText,
+      saveSuccessText: action.saveSuccessText,
+      extraText: action.extraText
+    }))
+  }
+}
+
+const customMonsterActionsFromData = (data: any): CustomMonsterActionDraft[] => {
+  if (Array.isArray(data?.custom_actions) && data.custom_actions.length > 0) {
+    return data.custom_actions.map((action: any) => ({
+      id: `cma-load-${Math.random().toString(36).slice(2, 8)}`,
+      name: typeof action?.name === 'string' ? action.name : '',
+      attackKind:
+        action?.attackKind === 'ranged' ||
+        action?.attackKind === 'spell' ||
+        action?.attackKind === 'melee_or_ranged'
+          ? action.attackKind
+          : 'melee',
+      attackBonus: typeof action?.attackBonus === 'string' ? action.attackBonus : '',
+      rangeText: typeof action?.rangeText === 'string' ? action.rangeText : '',
+      targetText: typeof action?.targetText === 'string' ? action.targetText : '',
+      damageExpr: typeof action?.damageExpr === 'string' ? action.damageExpr : '',
+      damageType: typeof action?.damageType === 'string' ? action.damageType : '',
+      saveDc: typeof action?.saveDc === 'string' ? action.saveDc : '',
+      saveAbility:
+        action?.saveAbility === 'СИЛ' ||
+        action?.saveAbility === 'ЛВК' ||
+        action?.saveAbility === 'ТЕЛ' ||
+        action?.saveAbility === 'ИНТ' ||
+        action?.saveAbility === 'МДР' ||
+        action?.saveAbility === 'ХАР'
+          ? action.saveAbility
+          : '',
+      saveFailText: typeof action?.saveFailText === 'string' ? action.saveFailText : '',
+      saveSuccessText: typeof action?.saveSuccessText === 'string' ? action.saveSuccessText : '',
+      extraText: typeof action?.extraText === 'string' ? action.extraText : ''
+    }))
+  }
+  const parsed = parseMonsterActions(data)
+  if (parsed.length > 0) {
+    return parsed.map((action) => ({
+      id: `cma-parse-${Math.random().toString(36).slice(2, 8)}`,
+      name: action.name || '',
+      attackKind: parseAttackKindFromText(action.text || ''),
+      attackBonus: action.attackBonus !== null ? String(action.attackBonus) : '',
+      rangeText: parseRangeFromText(action.text || ''),
+      targetText: parseTargetFromText(action.text || ''),
+      damageExpr: action.damageExpr ?? '',
+      damageType: parseDamageTypeFromText(action.text || ''),
+      saveDc: parseSaveFromText(action.text || '').saveDc,
+      saveAbility: parseSaveFromText(action.text || '').saveAbility,
+      saveFailText: '',
+      saveSuccessText: '',
+      extraText: action.text || ''
+    }))
+  }
+  return [createEmptyCustomMonsterAction()]
+}
+
+const buildCustomMonsterData = (draft: CustomMonsterDraft, actionDrafts: CustomMonsterActionDraft[]) => {
+  const parseCommaList = (value: string) =>
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .join(', ')
+  const manualActions = parseNamedMonsterEntries(draft.actionsText)
+  const structured = buildStructuredMonsterActions(actionDrafts)
+  return {
+    size: draft.size || 'Medium',
+    type: draft.type.trim(),
+    alignment: draft.alignment.trim(),
+    ac: draft.ac.trim(),
+    hp: draft.hp.trim(),
+    speed: draft.speed.trim(),
+    cr: draft.cr.trim(),
+    str: parseOptionalInt(draft.str),
+    dex: parseOptionalInt(draft.dex),
+    con: parseOptionalInt(draft.con),
+    int: parseOptionalInt(draft.int),
+    wis: parseOptionalInt(draft.wis),
+    cha: parseOptionalInt(draft.cha),
+    senses: draft.senses.trim(),
+    languages: draft.languages.trim(),
+    save: draft.savesText.trim(),
+    skill: draft.skillsText.trim(),
+    vulnerable: parseCommaList(draft.vulnerabilities),
+    resist: parseCommaList(draft.resistances),
+    immune: parseCommaList(draft.immunities),
+    conditionImmune: parseCommaList(draft.conditionImmunities),
+    saves: {
+      str: scoreToSaveMod(draft.str),
+      dex: scoreToSaveMod(draft.dex),
+      con: scoreToSaveMod(draft.con),
+      int: scoreToSaveMod(draft.int),
+      wis: scoreToSaveMod(draft.wis),
+      cha: scoreToSaveMod(draft.cha)
+    },
+    trait: parseNamedMonsterEntries(draft.traitsText),
+    action: [...structured.entries, ...manualActions],
+    custom_actions: structured.raw,
+    reaction: parseNamedMonsterEntries(draft.reactionsText),
+    legendary: {
+      list: parseNamedMonsterEntries(draft.legendaryText)
+    },
+    lair: {
+      list: parseNamedMonsterEntries(draft.lairText)
+    }
+  }
+}
+
+const customMonsterDataToDraft = (row: { name?: string | null; cr?: string | null; data?: any }): CustomMonsterDraft => {
+  const data = row?.data ?? {}
+  const toStat = (value: unknown) =>
+    typeof value === 'number' ? String(value) : typeof value === 'string' ? value : ''
+  const entriesToText = (value: any) => {
+    const list = Array.isArray(value) ? value : []
+    return list
+      .map((entry) => {
+        const name = typeof entry?.name === 'string' ? entry.name.trim() : ''
+        const text = Array.isArray(entry?.entries)
+          ? entry.entries.map((item: any) => extractActionText(item)).join(' ')
+          : extractActionText(entry)
+        if (name && text) return `${name}: ${text}`
+        return text || name
+      })
+      .filter(Boolean)
+      .join('\n')
+  }
+  return {
+    ...emptyCustomMonsterDraft,
+    name: row?.name ?? '',
+    size: typeof data.size === 'string' && data.size ? data.size : 'Medium',
+    type: typeof data.type === 'string' ? data.type : '',
+    alignment: typeof data.alignment === 'string' ? data.alignment : '',
+    ac: toText(data.ac) === '—' ? '' : toText(data.ac),
+    hp: toText(data.hp) === '—' ? '' : toText(data.hp),
+    speed: typeof data.speed === 'string' ? data.speed : '',
+    cr: row?.cr ?? (typeof data.cr === 'string' ? data.cr : ''),
+    str: toStat(data.str),
+    dex: toStat(data.dex),
+    con: toStat(data.con),
+    int: toStat(data.int),
+    wis: toStat(data.wis),
+    cha: toStat(data.cha),
+    senses: typeof data.senses === 'string' ? data.senses : '',
+    languages: typeof data.languages === 'string' ? data.languages : '',
+    savesText: typeof data.save === 'string' ? data.save : '',
+    skillsText: typeof data.skill === 'string' ? data.skill : '',
+    vulnerabilities: typeof data.vulnerable === 'string' ? data.vulnerable : '',
+    resistances: typeof data.resist === 'string' ? data.resist : '',
+    immunities: typeof data.immune === 'string' ? data.immune : '',
+    conditionImmunities: typeof data.conditionImmune === 'string' ? data.conditionImmune : '',
+    traitsText: entriesToText(data.trait),
+    actionsText: Array.isArray(data?.custom_actions) && data.custom_actions.length > 0 ? '' : entriesToText(data.action),
+    reactionsText: entriesToText(data.reaction),
+    legendaryText: entriesToText(data.legendary?.list),
+    lairText: entriesToText(data.lair?.list)
+  }
+}
+
+const rollD20 = (bonus: number | null) => {
+  const roll = Math.floor(Math.random() * 20) + 1
+  const total = roll + (bonus ?? 0)
+  return { roll, total, bonus: bonus ?? 0 }
+}
+
+const rollDiceExpr = (expr: string) => {
+  const parsed = parseDice(expr)
+  if (!parsed) return null
+  const rolls = Array.from({ length: parsed.count }, () =>
+    Math.floor(Math.random() * parsed.sides) + 1
+  )
+  const total = rolls.reduce((sum, value) => sum + value, 0) + parsed.modifier
+  return { total, rolls, modifier: parsed.modifier }
+}
+
+const rollCriticalDamageExpr = (expr: string) => {
+  const parsed = parseDice(expr)
+  if (!parsed) return null
+  const critCount = parsed.count * 2
+  const rolls = Array.from({ length: critCount }, () =>
+    Math.floor(Math.random() * parsed.sides) + 1
+  )
+  const total = rolls.reduce((sum, value) => sum + value, 0) + parsed.modifier
+  return { total, rolls, modifier: parsed.modifier, expr: `${critCount}d${parsed.sides}` }
+}
+
+const getD20Tone = (roll: number): CombatLogTone => {
+  if (roll === 20) return 'crit'
+  if (roll === 1) return 'fail'
+  return 'normal'
+}
+
+const formatModifierDetail = (modifier: number) => {
+  if (!modifier) return ''
+  return modifier > 0 ? ` + ${modifier}` : ` - ${Math.abs(modifier)}`
+}
+
+const dicePresets = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100', '2d20', '2d6'] as const
+const conditionPresets = [
+  'Оглушён',
+  'Ослеплён',
+  'Очарован',
+  'Отравлен',
+  'Парализован',
+  'Испуган',
+  'Сбит с ног',
+  'Обездвижен',
+  'Незаметен',
+  'Удерживаем',
+  'Мертв'
+] as const
+const effectPresets = ['Горение', 'Кровотечение', 'Благословение', 'Проклятие'] as const
+
+const ensureCharacterData = (data: any): CharacterData => ({
+  inventory: Array.isArray(data?.inventory)
+    ? data.inventory
+        .filter((entry: any) => typeof entry?.name === 'string' && entry.name.trim())
+        .map((entry: any) => ({
+          name: String(entry.name).trim(),
+          qty: typeof entry?.qty === 'number' && Number.isFinite(entry.qty) ? entry.qty : 1,
+          notes: typeof entry?.notes === 'string' ? entry.notes : '',
+          category:
+            entry?.category === 'item' || entry?.category === 'artifact' || entry?.category === 'manual'
+              ? entry.category
+              : 'manual'
+        }))
+    : [],
+  currency: {
+    cp: typeof data?.currency?.cp === 'number' && Number.isFinite(data.currency.cp) ? data.currency.cp : 0,
+    sp: typeof data?.currency?.sp === 'number' && Number.isFinite(data.currency.sp) ? data.currency.sp : 0,
+    ep: typeof data?.currency?.ep === 'number' && Number.isFinite(data.currency.ep) ? data.currency.ep : 0,
+    gp: typeof data?.currency?.gp === 'number' && Number.isFinite(data.currency.gp) ? data.currency.gp : 0,
+    pp: typeof data?.currency?.pp === 'number' && Number.isFinite(data.currency.pp) ? data.currency.pp : 0
+  },
+  spells: Array.isArray(data?.spells)
+    ? data.spells.map((entry: any) =>
+        typeof entry === 'string' ? { name: entry } : entry
+      )
+    : [],
+  items: Array.isArray(data?.items)
+    ? data.items.map((entry: any) =>
+        typeof entry === 'string' ? { name: entry } : entry
+      )
+    : [],
+  artifacts: Array.isArray(data?.artifacts)
+    ? data.artifacts.map((entry: any) =>
+        typeof entry === 'string' ? { name: entry } : entry
+      )
+    : [],
+  ammo: Array.isArray(data?.ammo) ? data.ammo : [],
+  notes: typeof data?.notes === 'string' ? data.notes : '',
+  combat: {
+    hpMax: typeof data?.combat?.hpMax === 'number' ? data.combat.hpMax : null,
+    hpCurrent: typeof data?.combat?.hpCurrent === 'number' ? data.combat.hpCurrent : null,
+    ac: typeof data?.combat?.ac === 'number' ? data.combat.ac : null,
+    speed: typeof data?.combat?.speed === 'number' ? data.combat.speed : null,
+    initiativeOverride:
+      typeof data?.combat?.initiativeOverride === 'number' ? data.combat.initiativeOverride : null
+  },
+  stats: {
+    str: {
+      score: typeof data?.stats?.str?.score === 'number' ? data.stats.str.score : null,
+      modOverride:
+        typeof data?.stats?.str?.modOverride === 'number' ? data.stats.str.modOverride : null
+    },
+    dex: {
+      score: typeof data?.stats?.dex?.score === 'number' ? data.stats.dex.score : null,
+      modOverride:
+        typeof data?.stats?.dex?.modOverride === 'number' ? data.stats.dex.modOverride : null
+    },
+    con: {
+      score: typeof data?.stats?.con?.score === 'number' ? data.stats.con.score : null,
+      modOverride:
+        typeof data?.stats?.con?.modOverride === 'number' ? data.stats.con.modOverride : null
+    },
+    int: {
+      score: typeof data?.stats?.int?.score === 'number' ? data.stats.int.score : null,
+      modOverride:
+        typeof data?.stats?.int?.modOverride === 'number' ? data.stats.int.modOverride : null
+    },
+    wis: {
+      score: typeof data?.stats?.wis?.score === 'number' ? data.stats.wis.score : null,
+      modOverride:
+        typeof data?.stats?.wis?.modOverride === 'number' ? data.stats.wis.modOverride : null
+    },
+    cha: {
+      score: typeof data?.stats?.cha?.score === 'number' ? data.stats.cha.score : null,
+      modOverride:
+        typeof data?.stats?.cha?.modOverride === 'number' ? data.stats.cha.modOverride : null
+    }
+  },
+  saves: {
+    str: {
+      prof: Boolean(data?.saves?.str?.prof),
+      override: typeof data?.saves?.str?.override === 'number' ? data.saves.str.override : null
+    },
+    dex: {
+      prof: Boolean(data?.saves?.dex?.prof),
+      override: typeof data?.saves?.dex?.override === 'number' ? data.saves.dex.override : null
+    },
+    con: {
+      prof: Boolean(data?.saves?.con?.prof),
+      override: typeof data?.saves?.con?.override === 'number' ? data.saves.con.override : null
+    },
+    int: {
+      prof: Boolean(data?.saves?.int?.prof),
+      override: typeof data?.saves?.int?.override === 'number' ? data.saves.int.override : null
+    },
+    wis: {
+      prof: Boolean(data?.saves?.wis?.prof),
+      override: typeof data?.saves?.wis?.override === 'number' ? data.saves.wis.override : null
+    },
+    cha: {
+      prof: Boolean(data?.saves?.cha?.prof),
+      override: typeof data?.saves?.cha?.override === 'number' ? data.saves.cha.override : null
+    }
+  },
+  skills: {
+    acrobatics: {
+      prof: Boolean(data?.skills?.acrobatics?.prof),
+      override:
+        typeof data?.skills?.acrobatics?.override === 'number'
+          ? data.skills.acrobatics.override
+          : null
+    },
+    animalHandling: {
+      prof: Boolean(data?.skills?.animalHandling?.prof),
+      override:
+        typeof data?.skills?.animalHandling?.override === 'number'
+          ? data.skills.animalHandling.override
+          : null
+    },
+    arcana: {
+      prof: Boolean(data?.skills?.arcana?.prof),
+      override:
+        typeof data?.skills?.arcana?.override === 'number'
+          ? data.skills.arcana.override
+          : null
+    },
+    athletics: {
+      prof: Boolean(data?.skills?.athletics?.prof),
+      override:
+        typeof data?.skills?.athletics?.override === 'number'
+          ? data.skills.athletics.override
+          : null
+    },
+    deception: {
+      prof: Boolean(data?.skills?.deception?.prof),
+      override:
+        typeof data?.skills?.deception?.override === 'number'
+          ? data.skills.deception.override
+          : null
+    },
+    history: {
+      prof: Boolean(data?.skills?.history?.prof),
+      override:
+        typeof data?.skills?.history?.override === 'number'
+          ? data.skills.history.override
+          : null
+    },
+    insight: {
+      prof: Boolean(data?.skills?.insight?.prof),
+      override:
+        typeof data?.skills?.insight?.override === 'number'
+          ? data.skills.insight.override
+          : null
+    },
+    intimidation: {
+      prof: Boolean(data?.skills?.intimidation?.prof),
+      override:
+        typeof data?.skills?.intimidation?.override === 'number'
+          ? data.skills.intimidation.override
+          : null
+    },
+    investigation: {
+      prof: Boolean(data?.skills?.investigation?.prof),
+      override:
+        typeof data?.skills?.investigation?.override === 'number'
+          ? data.skills.investigation.override
+          : null
+    },
+    medicine: {
+      prof: Boolean(data?.skills?.medicine?.prof),
+      override:
+        typeof data?.skills?.medicine?.override === 'number'
+          ? data.skills.medicine.override
+          : null
+    },
+    nature: {
+      prof: Boolean(data?.skills?.nature?.prof),
+      override:
+        typeof data?.skills?.nature?.override === 'number'
+          ? data.skills.nature.override
+          : null
+    },
+    perception: {
+      prof: Boolean(data?.skills?.perception?.prof),
+      override:
+        typeof data?.skills?.perception?.override === 'number'
+          ? data.skills.perception.override
+          : null
+    },
+    performance: {
+      prof: Boolean(data?.skills?.performance?.prof),
+      override:
+        typeof data?.skills?.performance?.override === 'number'
+          ? data.skills.performance.override
+          : null
+    },
+    persuasion: {
+      prof: Boolean(data?.skills?.persuasion?.prof),
+      override:
+        typeof data?.skills?.persuasion?.override === 'number'
+          ? data.skills.persuasion.override
+          : null
+    },
+    religion: {
+      prof: Boolean(data?.skills?.religion?.prof),
+      override:
+        typeof data?.skills?.religion?.override === 'number'
+          ? data.skills.religion.override
+          : null
+    },
+    sleightOfHand: {
+      prof: Boolean(data?.skills?.sleightOfHand?.prof),
+      override:
+        typeof data?.skills?.sleightOfHand?.override === 'number'
+          ? data.skills.sleightOfHand.override
+          : null
+    },
+    stealth: {
+      prof: Boolean(data?.skills?.stealth?.prof),
+      override:
+        typeof data?.skills?.stealth?.override === 'number'
+          ? data.skills.stealth.override
+          : null
+    },
+    survival: {
+      prof: Boolean(data?.skills?.survival?.prof),
+      override:
+        typeof data?.skills?.survival?.override === 'number'
+          ? data.skills.survival.override
+          : null
+    }
+  }
+})
+
+const createDefaultCharacterData = (): CharacterData => ensureCharacterData(null)
+const useList = (entity: EntityKey, query: string) => {
+  const [data, setData] = useState<ListResponse<ListRow>>(defaultResponse)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let ignore = false
+    setIsLoading(true)
+    setError(null)
+
+    const handle = setTimeout(() => {
+      const api = window.beholder[entity]
+      api
+        .list({ query, limit: 80, offset: 0 })
+        .then((response) => {
+          if (ignore) return
+          setData(response as ListResponse<ListRow>)
+          setIsLoading(false)
+        })
+        .catch((err) => {
+          if (ignore) return
+          setError(err?.message || 'Ошибка загрузки')
+          setIsLoading(false)
+        })
+    }, 200)
+
+    return () => {
+      ignore = true
+      clearTimeout(handle)
+    }
+  }, [entity, query])
+
+  return { data, isLoading, error }
+}
+
+const useDetail = (entity: EntityKey, id: number | null) => {
+  const [detail, setDetail] = useState<DetailResponse>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    let ignore = false
+    if (!id) {
+      setDetail(null)
+      return
+    }
+
+    setIsLoading(true)
+    window.beholder[entity]
+      .get(id)
+      .then((response) => {
+        if (ignore) return
+        setDetail(response as DetailResponse)
+        setIsLoading(false)
+      })
+      .catch(() => {
+        if (ignore) return
+        setDetail(null)
+        setIsLoading(false)
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [entity, id])
+
+  return { detail, isLoading }
+}
+
+export default function App(): JSX.Element {
+  const isCombatBoardMode =
+    new URLSearchParams(window.location.search).get('mode') === 'combat-board'
+  const isReferenceWindowMode =
+    new URLSearchParams(window.location.search).get('mode') === 'reference-window'
+  const isCombatPanelMode =
+    new URLSearchParams(window.location.search).get('mode') === 'combat-panel'
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    const stored = window.localStorage.getItem('beholder-theme')
+    return stored === 'light' ? 'light' : 'dark'
+  })
+  const [view, setView] = useState<ViewKey>(isCombatBoardMode ? 'combat' : isCombatPanelMode ? 'combat' : isReferenceWindowMode ? 'reference' : 'home')
+  const activeView: ViewKey = isCombatBoardMode ? 'combat' : isCombatPanelMode ? 'combat' : isReferenceWindowMode ? 'reference' : view
+
+  useEffect(() => {
+    if (isCombatBoardMode && view !== 'combat') {
+      setView('combat')
+    }
+    if (isCombatPanelMode && view !== 'combat') {
+      setView('combat')
+    }
+    if (isReferenceWindowMode && view !== 'reference') {
+      setView('reference')
+    }
+  }, [isCombatBoardMode, isCombatPanelMode, isReferenceWindowMode, view])
+  const [referenceSection, setReferenceSection] = useState<ReferenceSection>('ttg_classes')
+  const [ttgKind, setTtgKind] = useState<'classes' | 'races' | 'rules'>('classes')
+  const [ttgQuery, setTtgQuery] = useState('')
+  const [ttgClasses, setTtgClasses] = useState<TtgClass[]>([])
+  const [ttgRaces, setTtgRaces] = useState<TtgRace[]>([])
+  const [ttgRules, setTtgRules] = useState<TtgRule[]>([])
+  const [ttgRuleTypeFilter, setTtgRuleTypeFilter] = useState<string>('all')
+  const [ttgRuleSourceFilter, setTtgRuleSourceFilter] = useState<string>('all')
+  const [ttgPinnedRuleSlugs, setTtgPinnedRuleSlugs] = useState<string[]>(() => {
+    const stored = window.localStorage.getItem('ttg-pinned-rules')
+    if (!stored) return []
+    try {
+      const parsed = JSON.parse(stored)
+      return Array.isArray(parsed) ? parsed.filter((slug) => typeof slug === 'string') : []
+    } catch {
+      return []
+    }
+  })
+  const [ttgSelectedSlug, setTtgSelectedSlug] = useState<string | null>(null)
+  const [ttgLoading, setTtgLoading] = useState(false)
+  const [ttgLoaded, setTtgLoaded] = useState(false)
+  const [ttgError, setTtgError] = useState<string | null>(null)
+  const [referenceModal, setReferenceModal] = useState<ReferenceModal | null>(null)
+  const [entity, setEntity] = useState<EntityKey>('monsters')
+  const [query, setQuery] = useState('')
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [campaign, setCampaign] = useState<Campaign | null>(null)
+  const [campaignName, setCampaignName] = useState('')
+  const [campaignImportStatus, setCampaignImportStatus] = useState<string | null>(null)
+  const [fullCharacterFormOpen, setFullCharacterFormOpen] = useState(false)
+  const [characterCreateName, setCharacterCreateName] = useState('')
+  const [characterCreateRace, setCharacterCreateRace] = useState('')
+  const [characterCreateClass, setCharacterCreateClass] = useState('')
+  const [characterCreateLevel, setCharacterCreateLevel] = useState('1')
+  const [characterCreateHpMax, setCharacterCreateHpMax] = useState('')
+  const [characterCreateHpCurrent, setCharacterCreateHpCurrent] = useState('')
+  const [characterCreateAc, setCharacterCreateAc] = useState('')
+  const [characterCreateInit, setCharacterCreateInit] = useState('')
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
+  const [editCharacter, setEditCharacter] = useState({
+    name: '',
+    race: '',
+    class: '',
+    level: ''
+  })
+  const [editCombat, setEditCombat] = useState({
+    hpMax: '',
+    hpCurrent: '',
+    ac: '',
+    speed: '',
+    initiativeOverride: ''
+  })
+  const [editStats, setEditStats] = useState({
+    str: { score: '', modOverride: '' },
+    dex: { score: '', modOverride: '' },
+    con: { score: '', modOverride: '' },
+    int: { score: '', modOverride: '' },
+    wis: { score: '', modOverride: '' },
+    cha: { score: '', modOverride: '' }
+  })
+  const [editSaves, setEditSaves] = useState({
+    str: { prof: false, override: '' },
+    dex: { prof: false, override: '' },
+    con: { prof: false, override: '' },
+    int: { prof: false, override: '' },
+    wis: { prof: false, override: '' },
+    cha: { prof: false, override: '' }
+  })
+  const [editSkills, setEditSkills] = useState({
+    acrobatics: { prof: false, override: '' },
+    animalHandling: { prof: false, override: '' },
+    arcana: { prof: false, override: '' },
+    athletics: { prof: false, override: '' },
+    deception: { prof: false, override: '' },
+    history: { prof: false, override: '' },
+    insight: { prof: false, override: '' },
+    intimidation: { prof: false, override: '' },
+    investigation: { prof: false, override: '' },
+    medicine: { prof: false, override: '' },
+    nature: { prof: false, override: '' },
+    perception: { prof: false, override: '' },
+    performance: { prof: false, override: '' },
+    persuasion: { prof: false, override: '' },
+    religion: { prof: false, override: '' },
+    sleightOfHand: { prof: false, override: '' },
+    stealth: { prof: false, override: '' },
+    survival: { prof: false, override: '' }
+  })
+  const [newCharacter, setNewCharacter] = useState({
+    name: '',
+    race: '',
+    class: '',
+    level: '1'
+  })
+  const [inventoryFilter, setInventoryFilter] = useState<
+    'all' | 'consumables' | 'weapons' | 'armor' | 'artifacts'
+  >('all')
+  const [inventorySort, setInventorySort] = useState<'name' | 'qty'>('name')
+  const [inventorySortDirection, setInventorySortDirection] = useState<'asc' | 'desc'>('asc')
+  const [newInventoryItem, setNewInventoryItem] = useState({ name: '', qty: '1' })
+  const [spellQuery, setSpellQuery] = useState('')
+  const [spellResults, setSpellResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
+  const [itemQuery, setItemQuery] = useState('')
+  const [itemResults, setItemResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
+  const [artifactQuery, setArtifactQuery] = useState('')
+  const [artifactResults, setArtifactResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
+  const [newAmmo, setNewAmmo] = useState({ name: '', qty: '1' })
+  const [combatParticipants, setCombatParticipants] = useState<CombatParticipant[]>([])
+  const [targetingSourceId, setTargetingSourceId] = useState<string | null>(null)
+  const [targetingCursor, setTargetingCursor] = useState<{ x: number; y: number } | null>(null)
+  const [linkDragSourceId, setLinkDragSourceId] = useState<string | null>(null)
+  const [linkDragStart, setLinkDragStart] = useState<{ x: number; y: number } | null>(null)
+  const [linkDragActive, setLinkDragActive] = useState(false)
+  const [resizingCard, setResizingCard] = useState<{
+    id: string
+    dir: 'e' | 's' | 'se'
+    startX: number
+    startY: number
+    startWidth: number
+    startHeight: number
+  } | null>(null)
+  const [combatLinks, setCombatLinks] = useState<Array<{ id: string; d: string }>>([])
+  const combatBoardRef = useRef<HTMLDivElement | null>(null)
+  const combatCardRefs = useRef(new Map<string, HTMLDivElement>())
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
+  const dragOffsetRef = useRef({ x: 0, y: 0 })
+  const cardPressRef = useRef<{
+    id: string
+    pointerId: number
+    startX: number
+    startY: number
+    timerId: number | null
+    linkActive: boolean
+  } | null>(null)
+  const [combatQuery, setCombatQuery] = useState('')
+  const [combatResults, setCombatResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
+  const [combatError, setCombatError] = useState<string | null>(null)
+  const [customMonsterDraft, setCustomMonsterDraft] = useState<CustomMonsterDraft>(emptyCustomMonsterDraft)
+  const [customMonsterActions, setCustomMonsterActions] = useState<CustomMonsterActionDraft[]>([
+    createEmptyCustomMonsterAction()
+  ])
+  const [customMonsterRows, setCustomMonsterRows] = useState<CustomMonsterRow[]>([])
+  const [customMonsterQuery, setCustomMonsterQuery] = useState('')
+  const [customMonsterError, setCustomMonsterError] = useState<string | null>(null)
+  const [editingCustomMonsterId, setEditingCustomMonsterId] = useState<number | null>(null)
+  const [savingCustomMonster, setSavingCustomMonster] = useState(false)
+  const [customMonsterModalOpen, setCustomMonsterModalOpen] = useState(false)
+  const [combatLog, setCombatLog] = useState<CombatLogEntry[]>([])
+  const [combatLogExpanded, setCombatLogExpanded] = useState(false)
+  const [effectName, setEffectName] = useState('')
+  const [effectRounds, setEffectRounds] = useState('')
+  const [conditionName, setConditionName] = useState('')
+  const [conditionRounds, setConditionRounds] = useState('')
+  const [concentrationName, setConcentrationName] = useState('')
+  const [concentrationRounds, setConcentrationRounds] = useState('')
+  const [damageValue, setDamageValue] = useState('')
+  const [massValue, setMassValue] = useState('')
+  const [combatName, setCombatName] = useState('Сессия боя')
+  const [combatSessions, setCombatSessions] = useState<Array<{ id: number; name: string }>>([])
+  const [selectedCombatId, setSelectedCombatId] = useState<number | null>(null)
+  const [currentTurn, setCurrentTurn] = useState(0)
+  const [combatDetailId, setCombatDetailId] = useState<string | null>(null)
+  const [modal, setModal] = useState<{
+    type: 'spells' | 'items' | 'artifacts'
+    id: number
+  } | null>(null)
+  const [modalDetail, setModalDetail] = useState<DetailResponse>(null)
+  const [diceExpr, setDiceExpr] = useState('1d20+0')
+  const [diceResult, setDiceResult] = useState<{ total: number; rolls: number[] } | null>(null)
+  const [diceRolling, setDiceRolling] = useState(false)
+  const [quickMod, setQuickMod] = useState('')
+  const [rollOverlay, setRollOverlay] = useState<{
+    label: string
+    total: number
+    detail: string
+    tone: CombatLogTone
+  } | null>(null)
+  const rollOverlayTimerRef = useRef<number | null>(null)
+  const [combatFilter, setCombatFilter] = useState<'all' | 'alive' | 'down' | 'concentration' | 'status'>('all')
+  const [combatSearch, setCombatSearch] = useState('')
+  const [impactFlash, setImpactFlash] = useState<{
+    id: string
+    tone: 'hit' | 'miss'
+    value?: number | null
+  } | null>(null)
+
+  const trimmedQuery = useMemo(() => query.trim(), [query])
+  const { data, isLoading, error } = useList(entity, trimmedQuery)
+  const { detail, isLoading: isDetailLoading } = useDetail(entity, selectedId)
+  const isReferenceEntitySection =
+    referenceSection === 'monsters' ||
+    referenceSection === 'spells' ||
+    referenceSection === 'items' ||
+    referenceSection === 'artifacts'
+  const isEntityLibraryView = activeView === 'reference' && isReferenceEntitySection
+  const ttgSearch = ttgQuery.trim().toLowerCase()
+
+  const ttgItems = useMemo(() => {
+    const source =
+      ttgKind === 'classes' ? ttgClasses : ttgKind === 'races' ? ttgRaces : ttgRules
+    const filteredByRuleMeta =
+      ttgKind !== 'rules'
+        ? source
+        : source.filter((entry) => {
+            const matchType =
+              ttgRuleTypeFilter === 'all' ||
+              (entry.type ?? '').toLowerCase() === ttgRuleTypeFilter.toLowerCase()
+            const sourceValue = (entry.source_name ?? entry.source_short ?? '').toLowerCase()
+            const matchSource =
+              ttgRuleSourceFilter === 'all' || sourceValue === ttgRuleSourceFilter.toLowerCase()
+            return matchType && matchSource
+          })
+    if (!ttgSearch) return filteredByRuleMeta
+    return filteredByRuleMeta.filter((entry) => {
+      const haystack = [
+        entry.slug,
+        entry.name_ru,
+        entry.name_en,
+        'type' in entry ? entry.type : '',
+        entry.source_short,
+        entry.source_name
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return haystack.includes(ttgSearch)
+    })
+  }, [
+    ttgKind,
+    ttgClasses,
+    ttgRaces,
+    ttgRules,
+    ttgSearch,
+    ttgRuleTypeFilter,
+    ttgRuleSourceFilter
+  ])
+
+  const ttgRuleTypeOptions = useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        ttgRules
+          .map((rule) => (rule.type ?? '').trim())
+          .filter((value) => value.length > 0)
+      )
+    )
+    return unique.sort((a, b) => a.localeCompare(b, 'ru'))
+  }, [ttgRules])
+
+  const ttgRuleSourceOptions = useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        ttgRules
+          .map((rule) => (rule.source_name ?? rule.source_short ?? '').trim())
+          .filter((value) => value.length > 0)
+      )
+    )
+    return unique.sort((a, b) => a.localeCompare(b, 'ru'))
+  }, [ttgRules])
+
+  const pinnedRules = useMemo(() => {
+    if (ttgPinnedRuleSlugs.length === 0) return []
+    const lookup = new Map(
+      ttgRules.map((rule) => [rule.slug ?? `${rule.name_ru ?? rule.name_en ?? ''}`, rule])
+    )
+    return ttgPinnedRuleSlugs
+      .map((slug) => lookup.get(slug))
+      .filter((rule): rule is TtgRule => Boolean(rule))
+  }, [ttgRules, ttgPinnedRuleSlugs])
+
+  const toggleRulePin = (slug: string) => {
+    setTtgPinnedRuleSlugs((prev) =>
+      prev.includes(slug) ? prev.filter((item) => item !== slug) : [slug, ...prev].slice(0, 20)
+    )
+  }
+
+  const ttgSelected = useMemo(() => {
+    if (ttgItems.length === 0) return null
+    if (!ttgSelectedSlug) return ttgItems[0]
+    return ttgItems.find((entry) => entry.slug === ttgSelectedSlug) ?? ttgItems[0]
+  }, [ttgItems, ttgSelectedSlug])
+
+  const openReferenceTtgModal = (entry: TtgEntry) => {
+    const isClass = referenceSection === 'ttg_classes'
+    const isRule = referenceSection === 'ttg_rules'
+    const sectionsFromData =
+      'sections' in entry && Array.isArray(entry.sections)
+        ? entry.sections
+            .map((section) => ({
+              title: section?.title ? String(section.title) : '',
+              content: section?.content ? String(section.content) : ''
+            }))
+            .filter((section) => section.title && section.content)
+        : []
+    const sections =
+      sectionsFromData.length > 0
+        ? sectionsFromData
+        : buildReferenceSections(entry.description_text ?? null, isClass)
+    const related: ReferenceRelated[] =
+      isClass && 'archetypes' in entry
+        ? (entry.archetypes ?? []).map((arc) => ({
+            title: arc.name_ru ?? arc.name_en ?? arc.slug ?? 'Архетип',
+            subtitle: arc.source_name ?? arc.source_short ?? null,
+            text: arc.description_text ?? null
+          }))
+        : !isClass && 'subraces' in entry
+          ? (entry.subraces ?? []).map((sub) => ({
+              title: sub.name_ru ?? sub.name_en ?? 'Подраса',
+              subtitle: sub.source_name ?? sub.source_short ?? null,
+              text: sub.description_text ?? null
+            }))
+          : []
+    const columns: Array<{ label: string; value: string }> = [
+      { label: 'Slug', value: entry.slug ?? '—' },
+      { label: 'Источник', value: entry.source_name ?? entry.source_short ?? '—' }
+    ]
+    if (isRule && 'type' in entry) {
+      columns.push({ label: 'Категория', value: entry.type ?? '—' })
+    }
+    if (isClass && 'hit_die' in entry) {
+      columns.push({ label: 'Кость хитов', value: entry.hit_die ?? '—' })
+    }
+    if (!isClass && 'size' in entry) {
+      columns.push({ label: 'Размер', value: entry.size ?? '—' })
+      columns.push({ label: 'Скорость', value: entry.speed ?? '—' })
+      columns.push({ label: 'Тёмное зрение', value: entry.darkvision ?? '—' })
+    }
+    setReferenceModal({
+      kind: isClass ? 'ttg_class' : isRule ? 'ttg_rule' : 'ttg_race',
+      slug: entry.slug ?? null,
+      title: entry.name_ru ?? entry.name_en ?? entry.slug ?? 'Запись',
+      subtitle: entry.name_ru && entry.name_en ? entry.name_en : null,
+      columns,
+      sections,
+      related,
+      text: sections.length === 0 ? entry.description_text ?? null : null
+    })
+  }
+
+  const openReferenceEntityModal = async (row: ListRow) => {
+    const targetEntity = referenceSection as EntityKey
+    const detail = (await window.beholder[targetEntity].get(row.id as number)) as DetailResponse
+    if (!detail) return
+    const columns: Array<{ label: string; value: string }> = []
+    if (targetEntity === 'monsters') {
+      const data = detail.data as any
+      columns.push(
+        { label: 'Тип', value: [data?.size, data?.type, data?.alignment].filter(Boolean).join(' · ') || '—' },
+        { label: 'КС', value: toText(data?.cr) },
+        { label: 'Хиты', value: toText(data?.hp) },
+        { label: 'КД', value: toText(data?.ac) }
+      )
+    }
+    if (targetEntity === 'spells') {
+      const data = detail.data as any
+      columns.push(
+        { label: 'Уровень', value: getLocaleValue(data, 'level') ?? '—' },
+        { label: 'Школа', value: getLocaleValue(data, 'school') ?? '—' },
+        { label: 'Время', value: getLocaleValue(data, 'castingTime') ?? '—' }
+      )
+    }
+    if (targetEntity === 'items') {
+      const data = detail.data as any
+      columns.push(
+        { label: 'Тип', value: getLocaleValue(data, 'type') ?? '—' },
+        { label: 'Редкость', value: rarityLabel(data?.en?.rarity ?? data?.ru?.rarity) },
+        { label: 'КД', value: toText(data?.en?.ac ?? data?.ru?.ac) }
+      )
+    }
+    if (targetEntity === 'artifacts') {
+      const data = detail.data as any
+      columns.push(
+        { label: 'Тип', value: getLocaleValue(data, 'type') ?? '—' },
+        { label: 'Редкость', value: rarityLabel(data?.en?.rarity ?? data?.ru?.rarity) },
+        { label: 'Настройка', value: toText(data?.en?.attunement ?? data?.ru?.attunement) }
+      )
+    }
+    setReferenceModal({
+      kind: 'entity',
+      title: detail.name_ru ?? detail.name,
+      subtitle: detail.name_ru && detail.name ? detail.name : null,
+      columns,
+      text: stripHtml(getDescriptionHtml(detail.data) || '')
+    })
+  }
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', themeMode)
+    window.localStorage.setItem('beholder-theme', themeMode)
+  }, [themeMode])
+
+  useEffect(() => {
+    window.localStorage.setItem('ttg-pinned-rules', JSON.stringify(ttgPinnedRuleSlugs))
+  }, [ttgPinnedRuleSlugs])
+
+  useEffect(() => {
+    if (referenceSection === 'ttg_classes') {
+      setTtgKind('classes')
+      return
+    }
+    if (referenceSection === 'ttg_races') {
+      setTtgKind('races')
+      return
+    }
+    if (referenceSection === 'ttg_rules') {
+      setTtgKind('rules')
+      return
+    }
+    setEntity(referenceSection)
+  }, [referenceSection])
+
+  useEffect(() => {
+    if (view !== 'reference' || ttgLoaded || ttgLoading) return
+    setTtgLoading(true)
+    setTtgError(null)
+    window.beholder.ttg
+      .getAll()
+      .then((payload) => {
+        setTtgClasses(Array.isArray(payload.classes) ? (payload.classes as TtgClass[]) : [])
+        setTtgRaces(Array.isArray(payload.races) ? (payload.races as TtgRace[]) : [])
+        setTtgRules(Array.isArray(payload.rules) ? (payload.rules as TtgRule[]) : [])
+        setTtgLoaded(true)
+      })
+      .catch((err: any) => {
+        setTtgError(err?.message ?? 'Ошибка загрузки справочника')
+      })
+      .finally(() => setTtgLoading(false))
+  }, [view, ttgLoaded, ttgLoading])
+
+  useEffect(() => {
+    setSelectedId(null)
+  }, [entity])
+
+  useEffect(() => {
+    if (data.items.length === 0) {
+      setSelectedId(null)
+      return
+    }
+    if (!selectedId || !data.items.some((item) => item.id === selectedId)) {
+      setSelectedId(data.items[0].id)
+    }
+  }, [data.items, selectedId])
+
+  useEffect(() => {
+    if (ttgItems.length === 0) {
+      setTtgSelectedSlug(null)
+      return
+    }
+    if (!ttgSelectedSlug || !ttgItems.some((entry) => entry.slug === ttgSelectedSlug)) {
+      setTtgSelectedSlug(ttgItems[0]?.slug ?? null)
+    }
+  }, [ttgItems, ttgSelectedSlug])
+
+  const monster = entity === 'monsters' ? detail?.data : null
+  const legendary = monster?.legendary as MonsterLegendary | undefined
+  const lair = monster?.lair as MonsterLair | undefined
+  const traits = normalizeEntries(monster?.trait)
+  const actions = normalizeEntries(monster?.action)
+  const reactions = normalizeEntries(monster?.reaction)
+  const legendaryList = normalizeEntries(legendary?.list ?? legendary)
+  const lairList = normalizeEntries(lair?.list ?? lair)
+  const monsterDescription = monster ? htmlToPlainText(getDescriptionHtml(monster)) : ''
+
+  const spellData = entity === 'spells' ? detail?.data : null
+  const itemData = entity === 'items' ? detail?.data : null
+  const artifactData = entity === 'artifacts' ? detail?.data : null
+  const selectedCharacterData = selectedCharacter ? ensureCharacterData(selectedCharacter.data) : null
+  const detectInventoryGroup = (entry: InventoryEntry): 'consumables' | 'weapons' | 'armor' | 'artifacts' | 'other' => {
+    if (entry.category === 'artifact') return 'artifacts'
+    const text = `${entry.name} ${entry.notes ?? ''}`.toLowerCase()
+    if (/(зель|эликсир|potion|scroll|свиток|ration|припас|патрон|болт|стрел)/.test(text)) return 'consumables'
+    if (/(меч|sword|лук|bow|арбалет|crossbow|кинжал|dagger|топор|axe|копь|spear|молот|hammer|булав|рапир|алебард|пика|дротик|пращ|whip|weapon)/.test(text)) return 'weapons'
+    if (/(брон|armor|armour|щит|shield|кольчуг|латы|доспех|шлем)/.test(text)) return 'armor'
+    return 'other'
+  }
+  const visibleInventory = useMemo(() => {
+    if (!selectedCharacterData) return []
+    const withIndex = selectedCharacterData.inventory.map((entry, index) => ({ entry, index }))
+    const filtered = withIndex.filter(({ entry }) => {
+      if (inventoryFilter === 'all') return true
+      return detectInventoryGroup(entry) === inventoryFilter
+    })
+    return [...filtered].sort((a, b) => {
+      const entryA = a.entry
+      const entryB = b.entry
+      const direction = inventorySortDirection === 'asc' ? 1 : -1
+      if (inventorySort === 'qty') {
+        const byQty = (entryA.qty - entryB.qty) * direction
+        if (byQty !== 0) return byQty
+        return entryA.name.localeCompare(entryB.name, 'ru') * direction
+      }
+      return entryA.name.localeCompare(entryB.name, 'ru') * direction
+    })
+  }, [selectedCharacterData, inventoryFilter, inventorySort, inventorySortDirection])
+
+  const loadCharacters = async () => {
+    if (!campaign) return
+    const rows = await window.beholder.characters.list(campaign.id)
+    setCharacters(rows as Character[])
+  }
+
+  useEffect(() => {
+    window.beholder.campaign.get().then((existing) => {
+      if (existing) {
+        setCampaign(existing)
+        setCampaignName(existing.name)
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!campaign) return
+    void loadCharacters()
+  }, [campaign])
+
+  useEffect(() => {
+    setCampaignImportStatus(null)
+  }, [campaign?.id])
+
+  useEffect(() => {
+    if (!campaign) return
+    window.beholder.combats.list(campaign.id).then((rows) => {
+      setCombatSessions(rows.map((row) => ({ id: row.id, name: row.name })))
+    })
+  }, [campaign])
+
+  useEffect(() => {
+    if (!modal) {
+      setModalDetail(null)
+      return
+    }
+    window.beholder[modal.type].get(modal.id).then((detail) => {
+      setModalDetail(detail as DetailResponse)
+    })
+  }, [modal])
+
+  useEffect(() => {
+    if (!spellQuery.trim()) {
+      setSpellResults([])
+      return
+    }
+    const handle = setTimeout(() => {
+      window.beholder.spells.list({ query: spellQuery.trim(), limit: 6, offset: 0 }).then((res) => {
+        setSpellResults(res.items as any)
+      })
+    }, 200)
+    return () => clearTimeout(handle)
+  }, [spellQuery])
+
+  useEffect(() => {
+    if (!itemQuery.trim()) {
+      setItemResults([])
+      return
+    }
+    const handle = setTimeout(() => {
+      window.beholder.items.list({ query: itemQuery.trim(), limit: 6, offset: 0 }).then((res) => {
+        setItemResults(res.items as any)
+      })
+    }, 200)
+    return () => clearTimeout(handle)
+  }, [itemQuery])
+
+  useEffect(() => {
+    if (!artifactQuery.trim()) {
+      setArtifactResults([])
+      return
+    }
+    const handle = setTimeout(() => {
+      window.beholder.artifacts
+        .list({ query: artifactQuery.trim(), limit: 6, offset: 0 })
+        .then((res) => {
+          setArtifactResults(res.items as any)
+        })
+    }, 200)
+    return () => clearTimeout(handle)
+  }, [artifactQuery])
+
+  useEffect(() => {
+    if (!combatQuery.trim()) {
+      setCombatResults([])
+      setCombatError(null)
+      return
+    }
+    const handle = setTimeout(() => {
+      window.beholder.monsters
+        .list({ query: combatQuery.trim(), limit: 6, offset: 0 })
+        .then((res) => {
+          setCombatResults(res.items as any)
+          setCombatError(null)
+        })
+        .catch((err) => {
+          setCombatResults([])
+          setCombatError(err?.message ?? 'Ошибка поиска монстров')
+        })
+    }, 200)
+    return () => clearTimeout(handle)
+  }, [combatQuery])
+
+  useEffect(() => {
+    if (!campaign) {
+      setCustomMonsterRows([])
+      setCustomMonsterError(null)
+      return
+    }
+    const handle = setTimeout(() => {
+      window.beholder.customMonsters
+        .list({
+          campaignId: campaign.id,
+          query: customMonsterQuery.trim() || undefined,
+          limit: 20,
+          offset: 0
+        })
+        .then((res) => {
+          setCustomMonsterRows(res.items as CustomMonsterRow[])
+          setCustomMonsterError(null)
+        })
+        .catch((err) => {
+          setCustomMonsterRows([])
+          setCustomMonsterError(err?.message ?? 'Ошибка списка кастомных монстров')
+        })
+    }, 200)
+    return () => clearTimeout(handle)
+  }, [campaign, customMonsterQuery])
+
+  useEffect(() => {
+    if (characters.length === 0) {
+      setSelectedCharacterId(null)
+      return
+    }
+    if (!selectedCharacterId || !characters.some((c) => c.id === selectedCharacterId)) {
+      setSelectedCharacterId(characters[0].id)
+    }
+  }, [characters, selectedCharacterId])
+
+  useEffect(() => {
+    if (!selectedCharacterId) {
+      setSelectedCharacter(null)
+      return
+    }
+    window.beholder.characters.get(selectedCharacterId).then((row) => {
+      setSelectedCharacter(row as Character | null)
+    })
+  }, [selectedCharacterId])
+
+  useEffect(() => {
+    if (!selectedCharacter) {
+      setEditCharacter({ name: '', race: '', class: '', level: '' })
+      return
+    }
+    setEditCharacter({
+      name: selectedCharacter.name ?? '',
+      race: selectedCharacter.race ?? '',
+      class: selectedCharacter.class ?? '',
+      level: selectedCharacter.level !== null && selectedCharacter.level !== undefined
+        ? String(selectedCharacter.level)
+        : ''
+    })
+    const data = ensureCharacterData(selectedCharacter.data)
+    setEditCombat({
+      hpMax: data.combat.hpMax !== null ? String(data.combat.hpMax) : '',
+      hpCurrent: data.combat.hpCurrent !== null ? String(data.combat.hpCurrent) : '',
+      ac: data.combat.ac !== null ? String(data.combat.ac) : '',
+      speed: data.combat.speed !== null ? String(data.combat.speed) : '',
+      initiativeOverride:
+        data.combat.initiativeOverride !== null ? String(data.combat.initiativeOverride) : ''
+    })
+    setEditStats({
+      str: {
+        score: data.stats.str.score !== null ? String(data.stats.str.score) : '',
+        modOverride:
+          data.stats.str.modOverride !== null ? String(data.stats.str.modOverride) : ''
+      },
+      dex: {
+        score: data.stats.dex.score !== null ? String(data.stats.dex.score) : '',
+        modOverride:
+          data.stats.dex.modOverride !== null ? String(data.stats.dex.modOverride) : ''
+      },
+      con: {
+        score: data.stats.con.score !== null ? String(data.stats.con.score) : '',
+        modOverride:
+          data.stats.con.modOverride !== null ? String(data.stats.con.modOverride) : ''
+      },
+      int: {
+        score: data.stats.int.score !== null ? String(data.stats.int.score) : '',
+        modOverride:
+          data.stats.int.modOverride !== null ? String(data.stats.int.modOverride) : ''
+      },
+      wis: {
+        score: data.stats.wis.score !== null ? String(data.stats.wis.score) : '',
+        modOverride:
+          data.stats.wis.modOverride !== null ? String(data.stats.wis.modOverride) : ''
+      },
+      cha: {
+        score: data.stats.cha.score !== null ? String(data.stats.cha.score) : '',
+        modOverride:
+          data.stats.cha.modOverride !== null ? String(data.stats.cha.modOverride) : ''
+      }
+    })
+    setEditSaves({
+      str: {
+        prof: data.saves.str.prof,
+        override: data.saves.str.override !== null ? String(data.saves.str.override) : ''
+      },
+      dex: {
+        prof: data.saves.dex.prof,
+        override: data.saves.dex.override !== null ? String(data.saves.dex.override) : ''
+      },
+      con: {
+        prof: data.saves.con.prof,
+        override: data.saves.con.override !== null ? String(data.saves.con.override) : ''
+      },
+      int: {
+        prof: data.saves.int.prof,
+        override: data.saves.int.override !== null ? String(data.saves.int.override) : ''
+      },
+      wis: {
+        prof: data.saves.wis.prof,
+        override: data.saves.wis.override !== null ? String(data.saves.wis.override) : ''
+      },
+      cha: {
+        prof: data.saves.cha.prof,
+        override: data.saves.cha.override !== null ? String(data.saves.cha.override) : ''
+      }
+    })
+    setEditSkills({
+      acrobatics: {
+        prof: data.skills.acrobatics.prof,
+        override:
+          data.skills.acrobatics.override !== null
+            ? String(data.skills.acrobatics.override)
+            : ''
+      },
+      animalHandling: {
+        prof: data.skills.animalHandling.prof,
+        override:
+          data.skills.animalHandling.override !== null
+            ? String(data.skills.animalHandling.override)
+            : ''
+      },
+      arcana: {
+        prof: data.skills.arcana.prof,
+        override: data.skills.arcana.override !== null ? String(data.skills.arcana.override) : ''
+      },
+      athletics: {
+        prof: data.skills.athletics.prof,
+        override:
+          data.skills.athletics.override !== null
+            ? String(data.skills.athletics.override)
+            : ''
+      },
+      deception: {
+        prof: data.skills.deception.prof,
+        override:
+          data.skills.deception.override !== null
+            ? String(data.skills.deception.override)
+            : ''
+      },
+      history: {
+        prof: data.skills.history.prof,
+        override:
+          data.skills.history.override !== null ? String(data.skills.history.override) : ''
+      },
+      insight: {
+        prof: data.skills.insight.prof,
+        override:
+          data.skills.insight.override !== null ? String(data.skills.insight.override) : ''
+      },
+      intimidation: {
+        prof: data.skills.intimidation.prof,
+        override:
+          data.skills.intimidation.override !== null
+            ? String(data.skills.intimidation.override)
+            : ''
+      },
+      investigation: {
+        prof: data.skills.investigation.prof,
+        override:
+          data.skills.investigation.override !== null
+            ? String(data.skills.investigation.override)
+            : ''
+      },
+      medicine: {
+        prof: data.skills.medicine.prof,
+        override:
+          data.skills.medicine.override !== null ? String(data.skills.medicine.override) : ''
+      },
+      nature: {
+        prof: data.skills.nature.prof,
+        override:
+          data.skills.nature.override !== null ? String(data.skills.nature.override) : ''
+      },
+      perception: {
+        prof: data.skills.perception.prof,
+        override:
+          data.skills.perception.override !== null
+            ? String(data.skills.perception.override)
+            : ''
+      },
+      performance: {
+        prof: data.skills.performance.prof,
+        override:
+          data.skills.performance.override !== null
+            ? String(data.skills.performance.override)
+            : ''
+      },
+      persuasion: {
+        prof: data.skills.persuasion.prof,
+        override:
+          data.skills.persuasion.override !== null
+            ? String(data.skills.persuasion.override)
+            : ''
+      },
+      religion: {
+        prof: data.skills.religion.prof,
+        override:
+          data.skills.religion.override !== null ? String(data.skills.religion.override) : ''
+      },
+      sleightOfHand: {
+        prof: data.skills.sleightOfHand.prof,
+        override:
+          data.skills.sleightOfHand.override !== null
+            ? String(data.skills.sleightOfHand.override)
+            : ''
+      },
+      stealth: {
+        prof: data.skills.stealth.prof,
+        override:
+          data.skills.stealth.override !== null ? String(data.skills.stealth.override) : ''
+      },
+      survival: {
+        prof: data.skills.survival.prof,
+        override:
+          data.skills.survival.override !== null ? String(data.skills.survival.override) : ''
+      }
+    })
+  }, [selectedCharacter])
+
+  const handleCreateCampaign = async () => {
+    const name = campaignName.trim()
+    if (!name) return
+    const result = await window.beholder.campaign.create(name)
+    setCampaign({ id: result.id, name })
+  }
+
+  const handleCreateCharacter = async () => {
+    if (!campaign) return
+    const name = newCharacter.name.trim()
+    if (!name) return
+    await window.beholder.characters.create({
+      campaignId: campaign.id,
+      name,
+      race: newCharacter.race.trim() || undefined,
+      class: newCharacter.class.trim() || undefined,
+      level: newCharacter.level ? Number(newCharacter.level) : undefined
+    })
+    const rows = await window.beholder.characters.list(campaign.id)
+    setCharacters(rows as Character[])
+    setNewCharacter({ name: '', race: '', class: '', level: '1' })
+  }
+
+  const handleImportCharacterFromFile = async () => {
+    if (!campaign) return
+    const result = await window.beholder.characters.import(campaign.id)
+    if (result.canceled) return
+    if (result.error) {
+      setCampaignImportStatus(`Ошибка импорта: ${result.error}`)
+      return
+    }
+    const rows = await window.beholder.characters.list(campaign.id)
+    setCharacters(rows as Character[])
+    setCampaignImportStatus(
+      result.name ? `Импортирован персонаж: ${result.name}` : 'Персонаж импортирован'
+    )
+  }
+
+  const openPlayerFormForOneClickImport = () => {
+    window.open(
+      `${window.location.origin}${window.location.pathname}?mode=player-form`,
+      '_blank'
+    )
+    setCampaignImportStatus('Открой форму, заполни персонажа и нажми «Отправить в приложение (1 клик)».')
+  }
+
+  const handleCreateQuickCharacter = async () => {
+    if (!campaign) return
+    const name = characterCreateName.trim()
+    if (!name) {
+      setCampaignImportStatus('Укажи имя персонажа.')
+      return
+    }
+    const level = characterCreateLevel.trim() ? Number(characterCreateLevel) : 1
+    if (Number.isNaN(level) || level < 1) {
+      setCampaignImportStatus('Уровень должен быть числом >= 1.')
+      return
+    }
+    const hpMax = characterCreateHpMax.trim() ? Number(characterCreateHpMax) : null
+    const hpCurrent = characterCreateHpCurrent.trim()
+      ? Number(characterCreateHpCurrent)
+      : hpMax
+    const ac = characterCreateAc.trim() ? Number(characterCreateAc) : null
+    const initiativeOverride = characterCreateInit.trim()
+      ? Number(characterCreateInit)
+      : null
+    if ([hpMax, hpCurrent, ac, initiativeOverride].some((value) => value !== null && Number.isNaN(value))) {
+      setCampaignImportStatus('Числовые поля должны быть корректными числами.')
+      return
+    }
+    const data = createDefaultCharacterData()
+    data.combat.hpMax = hpMax
+    data.combat.hpCurrent = hpCurrent
+    data.combat.ac = ac
+    data.combat.initiativeOverride = initiativeOverride
+    try {
+      const result = await window.beholder.characters.create({
+        campaignId: campaign.id,
+        name,
+        race: characterCreateRace.trim() || undefined,
+        class: characterCreateClass.trim() || undefined,
+        level
+      })
+      await window.beholder.characters.updateData({ id: result.id, data })
+      setCampaignImportStatus(`Создан персонаж: ${name}`)
+      setCharacterCreateName('')
+      setCharacterCreateRace('')
+      setCharacterCreateClass('')
+      setCharacterCreateLevel('1')
+      setCharacterCreateHpMax('')
+      setCharacterCreateHpCurrent('')
+      setCharacterCreateAc('')
+      setCharacterCreateInit('')
+      await loadCharacters()
+    } catch (err: any) {
+      setCampaignImportStatus(err?.message ?? 'Не удалось создать персонажа.')
+    }
+  }
+
+  const handleCreateCharacterFromFullForm = async (payload: PlayerCharacterTemplateV1) => {
+    if (!campaign) return
+    const name = payload.identity.name.trim()
+    if (!name) {
+      setCampaignImportStatus('Укажи имя персонажа в форме.')
+      return
+    }
+
+    const parseSpeed = (value: string): number | null => {
+      const match = value.match(/\d+/)
+      if (!match) return null
+      const parsed = Number(match[0])
+      return Number.isFinite(parsed) ? parsed : null
+    }
+
+    const data = createDefaultCharacterData()
+    data.currency = {
+      cp: Number.isFinite(payload.equipment.currency.cp) ? payload.equipment.currency.cp : 0,
+      sp: Number.isFinite(payload.equipment.currency.sp) ? payload.equipment.currency.sp : 0,
+      ep: Number.isFinite(payload.equipment.currency.ep) ? payload.equipment.currency.ep : 0,
+      gp: Number.isFinite(payload.equipment.currency.gp) ? payload.equipment.currency.gp : 0,
+      pp: Number.isFinite(payload.equipment.currency.pp) ? payload.equipment.currency.pp : 0
+    }
+    data.inventory = payload.equipment.inventory
+      .filter((item) => item.name.trim())
+      .map((item) => ({
+        name: item.name.trim(),
+        qty: Number.isFinite(item.qty) ? item.qty : 1,
+        notes: item.notes ?? '',
+        category: 'manual'
+      }))
+    data.items = data.inventory.map((item) => ({ name: item.name, notes: item.notes }))
+    data.spells = payload.spellcasting.spellsKnown
+      .filter((spell) => spell.name.trim())
+      .map((spell) => ({
+        name: spell.name.trim(),
+        level: spell.level,
+        prepared: spell.prepared,
+        notes: spell.notes ?? ''
+      }))
+    data.notes = [
+      payload.traits.featuresAndTraits,
+      payload.traits.backstory,
+      payload.traits.personalityTraits,
+      payload.traits.ideals,
+      payload.traits.bonds,
+      payload.traits.flaws
+    ]
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .join('\n\n')
+    data.combat.hpMax = payload.core.hitPointsMax
+    data.combat.hpCurrent = payload.core.hitPointsCurrent
+    data.combat.ac = payload.core.armorClass
+    data.combat.speed = parseSpeed(payload.core.speed)
+    data.combat.initiativeOverride = payload.core.initiative
+    data.stats.str.score = payload.abilities.str.score
+    data.stats.dex.score = payload.abilities.dex.score
+    data.stats.con.score = payload.abilities.con.score
+    data.stats.int.score = payload.abilities.int.score
+    data.stats.wis.score = payload.abilities.wis.score
+    data.stats.cha.score = payload.abilities.cha.score
+    data.saves.str.prof = payload.saves.str.proficient
+    data.saves.dex.prof = payload.saves.dex.proficient
+    data.saves.con.prof = payload.saves.con.proficient
+    data.saves.int.prof = payload.saves.int.proficient
+    data.saves.wis.prof = payload.saves.wis.proficient
+    data.saves.cha.prof = payload.saves.cha.proficient
+    data.saves.str.override = payload.saves.str.bonusOverride
+    data.saves.dex.override = payload.saves.dex.bonusOverride
+    data.saves.con.override = payload.saves.con.bonusOverride
+    data.saves.int.override = payload.saves.int.bonusOverride
+    data.saves.wis.override = payload.saves.wis.bonusOverride
+    data.saves.cha.override = payload.saves.cha.bonusOverride
+
+    payload.skills.forEach((skill) => {
+      if (!(skill.key in data.skills)) return
+      const key = skill.key as keyof CharacterData['skills']
+      data.skills[key].prof = skill.proficient || skill.expertise
+      data.skills[key].override = skill.bonusOverride
+    })
+
+    try {
+      const result = await window.beholder.characters.create({
+        campaignId: campaign.id,
+        name,
+        race: payload.identity.race.trim() || undefined,
+        class: payload.identity.className.trim() || undefined,
+        level: payload.identity.level || undefined
+      })
+      await window.beholder.characters.updateData({ id: result.id, data })
+      await loadCharacters()
+      setFullCharacterFormOpen(false)
+      setCampaignImportStatus(`Создан персонаж: ${name}`)
+    } catch (err: any) {
+      setCampaignImportStatus(err?.message ?? 'Не удалось создать персонажа из полной формы.')
+    }
+  }
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string; payload?: unknown } | null
+      if (!data || data.type !== 'beholder:character-import') return
+      if (!campaign) {
+        setCampaignImportStatus('Сначала создай или выбери кампанию, затем повтори отправку.')
+        return
+      }
+      const payload = data.payload as PlayerCharacterTemplateV1 | undefined
+      if (!payload || payload.version !== 'beholder.character.v1') {
+        setCampaignImportStatus('Получены некорректные данные персонажа.')
+        return
+      }
+      void handleCreateCharacterFromFullForm(payload)
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [campaign, handleCreateCharacterFromFullForm])
+
+  const refreshSelectedCharacter = async () => {
+    if (!selectedCharacterId) return
+    const row = await window.beholder.characters.get(selectedCharacterId)
+    setSelectedCharacter(row as Character | null)
+  }
+
+  const updateCharacterData = async (data: CharacterData) => {
+    if (!selectedCharacterId) return
+    await window.beholder.characters.updateData({ id: selectedCharacterId, data })
+    await refreshSelectedCharacter()
+    if (campaign) {
+      const rows = await window.beholder.characters.list(campaign.id)
+      setCharacters(rows as Character[])
+    }
+  }
+
+  const handleUpdateCharacterBase = async () => {
+    if (!selectedCharacterId) return
+    const name = editCharacter.name.trim()
+    if (!name) return
+    await window.beholder.characters.updateBase({
+      id: selectedCharacterId,
+      name,
+      race: editCharacter.race.trim() || undefined,
+      class: editCharacter.class.trim() || undefined,
+      level: editCharacter.level ? Number(editCharacter.level) : undefined
+    })
+    await refreshSelectedCharacter()
+    if (campaign) {
+      const rows = await window.beholder.characters.list(campaign.id)
+      setCharacters(rows as Character[])
+    }
+  }
+
+  const handleSaveCombatAndStats = async () => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.combat = {
+      hpMax: editCombat.hpMax ? Number(editCombat.hpMax) : null,
+      hpCurrent: editCombat.hpCurrent ? Number(editCombat.hpCurrent) : null,
+      ac: editCombat.ac ? Number(editCombat.ac) : null,
+      speed: editCombat.speed ? Number(editCombat.speed) : null,
+      initiativeOverride: editCombat.initiativeOverride
+        ? Number(editCombat.initiativeOverride)
+        : null
+    }
+    const makeStat = (stat: { score: string; modOverride: string }) => ({
+      score: stat.score ? Number(stat.score) : null,
+      modOverride: stat.modOverride ? Number(stat.modOverride) : null
+    })
+    data.stats = {
+      str: makeStat(editStats.str),
+      dex: makeStat(editStats.dex),
+      con: makeStat(editStats.con),
+      int: makeStat(editStats.int),
+      wis: makeStat(editStats.wis),
+      cha: makeStat(editStats.cha)
+    }
+    data.saves = {
+      str: {
+        prof: editSaves.str.prof,
+        override: editSaves.str.override ? Number(editSaves.str.override) : null
+      },
+      dex: {
+        prof: editSaves.dex.prof,
+        override: editSaves.dex.override ? Number(editSaves.dex.override) : null
+      },
+      con: {
+        prof: editSaves.con.prof,
+        override: editSaves.con.override ? Number(editSaves.con.override) : null
+      },
+      int: {
+        prof: editSaves.int.prof,
+        override: editSaves.int.override ? Number(editSaves.int.override) : null
+      },
+      wis: {
+        prof: editSaves.wis.prof,
+        override: editSaves.wis.override ? Number(editSaves.wis.override) : null
+      },
+      cha: {
+        prof: editSaves.cha.prof,
+        override: editSaves.cha.override ? Number(editSaves.cha.override) : null
+      }
+    }
+    data.skills = {
+      acrobatics: {
+        prof: editSkills.acrobatics.prof,
+        override: editSkills.acrobatics.override ? Number(editSkills.acrobatics.override) : null
+      },
+      animalHandling: {
+        prof: editSkills.animalHandling.prof,
+        override: editSkills.animalHandling.override
+          ? Number(editSkills.animalHandling.override)
+          : null
+      },
+      arcana: {
+        prof: editSkills.arcana.prof,
+        override: editSkills.arcana.override ? Number(editSkills.arcana.override) : null
+      },
+      athletics: {
+        prof: editSkills.athletics.prof,
+        override: editSkills.athletics.override ? Number(editSkills.athletics.override) : null
+      },
+      deception: {
+        prof: editSkills.deception.prof,
+        override: editSkills.deception.override ? Number(editSkills.deception.override) : null
+      },
+      history: {
+        prof: editSkills.history.prof,
+        override: editSkills.history.override ? Number(editSkills.history.override) : null
+      },
+      insight: {
+        prof: editSkills.insight.prof,
+        override: editSkills.insight.override ? Number(editSkills.insight.override) : null
+      },
+      intimidation: {
+        prof: editSkills.intimidation.prof,
+        override: editSkills.intimidation.override
+          ? Number(editSkills.intimidation.override)
+          : null
+      },
+      investigation: {
+        prof: editSkills.investigation.prof,
+        override: editSkills.investigation.override
+          ? Number(editSkills.investigation.override)
+          : null
+      },
+      medicine: {
+        prof: editSkills.medicine.prof,
+        override: editSkills.medicine.override ? Number(editSkills.medicine.override) : null
+      },
+      nature: {
+        prof: editSkills.nature.prof,
+        override: editSkills.nature.override ? Number(editSkills.nature.override) : null
+      },
+      perception: {
+        prof: editSkills.perception.prof,
+        override: editSkills.perception.override ? Number(editSkills.perception.override) : null
+      },
+      performance: {
+        prof: editSkills.performance.prof,
+        override: editSkills.performance.override ? Number(editSkills.performance.override) : null
+      },
+      persuasion: {
+        prof: editSkills.persuasion.prof,
+        override: editSkills.persuasion.override ? Number(editSkills.persuasion.override) : null
+      },
+      religion: {
+        prof: editSkills.religion.prof,
+        override: editSkills.religion.override ? Number(editSkills.religion.override) : null
+      },
+      sleightOfHand: {
+        prof: editSkills.sleightOfHand.prof,
+        override: editSkills.sleightOfHand.override
+          ? Number(editSkills.sleightOfHand.override)
+          : null
+      },
+      stealth: {
+        prof: editSkills.stealth.prof,
+        override: editSkills.stealth.override ? Number(editSkills.stealth.override) : null
+      },
+      survival: {
+        prof: editSkills.survival.prof,
+        override: editSkills.survival.override ? Number(editSkills.survival.override) : null
+      }
+    }
+    await updateCharacterData(data)
+  }
+
+  const profBonus = (() => {
+    const level = selectedCharacter?.level ?? 1
+    return 2 + Math.floor((Math.max(level, 1) - 1) / 4)
+  })()
+
+  const getStatMod = (key: keyof CharacterData['stats']) => {
+    const current = editStats[key]
+    const score = current.score ? Number(current.score) : null
+    const auto = scoreToMod(score)
+    if (current.modOverride !== '') {
+      const value = Number(current.modOverride)
+      return Number.isNaN(value) ? auto : value
+    }
+    return auto
+  }
+
+  const handleAddInventory = async () => {
+    if (!selectedCharacter) return
+    const name = newInventoryItem.name.trim()
+    const qty = Number(newInventoryItem.qty || 1)
+    if (!name) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.inventory = [
+      ...data.inventory,
+      { name, qty: Number.isFinite(qty) ? qty : 1, notes: '', category: 'manual' }
+    ]
+    await updateCharacterData(data)
+    setNewInventoryItem({ name: '', qty: '1' })
+  }
+
+  const handleRemoveInventory = async (index: number) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.inventory = data.inventory.filter((_, i) => i !== index)
+    await updateCharacterData(data)
+  }
+
+  const handleUpdateInventoryItem = async (
+    index: number,
+    patch: Partial<{ name: string; qty: number; notes: string }>
+  ) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    if (!data.inventory[index]) return
+    const current = data.inventory[index]
+    const nextName =
+      patch.name === undefined ? current.name : patch.name.trim() || current.name
+    const nextQtyRaw = patch.qty === undefined ? current.qty : Math.floor(patch.qty)
+    const nextQty = Number.isFinite(nextQtyRaw) ? Math.max(1, nextQtyRaw) : current.qty
+    const nextNotes = patch.notes === undefined ? current.notes ?? '' : patch.notes
+    data.inventory[index] = { name: nextName, qty: nextQty, notes: nextNotes }
+    await updateCharacterData(data)
+  }
+
+  const addInventoryEntry = (
+    inventory: CharacterData['inventory'],
+    entry: { name: string; qty: number; notes?: string; category?: InventoryEntry['category'] }
+  ): CharacterData['inventory'] => {
+    const normalizedName = entry.name.trim().toLowerCase()
+    if (!normalizedName) return inventory
+    const existingIndex = inventory.findIndex(
+      (item) => item.name.trim().toLowerCase() === normalizedName
+    )
+    if (existingIndex < 0) {
+      return [
+        ...inventory,
+        {
+          name: entry.name.trim(),
+          qty: Math.max(1, entry.qty),
+          notes: entry.notes ?? '',
+          category: entry.category ?? 'manual'
+        }
+      ]
+    }
+    return inventory.map((item, index) =>
+      index === existingIndex
+        ? {
+            ...item,
+            qty: Math.max(1, item.qty + Math.max(1, entry.qty)),
+            notes: item.notes || entry.notes ? [item.notes ?? '', entry.notes ?? ''].filter(Boolean).join(' · ') : ''
+          }
+        : item
+    )
+  }
+
+  const handleAddInventoryFromLibrary = async (kind: 'items' | 'artifacts', id: number) => {
+    if (!selectedCharacter) return
+    const detail = (await window.beholder[kind].get(id)) as any
+    if (!detail) return
+    const name = (detail.name_ru ?? detail.name ?? '').trim()
+    if (!name) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    const notes = kind === 'items' ? buildItemSummary(detail.data) : buildArtifactSummary(detail.data)
+    data.inventory = addInventoryEntry(data.inventory, {
+      name,
+      qty: 1,
+      notes,
+      category: kind === 'items' ? 'item' : 'artifact'
+    })
+    if (kind === 'items') {
+      data.items = [...data.items, { id, name, summary: buildItemSummary(detail.data) }]
+      setItemQuery('')
+      setItemResults([])
+    } else {
+      data.artifacts = [...data.artifacts, { id, name, summary: buildArtifactSummary(detail.data) }]
+      setArtifactQuery('')
+      setArtifactResults([])
+    }
+    await updateCharacterData(data)
+  }
+
+  const handleSetCurrency = async (key: keyof CharacterData['currency'], value: number) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.currency[key] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0
+    await updateCharacterData(data)
+  }
+
+  const handleAdjustCurrency = async (key: keyof CharacterData['currency'], delta: number) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.currency[key] = Math.max(
+      0,
+      Math.floor((Number.isFinite(data.currency[key]) ? data.currency[key] : 0) + delta)
+    )
+    await updateCharacterData(data)
+  }
+
+  const handleAddSpell = async () => {
+    if (!selectedCharacter) return
+    const name = spellQuery.trim()
+    if (!name) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.spells = [...data.spells, { name, summary: '' }]
+    await updateCharacterData(data)
+    setSpellQuery('')
+  }
+
+  const handleRemoveSpell = async (index: number) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.spells = data.spells.filter((_, i) => i !== index)
+    await updateCharacterData(data)
+  }
+
+  const handleAddSpellFromLibrary = async (id: number) => {
+    if (!selectedCharacter) return
+    const detail = (await window.beholder.spells.get(id)) as any
+    if (!detail) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    const name = detail.name_ru ?? detail.name
+    data.spells = [...data.spells, { id, name, summary: buildSpellSummary(detail.data) }]
+    await updateCharacterData(data)
+    setSpellQuery('')
+    setSpellResults([])
+  }
+
+  const handleAddItemFromLibrary = async (id: number) => {
+    if (!selectedCharacter) return
+    const detail = (await window.beholder.items.get(id)) as any
+    if (!detail) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    const name = detail.name_ru ?? detail.name
+    data.items = [...data.items, { id, name, summary: buildItemSummary(detail.data) }]
+    await updateCharacterData(data)
+    setItemQuery('')
+    setItemResults([])
+  }
+
+  const handleRemoveItem = async (index: number) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.items = data.items.filter((_, i) => i !== index)
+    await updateCharacterData(data)
+  }
+
+  const handleAddArtifactFromLibrary = async (id: number) => {
+    if (!selectedCharacter) return
+    const detail = (await window.beholder.artifacts.get(id)) as any
+    if (!detail) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    const name = detail.name_ru ?? detail.name
+    data.artifacts = [...data.artifacts, { id, name, summary: buildArtifactSummary(detail.data) }]
+    await updateCharacterData(data)
+    setArtifactQuery('')
+    setArtifactResults([])
+  }
+
+  const handleRemoveArtifact = async (index: number) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.artifacts = data.artifacts.filter((_, i) => i !== index)
+    await updateCharacterData(data)
+  }
+
+  const openModal = (type: 'spells' | 'items' | 'artifacts', id?: number) => {
+    if (!id) return
+    setModal({ type, id })
+  }
+
+  const closeModal = () => setModal(null)
+  const closeCombatDetail = () => setCombatDetailId(null)
+
+  const addCharacterToCombat = () => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    const saves = buildSaveModsFromCharacter(data, selectedCharacter.level ?? null)
+    const actions = buildCharacterActions(data)
+    const baseAttack = deriveBaseAttack(actions)
+    const participant: CombatParticipant = {
+      id: `c-${selectedCharacter.id}-${Date.now()}`,
+      kind: 'character',
+      sourceId: selectedCharacter.id,
+      name: selectedCharacter.name,
+      targetId: null,
+      size: null,
+      hpMax: data.combat.hpMax,
+      hpCurrent: data.combat.hpCurrent ?? data.combat.hpMax,
+      ac: data.combat.ac,
+      initiative: data.combat.initiativeOverride,
+      attackBonus: baseAttack.attackBonus,
+      damageExpr: baseAttack.damageExpr ?? '1d6',
+      effects: [],
+      conditions: [],
+      concentration: null,
+      saves,
+      actions,
+      notes: ''
+    }
+    setCombatParticipants((prev) => [...prev, participant])
+  }
+
+  const addMonsterToCombat = async (monster: { id: number; name: string; name_ru: string | null }) => {
+    let detail: any = null
+    try {
+      detail = (await window.beholder.monsters.get(monster.id)) as any
+    } catch {
+      detail = null
+    }
+    const hp = parseMonsterHp(detail?.data?.hp)
+    const ac = parseMonsterAc(detail?.data?.ac)
+    const saves = parseMonsterSaves(detail?.data)
+    const actions = parseMonsterActions(detail?.data)
+    const baseAttack = deriveBaseAttack(actions)
+    const participant: CombatParticipant = {
+      id: `m-${monster.id}-${Date.now()}`,
+      kind: 'monster',
+      sourceId: monster.id,
+      name: detail?.name_ru ?? detail?.name ?? monster.name_ru ?? monster.name,
+      targetId: null,
+      size: null,
+      hpMax: hp,
+      hpCurrent: hp,
+      ac,
+      initiative: null,
+      attackBonus: baseAttack.attackBonus,
+      damageExpr: baseAttack.damageExpr ?? '1d6',
+      effects: [],
+      conditions: [],
+      concentration: null,
+      saves,
+      actions: actions.length > 0 ? actions : undefined,
+      notes: ''
+    }
+    setCombatParticipants((prev) => [...prev, participant])
+    setCombatQuery('')
+    setCombatResults([])
+    setCombatError(null)
+  }
+
+  const resetCustomMonsterForm = () => {
+    setCustomMonsterDraft(emptyCustomMonsterDraft)
+    setCustomMonsterActions([createEmptyCustomMonsterAction()])
+    setEditingCustomMonsterId(null)
+  }
+
+  const openCreateCustomMonsterModal = () => {
+    resetCustomMonsterForm()
+    setCustomMonsterModalOpen(true)
+    setCustomMonsterError(null)
+  }
+
+  const saveCustomMonster = async () => {
+    if (!campaign) return
+    const name = customMonsterDraft.name.trim()
+    if (!name) {
+      setCustomMonsterError('Укажите имя кастомного монстра')
+      return
+    }
+    const data = buildCustomMonsterData(customMonsterDraft, customMonsterActions)
+    setSavingCustomMonster(true)
+    try {
+      if (editingCustomMonsterId) {
+        await window.beholder.customMonsters.update({
+          id: editingCustomMonsterId,
+          name,
+          cr: customMonsterDraft.cr.trim() || null,
+          data
+        })
+      } else {
+        await window.beholder.customMonsters.create({
+          campaignId: campaign.id,
+          name,
+          cr: customMonsterDraft.cr.trim() || null,
+          data
+        })
+      }
+      const refreshed = await window.beholder.customMonsters.list({
+        campaignId: campaign.id,
+        query: customMonsterQuery.trim() || undefined,
+        limit: 20,
+        offset: 0
+      })
+      setCustomMonsterRows(refreshed.items as CustomMonsterRow[])
+      setCustomMonsterError(null)
+      resetCustomMonsterForm()
+      setCustomMonsterModalOpen(false)
+    } catch (err: any) {
+      setCustomMonsterError(err?.message ?? 'Не удалось сохранить кастомного монстра')
+    } finally {
+      setSavingCustomMonster(false)
+    }
+  }
+
+  const editCustomMonster = async (id: number) => {
+    try {
+      const row = (await window.beholder.customMonsters.get(id)) as any
+      if (!row) return
+      setCustomMonsterDraft(customMonsterDataToDraft(row))
+      setCustomMonsterActions(customMonsterActionsFromData(row.data))
+      setEditingCustomMonsterId(id)
+      setCustomMonsterModalOpen(true)
+      setCustomMonsterError(null)
+    } catch (err: any) {
+      setCustomMonsterError(err?.message ?? 'Не удалось загрузить монстра для редактирования')
+    }
+  }
+
+  const deleteCustomMonster = async (id: number) => {
+    if (!campaign) return
+    try {
+      await window.beholder.customMonsters.delete(id)
+      const refreshed = await window.beholder.customMonsters.list({
+        campaignId: campaign.id,
+        query: customMonsterQuery.trim() || undefined,
+        limit: 20,
+        offset: 0
+      })
+      setCustomMonsterRows(refreshed.items as CustomMonsterRow[])
+      if (editingCustomMonsterId === id) {
+        resetCustomMonsterForm()
+      }
+      setCustomMonsterError(null)
+    } catch (err: any) {
+      setCustomMonsterError(err?.message ?? 'Не удалось удалить кастомного монстра')
+    }
+  }
+
+  const addCustomMonsterToCombat = async (id: number) => {
+    try {
+      const row = (await window.beholder.customMonsters.get(id)) as any
+      if (!row) return
+      const hp = parseMonsterHp(row?.data?.hp)
+      const ac = parseMonsterAc(row?.data?.ac)
+      const saves = parseMonsterSaves(row?.data)
+      const actions = parseMonsterActions(row?.data)
+      const baseAttack = deriveBaseAttack(actions)
+    const participant: CombatParticipant = {
+      id: `cm-${id}-${Date.now()}`,
+      kind: 'monster',
+      sourceId: id,
+      name: row?.name ?? 'Кастомный монстр',
+      targetId: null,
+      size: null,
+      hpMax: hp,
+      hpCurrent: hp,
+      ac,
+      initiative: null,
+        attackBonus: baseAttack.attackBonus,
+        damageExpr: baseAttack.damageExpr ?? '1d6',
+        effects: [],
+        conditions: [],
+        concentration: null,
+        saves,
+        actions: actions.length > 0 ? actions : undefined,
+        notes: ''
+      }
+      setCombatParticipants((prev) => [...prev, participant])
+      setCustomMonsterError(null)
+    } catch (err: any) {
+      setCustomMonsterError(err?.message ?? 'Не удалось добавить кастомного монстра в бой')
+    }
+  }
+
+  const addCustomActionRow = () => {
+    setCustomMonsterActions((prev) => [...prev, createEmptyCustomMonsterAction()])
+  }
+
+  const updateCustomActionRow = (
+    id: string,
+    key: keyof Omit<CustomMonsterActionDraft, 'id'>,
+    value: string
+  ) => {
+    setCustomMonsterActions((prev) =>
+      prev.map((action) => (action.id === id ? { ...action, [key]: value } : action))
+    )
+  }
+
+  const removeCustomActionRow = (id: string) => {
+    setCustomMonsterActions((prev) => {
+      const next = prev.filter((action) => action.id !== id)
+      return next.length > 0 ? next : [createEmptyCustomMonsterAction()]
+    })
+  }
+
+  const updateParticipant = (id: string, patch: Partial<CombatParticipant>) => {
+    setCombatParticipants((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...patch } : p))
+    )
+  }
+
+  const getParticipantById = (id: string | null | undefined) =>
+    id ? combatParticipants.find((p) => p.id === id) : undefined
+
+  const updateCombatLinks = () => {
+    const board = combatBoardRef.current
+    if (!board) {
+      setCombatLinks([])
+      return
+    }
+    const boardRect = board.getBoundingClientRect()
+    const nextLinks: Array<{ id: string; d: string }> = []
+    for (const participant of combatParticipants) {
+      if (!participant.targetId) continue
+      const sourceEl = combatCardRefs.current.get(participant.id)
+      const targetEl = combatCardRefs.current.get(participant.targetId)
+      if (!sourceEl || !targetEl) continue
+      const fromRect = sourceEl.getBoundingClientRect()
+      const toRect = targetEl.getBoundingClientRect()
+      const fromX = fromRect.left - boardRect.left + fromRect.width / 2
+      const fromY = fromRect.top - boardRect.top + fromRect.height / 2
+      const toX = toRect.left - boardRect.left + toRect.width / 2
+      const toY = toRect.top - boardRect.top + toRect.height / 2
+      const dx = toX - fromX
+      const dy = toY - fromY
+      const curve = Math.min(140, Math.max(40, Math.abs(dx) * 0.25 + Math.abs(dy) * 0.15))
+      const c1x = fromX + dx * 0.25
+      const c1y = fromY + (dy >= 0 ? curve : -curve)
+      const c2x = fromX + dx * 0.75
+      const c2y = toY - (dy >= 0 ? curve : -curve)
+      const d = `M ${fromX} ${fromY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${toX} ${toY}`
+      nextLinks.push({ id: `${participant.id}__${participant.targetId}`, d })
+    }
+    setCombatLinks(nextLinks)
+  }
+
+  const removeParticipant = (id: string) => {
+    setCombatParticipants((prev) =>
+      prev
+        .filter((p) => p.id !== id)
+        .map((p) => (p.targetId === id ? { ...p, targetId: null } : p))
+    )
+  }
+
+  const defaultCardSize = { width: 300, height: 230 }
+
+  const deriveBaseAttack = (
+    actions?: Array<{ name: string; text: string; attackBonus: number | null; damageExpr: string | null }>
+  ) => {
+    if (!actions || actions.length === 0) return { attackBonus: null, damageExpr: '1d6' }
+    let bestBonus: number | null = null
+    let bestDamage: string | null = null
+    actions.forEach((action) => {
+      const bonus = action.attackBonus ?? parseActionAttackBonus(action.text)
+      const damage = action.damageExpr ?? parseActionDamageExpr(action.text)
+      if (bonus !== null && (bestBonus === null || bonus > bestBonus)) {
+        bestBonus = bonus
+        bestDamage = damage ?? bestDamage
+      }
+      if (!bestDamage && damage) bestDamage = damage
+    })
+    return {
+      attackBonus: bestBonus,
+      damageExpr: bestDamage ?? '1d6'
+    }
+  }
+
+  const orderedParticipants = [...combatParticipants].sort((a, b) => {
+    const aInit = a.initiative ?? -999
+    const bInit = b.initiative ?? -999
+    return bInit - aInit
+  })
+
+  const visibleParticipants = orderedParticipants.filter((participant) => {
+    if (combatSearch.trim()) {
+      const needle = combatSearch.trim().toLowerCase()
+      if (!participant.name.toLowerCase().includes(needle)) return false
+    }
+    if (combatFilter === 'alive') return (participant.hpCurrent ?? 1) > 0
+    if (combatFilter === 'down') return (participant.hpCurrent ?? 0) <= 0
+    if (combatFilter === 'concentration') return Boolean(participant.concentration)
+    if (combatFilter === 'status') {
+      return participant.conditions.length > 0 || participant.effects.length > 0
+    }
+    return true
+  })
+
+  useLayoutEffect(() => {
+    updateCombatLinks()
+  }, [combatParticipants, combatFilter, combatSearch, currentTurn])
+
+  useEffect(() => {
+    const handleResize = () => updateCombatLinks()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    if (!draggingCardId) return
+    const handleMove = (event: PointerEvent) => {
+      const board = combatBoardRef.current
+      const card = combatCardRefs.current.get(draggingCardId)
+      if (!board || !card) return
+      const boardRect = board.getBoundingClientRect()
+      const cardRect = card.getBoundingClientRect()
+      const offset = dragOffsetRef.current
+      let nextX = event.clientX - boardRect.left - offset.x
+      let nextY = event.clientY - boardRect.top - offset.y
+      const maxX = Math.max(0, boardRect.width - cardRect.width)
+      const maxY = Math.max(0, boardRect.height - cardRect.height)
+      nextX = Math.max(0, Math.min(nextX, maxX))
+      nextY = Math.max(0, Math.min(nextY, maxY))
+      updateParticipant(draggingCardId, { position: { x: nextX, y: nextY } })
+    }
+    const handleUp = () => setDraggingCardId(null)
+    window.addEventListener('pointermove', handleMove)
+    window.addEventListener('pointerup', handleUp)
+    return () => {
+      window.removeEventListener('pointermove', handleMove)
+      window.removeEventListener('pointerup', handleUp)
+    }
+  }, [draggingCardId])
+
+  useEffect(() => {
+    const handleMove = (event: PointerEvent) => {
+      const press = cardPressRef.current
+      if (!press || press.linkActive) return
+      const dx = event.clientX - press.startX
+      const dy = event.clientY - press.startY
+      if (Math.hypot(dx, dy) <= 6) return
+      if (press.timerId) {
+        window.clearTimeout(press.timerId)
+      }
+      const card = combatCardRefs.current.get(press.id)
+      if (!card) return
+      const cardRect = card.getBoundingClientRect()
+      setDraggingCardId(press.id)
+      dragOffsetRef.current = {
+        x: event.clientX - cardRect.left,
+        y: event.clientY - cardRect.top
+      }
+      card.setPointerCapture(press.pointerId)
+      cardPressRef.current = null
+    }
+    const handleUp = () => {
+      const press = cardPressRef.current
+      if (press?.timerId) {
+        window.clearTimeout(press.timerId)
+      }
+      cardPressRef.current = null
+    }
+    window.addEventListener('pointermove', handleMove)
+    window.addEventListener('pointerup', handleUp)
+    return () => {
+      window.removeEventListener('pointermove', handleMove)
+      window.removeEventListener('pointerup', handleUp)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!resizingCard) return
+    const handleMove = (event: PointerEvent) => {
+      const dx = event.clientX - resizingCard.startX
+      const dy = event.clientY - resizingCard.startY
+      const minW = 220
+      const minH = 180
+      let nextWidth = resizingCard.startWidth
+      let nextHeight = resizingCard.startHeight
+      if (resizingCard.dir === 'e' || resizingCard.dir === 'se') {
+        nextWidth = Math.max(minW, resizingCard.startWidth + dx)
+      }
+      if (resizingCard.dir === 's' || resizingCard.dir === 'se') {
+        nextHeight = Math.max(minH, resizingCard.startHeight + dy)
+      }
+      updateParticipant(resizingCard.id, {
+        size: { width: Math.round(nextWidth), height: Math.round(nextHeight) }
+      })
+    }
+    const handleUp = () => setResizingCard(null)
+    window.addEventListener('pointermove', handleMove)
+    window.addEventListener('pointerup', handleUp)
+    return () => {
+      window.removeEventListener('pointermove', handleMove)
+      window.removeEventListener('pointerup', handleUp)
+    }
+  }, [resizingCard])
+
+  useEffect(() => {
+    if (currentTurn >= orderedParticipants.length) {
+      setCurrentTurn(0)
+    }
+  }, [orderedParticipants.length, currentTurn])
+
+  const nextTurn = () => {
+    if (orderedParticipants.length === 0) return
+    setCombatParticipants((prev) =>
+      prev.map((p) => ({
+        ...p,
+        effects: p.effects
+          .map((effect) => ({
+            ...effect,
+            rounds: effect.rounds !== null ? effect.rounds - 1 : null
+          }))
+          .filter((effect) => effect.rounds === null || effect.rounds > 0),
+        conditions: p.conditions
+          .map((condition) => ({
+            ...condition,
+            rounds: condition.rounds !== null ? condition.rounds - 1 : null
+          }))
+          .filter((condition) => condition.rounds === null || condition.rounds > 0),
+        concentration:
+          p.concentration && p.concentration.rounds !== null
+            ? {
+                ...p.concentration,
+                rounds: p.concentration.rounds - 1
+              }
+            : p.concentration
+      }))
+    )
+    setCurrentTurn((prev) => {
+      if (orderedParticipants.length === 0) return 0
+      const start = (prev + 1) % orderedParticipants.length
+      for (let i = 0; i < orderedParticipants.length; i += 1) {
+        const idx = (start + i) % orderedParticipants.length
+        const candidate = orderedParticipants[idx]
+        if ((candidate.hpCurrent ?? 1) > 0) return idx
+      }
+      return start
+    })
+  }
+
+  const pushCombatLog = (
+    label: string,
+    total: number | null,
+    detail: string,
+    tone: CombatLogTone = 'normal'
+  ) => {
+    setCombatLog((prev) => [{ label, total, detail, tone }, ...prev].slice(0, 20))
+    if (total === null) return
+    setRollOverlay({ label, total, detail, tone })
+    if (rollOverlayTimerRef.current !== null) {
+      window.clearTimeout(rollOverlayTimerRef.current)
+    }
+    rollOverlayTimerRef.current = window.setTimeout(() => {
+      setRollOverlay(null)
+      rollOverlayTimerRef.current = null
+    }, 2600)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (rollOverlayTimerRef.current !== null) {
+        window.clearTimeout(rollOverlayTimerRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!impactFlash) return
+    const timer = window.setTimeout(() => setImpactFlash(null), 900)
+    return () => window.clearTimeout(timer)
+  }, [impactFlash])
+
+  const handleConcentrationCheck = (participant: CombatParticipant, damage: number) => {
+    if (!participant.concentration) return
+    const dc = Math.max(10, Math.floor(damage / 2))
+    const bonus = participant.saves.con ?? 0
+    const roll = rollD20(bonus)
+    const success = roll.total >= dc
+    pushCombatLog(
+      `Концентрация: ${participant.name}`,
+      roll.total,
+      `d20(${roll.roll}) + ${roll.bonus} против КС ${dc} → ${success ? 'успех' : 'провал'}`
+    )
+    if (!success) {
+      updateParticipant(participant.id, { concentration: null })
+    }
+  }
+
+  const rollInitiative = (participant: CombatParticipant) => {
+    const roll = rollD20(participant.initiative ?? 0)
+    updateParticipant(participant.id, { initiative: roll.total })
+    pushCombatLog(`Инициатива: ${participant.name}`, roll.total, `d20(${roll.roll}) + ${roll.bonus}`)
+  }
+
+  const rollAttack = (participant: CombatParticipant) => {
+    const roll = rollD20(participant.attackBonus ?? 0)
+    const tone = getD20Tone(roll.roll)
+    pushCombatLog(`Атака: ${participant.name}`, roll.total, `d20(${roll.roll}) + ${roll.bonus}`, tone)
+    if (tone === 'fail') {
+      pushCombatLog(`Промах: ${participant.name}`, null, 'Критический провал: добавь осложнение по ситуации.', 'fail')
+    }
+  }
+
+  const rollDamage = (participant: CombatParticipant) => {
+    const result = rollDiceExpr(participant.damageExpr || '1d6')
+    if (!result) return
+    pushCombatLog(
+      `Урон: ${participant.name}`,
+      result.total,
+      `${participant.damageExpr} = ${result.rolls.join(' + ')}${result.modifier ? ` + ${result.modifier}` : ''}`
+    )
+  }
+
+  const rollActionAttack = (participant: CombatParticipant, action: { name: string; attackBonus: number | null }) => {
+    const roll = rollD20(action.attackBonus ?? 0)
+    const tone = getD20Tone(roll.roll)
+    pushCombatLog(
+      `Атака: ${participant.name} · ${action.name}`,
+      roll.total,
+      `d20(${roll.roll}) + ${roll.bonus}`,
+      tone
+    )
+    return roll
+  }
+
+  const rollActionDamage = (
+    participant: CombatParticipant,
+    action: { name: string; damageExpr: string | null },
+    isCritical = false,
+    targetName?: string
+  ) => {
+    if (!action.damageExpr) return
+    const result = isCritical
+      ? rollCriticalDamageExpr(action.damageExpr)
+      : rollDiceExpr(action.damageExpr)
+    if (!result) return
+    const detail = isCritical
+      ? `КРИТ: ${result.expr}${formatModifierDetail(result.modifier)} = ${result.rolls.join(' + ')}${formatModifierDetail(result.modifier)}`
+      : `${action.damageExpr} = ${result.rolls.join(' + ')}${formatModifierDetail(result.modifier)}`
+    const targetLabel = targetName ? ` → ${targetName}` : ''
+    pushCombatLog(
+      `Урон: ${participant.name} · ${action.name}${targetLabel}`,
+      result.total,
+      detail,
+      isCritical ? 'crit' : 'normal'
+    )
+    return result.total
+  }
+
+  const rollActionSaveForTarget = (
+    participant: CombatParticipant,
+    action: {
+      name: string
+      text: string
+      saveDc: number | null
+      saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
+    }
+  ) => {
+    const parsed = parseSaveFromText(action.text || '')
+    const ability = action.saveAbility || parsed.saveAbility
+    const dc = action.saveDc ?? (parsed.saveDc ? Number(parsed.saveDc) : null)
+    if (!ability || !dc) {
+      pushCombatLog(
+        `Спасбросок цели: ${participant.name} · ${action.name}`,
+        null,
+        'В действии не найдена СЛ/характеристика спасброска.'
+      )
+      return
+    }
+    const raw = window.prompt(`Модификатор спасброска цели (${ability})`, '0')
+    if (raw === null) return
+    const bonus = Number(raw.trim() || '0')
+    if (Number.isNaN(bonus)) {
+      pushCombatLog(
+        `Спасбросок цели: ${participant.name} · ${action.name}`,
+        null,
+        'Некорректный модификатор спасброска.'
+      )
+      return
+    }
+    const roll = rollD20(bonus)
+    const success = roll.total >= dc
+    const tone = getD20Tone(roll.roll)
+    pushCombatLog(
+      `Спасбросок цели ${ability}: ${participant.name} · ${action.name}`,
+      roll.total,
+      `d20(${roll.roll}) + ${roll.bonus} против СЛ ${dc} → ${success ? 'успех' : 'провал'}`,
+      tone
+    )
+  }
+
+  const ensureTargetForAttack = (participant: CombatParticipant) => {
+    const target = getParticipantById(participant.targetId)
+    if (!target) {
+      setTargetingSourceId(participant.id)
+      pushCombatLog(`Цель: ${participant.name}`, null, 'Выбери цель для атаки.')
+      return null
+    }
+    return target
+  }
+
+  const performAttackAgainstTarget = (
+    participant: CombatParticipant,
+    action: {
+      name: string
+      text: string
+      attackBonus: number | null
+      damageExpr: string | null
+      saveDc?: number | null
+      saveAbility?: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
+    }
+  ) => {
+    const target = ensureTargetForAttack(participant)
+    if (!target) return
+    const attackBonus = action.attackBonus ?? parseActionAttackBonus(action.text)
+    const damageExpr = action.damageExpr ?? parseActionDamageExpr(action.text)
+    const parsedSave = parseSaveFromText(action.text)
+    const saveAbility = action.saveAbility || parsedSave.saveAbility
+    const saveDc = action.saveDc ?? (parsedSave.saveDc ? Number(parsedSave.saveDc) : null)
+
+    if (attackBonus === null && saveAbility && saveDc) {
+      const key = saveLabelToKey[saveAbility]
+      const bonus = target.saves[key] ?? 0
+      const roll = rollD20(bonus)
+      const success = roll.total >= saveDc
+      const tone = getD20Tone(roll.roll)
+      pushCombatLog(
+        `Спасбросок: ${participant.name} → ${target.name}`,
+        roll.total,
+        `d20(${roll.roll}) + ${roll.bonus} против СЛ ${saveDc} (${saveAbility}) → ${
+          success ? 'успех' : 'провал'
+        }`,
+        tone
+      )
+      if (!success && damageExpr) {
+        const total = rollActionDamage(participant, { name: action.name, damageExpr }, false, target.name)
+        if (typeof total === 'number') {
+          applyDamage(target, total)
+          setImpactFlash({ id: target.id, tone: 'hit', value: total })
+        }
+      }
+      return
+    }
+
+    const roll = rollD20(attackBonus ?? 0)
+    const tone = getD20Tone(roll.roll)
+    const ac = target.ac
+
+    if (ac === null || ac === undefined) {
+      pushCombatLog(
+        `Атака: ${participant.name} → ${target.name}`,
+        roll.total,
+        `d20(${roll.roll}) + ${roll.bonus}. КД цели неизвестен — урон вручную.`,
+        tone
+      )
+      setImpactFlash({ id: target.id, tone: 'hit' })
+      return
+    }
+
+    let hit = roll.total >= ac
+    if (roll.roll === 1) hit = false
+    if (roll.roll === 20) hit = true
+
+    pushCombatLog(
+      `Атака: ${participant.name} → ${target.name}`,
+      roll.total,
+      `d20(${roll.roll}) + ${roll.bonus} против КД ${ac} → ${hit ? 'попадание' : 'промах'}`,
+      tone
+    )
+
+    if (!hit) {
+      setImpactFlash({ id: target.id, tone: 'miss' })
+      return
+    }
+    if (!damageExpr) {
+      setImpactFlash({ id: target.id, tone: 'hit' })
+      return
+    }
+    const total = rollActionDamage(
+      participant,
+      { name: action.name, damageExpr },
+      roll.roll === 20,
+      target.name
+    )
+    if (typeof total === 'number') {
+      applyDamage(target, total)
+      setImpactFlash({ id: target.id, tone: 'hit', value: total })
+    }
+  }
+
+  const performAction = (participant: CombatParticipant, action: { name: string; text: string; attackBonus: number | null; damageExpr: string | null }) => {
+    const attackBonus = action.attackBonus ?? parseActionAttackBonus(action.text)
+    const damageExpr = action.damageExpr ?? parseActionDamageExpr(action.text)
+
+    if (attackBonus !== null) {
+      const attackRoll = rollActionAttack(participant, { name: action.name, attackBonus })
+      if (attackRoll.roll === 1) {
+        pushCombatLog(
+          `Промах: ${participant.name} · ${action.name}`,
+          null,
+          'Критический провал: атака не попала. Добавь осложнение по ситуации.',
+          'fail'
+        )
+        return
+      }
+      if (damageExpr) {
+        rollActionDamage(participant, { name: action.name, damageExpr }, attackRoll.roll === 20)
+      }
+      return
+    }
+    if (damageExpr) {
+      rollActionDamage(participant, { name: action.name, damageExpr }, false)
+      return
+    }
+    pushCombatLog(`Действие: ${participant.name} · ${action.name}`, null, normalizeActionText(action.text) || '—')
+  }
+
+  const rollSave = (participant: CombatParticipant, key: (typeof abilityKeys)[number]) => {
+    const bonus = participant.saves[key] ?? 0
+    const roll = rollD20(bonus)
+    pushCombatLog(
+      `Спасбросок ${abilityLabels[key]}: ${participant.name}`,
+      roll.total,
+      `d20(${roll.roll}) + ${roll.bonus}`
+    )
+  }
+
+  const saveCombatSession = async () => {
+    if (!campaign) return
+    const payload = {
+      campaignId: campaign.id,
+      name: combatName.trim() || 'Сессия боя',
+      data: {
+        participants: combatParticipants,
+        currentTurn,
+        log: combatLog
+      },
+      combatId: selectedCombatId ?? undefined
+    }
+    const result = await window.beholder.combats.save(payload)
+    setSelectedCombatId(result.id)
+    const rows = await window.beholder.combats.list(campaign.id)
+    setCombatSessions(rows.map((row) => ({ id: row.id, name: row.name })))
+  }
+
+  const normalizeSaves = (value: any): SaveMods => {
+    if (!value || typeof value !== 'object') return { ...emptySaves }
+    return {
+      str: typeof value.str === 'number' ? value.str : emptySaves.str,
+      dex: typeof value.dex === 'number' ? value.dex : emptySaves.dex,
+      con: typeof value.con === 'number' ? value.con : emptySaves.con,
+      int: typeof value.int === 'number' ? value.int : emptySaves.int,
+      wis: typeof value.wis === 'number' ? value.wis : emptySaves.wis,
+      cha: typeof value.cha === 'number' ? value.cha : emptySaves.cha
+    }
+  }
+
+  const normalizeParticipant = (participant: any): CombatParticipant => ({
+    ...participant,
+    targetId: participant?.targetId ?? null,
+    position:
+      participant?.position &&
+      typeof participant.position.x === 'number' &&
+      typeof participant.position.y === 'number'
+        ? participant.position
+        : null,
+    size:
+      participant?.size &&
+      typeof participant.size.width === 'number' &&
+      typeof participant.size.height === 'number'
+        ? participant.size
+        : null,
+    damageExpr: participant?.damageExpr ?? '1d6',
+    effects: Array.isArray(participant?.effects) ? participant.effects : [],
+    conditions: Array.isArray(participant?.conditions) ? participant.conditions : [],
+    concentration:
+      participant?.concentration && typeof participant.concentration === 'object'
+        ? participant.concentration
+        : null,
+    saves: normalizeSaves(participant?.saves),
+    actions: Array.isArray(participant?.actions) ? participant.actions : undefined
+  })
+
+  const loadCombatSession = async (id: number) => {
+    const result = await window.beholder.combats.get(id)
+    if (!result || !result.data) return
+    const data = result.data as any
+    const participants = Array.isArray(data.participants)
+      ? data.participants.map(normalizeParticipant)
+      : []
+    setCombatParticipants(participants)
+    setCurrentTurn(typeof data.currentTurn === 'number' ? data.currentTurn : 0)
+    const log = Array.isArray(data.log)
+      ? data.log
+          .map((entry: any) => ({
+            label: typeof entry?.label === 'string' ? entry.label : 'Событие',
+            total: typeof entry?.total === 'number' ? entry.total : null,
+            detail: typeof entry?.detail === 'string' ? entry.detail : '—',
+            tone: entry?.tone === 'crit' || entry?.tone === 'fail' ? entry.tone : 'normal'
+          }))
+          .slice(0, 20)
+      : []
+    setCombatLog(log)
+    setCombatName(result.name)
+    setSelectedCombatId(result.id)
+  }
+
+  const resetCombat = () => {
+    setCombatParticipants([])
+    setCombatLog([])
+    setCurrentTurn(0)
+    setCombatName('Сессия боя')
+    setSelectedCombatId(null)
+  }
+
+  const exportCombatSession = async () => {
+    if (!selectedCombatId) return
+    await window.beholder.combats.export(selectedCombatId)
+  }
+
+  const importCombatSession = async () => {
+    if (!campaign) return
+    const result = await window.beholder.combats.import(campaign.id)
+    if (!result || result.canceled) return
+    const rows = await window.beholder.combats.list(campaign.id)
+    setCombatSessions(rows.map((row) => ({ id: row.id, name: row.name })))
+    if (result.id) {
+      await loadCombatSession(result.id)
+    }
+  }
+
+  const applyDamage = (participant: CombatParticipant, amount: number) => {
+    const current = participant.hpCurrent ?? 0
+    updateParticipant(participant.id, { hpCurrent: Math.max(current - amount, 0) })
+    pushCombatLog(`Урон: ${participant.name}`, null, `${amount} урона`)
+    handleConcentrationCheck(participant, amount)
+  }
+
+  const applyHeal = (participant: CombatParticipant, amount: number) => {
+    const current = participant.hpCurrent ?? 0
+    const max = participant.hpMax ?? current + amount
+    updateParticipant(participant.id, { hpCurrent: Math.min(current + amount, max) })
+    pushCombatLog(`Лечение: ${participant.name}`, null, `${amount} лечения`)
+  }
+
+  const applyDamageAll = (amount: number) => {
+    setCombatParticipants((prev) =>
+      prev.map((p) => ({
+        ...p,
+        hpCurrent: Math.max((p.hpCurrent ?? 0) - amount, 0)
+      }))
+    )
+    combatParticipants.forEach((participant) => {
+      if (participant.concentration) handleConcentrationCheck(participant, amount)
+    })
+    pushCombatLog('Массовый урон', null, `${amount} всем участникам`)
+  }
+
+  const applyHealAll = (amount: number) => {
+    setCombatParticipants((prev) =>
+      prev.map((p) => {
+        const current = p.hpCurrent ?? 0
+        const max = p.hpMax ?? current + amount
+        return { ...p, hpCurrent: Math.min(current + amount, max) }
+      })
+    )
+    pushCombatLog('Массовое лечение', null, `${amount} всем участникам`)
+  }
+
+  const addEffectToCurrent = () => {
+    if (!orderedParticipants[currentTurn]) return
+    const name = effectName.trim()
+    if (!name) return
+    const rounds = effectRounds ? Number(effectRounds) : null
+    updateParticipant(orderedParticipants[currentTurn].id, {
+      effects: [
+        ...orderedParticipants[currentTurn].effects,
+        { name, rounds: Number.isNaN(rounds) ? null : rounds }
+      ]
+    })
+    pushCombatLog(`Эффект: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+    setEffectName('')
+    setEffectRounds('')
+  }
+
+  const addConditionToCurrent = () => {
+    if (!orderedParticipants[currentTurn]) return
+    const name = conditionName.trim()
+    if (!name) return
+    const rounds = conditionRounds ? Number(conditionRounds) : null
+    updateParticipant(orderedParticipants[currentTurn].id, {
+      conditions: [
+        ...orderedParticipants[currentTurn].conditions,
+        { name, rounds: Number.isNaN(rounds) ? null : rounds }
+      ]
+    })
+    pushCombatLog(`Состояние: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+    setConditionName('')
+    setConditionRounds('')
+  }
+
+  const addPresetCondition = (name: string) => {
+    if (!orderedParticipants[currentTurn]) return
+    updateParticipant(orderedParticipants[currentTurn].id, {
+      conditions: [...orderedParticipants[currentTurn].conditions, { name, rounds: null }]
+    })
+    pushCombatLog(`Состояние: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+  }
+
+  const addPresetEffect = (name: string) => {
+    if (!orderedParticipants[currentTurn]) return
+    updateParticipant(orderedParticipants[currentTurn].id, {
+      effects: [...orderedParticipants[currentTurn].effects, { name, rounds: null }]
+    })
+    pushCombatLog(`Эффект: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+  }
+
+  const setConcentrationForCurrent = () => {
+    if (!orderedParticipants[currentTurn]) return
+    const name = concentrationName.trim()
+    if (!name) return
+    const rounds = concentrationRounds ? Number(concentrationRounds) : null
+    updateParticipant(orderedParticipants[currentTurn].id, {
+      concentration: { name, rounds: Number.isNaN(rounds) ? null : rounds }
+    })
+    pushCombatLog(`Концентрация: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+    setConcentrationName('')
+    setConcentrationRounds('')
+  }
+
+  const removeEffect = (participantId: string, index: number) => {
+    const participant = combatParticipants.find((p) => p.id === participantId)
+    if (!participant) return
+    updateParticipant(participantId, {
+      effects: participant.effects.filter((_, i) => i !== index)
+    })
+    pushCombatLog(`Эффект: ${participant.name}`, null, '— снят')
+  }
+
+  const removeCondition = (participantId: string, index: number) => {
+    const participant = combatParticipants.find((p) => p.id === participantId)
+    if (!participant) return
+    updateParticipant(participantId, {
+      conditions: participant.conditions.filter((_, i) => i !== index)
+    })
+    pushCombatLog(`Состояние: ${participant.name}`, null, '— снято')
+  }
+
+  const clearConcentration = (participantId: string) => {
+    const participant = combatParticipants.find((p) => p.id === participantId)
+    updateParticipant(participantId, { concentration: null })
+    if (participant) {
+      pushCombatLog(`Концентрация: ${participant.name}`, null, '— снята')
+    }
+  }
+
+  const clearCombatLog = () => {
+    setCombatLog([])
+    setRollOverlay(null)
+    if (rollOverlayTimerRef.current !== null) {
+      window.clearTimeout(rollOverlayTimerRef.current)
+      rollOverlayTimerRef.current = null
+    }
+  }
+
+  const handleAddAmmo = async () => {
+    if (!selectedCharacter) return
+    const name = newAmmo.name.trim()
+    const qty = Number(newAmmo.qty || 1)
+    if (!name) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.ammo = [...data.ammo, { name, qty: Number.isFinite(qty) ? qty : 1 }]
+    await updateCharacterData(data)
+    setNewAmmo({ name: '', qty: '1' })
+  }
+
+  const handleRemoveAmmo = async (index: number) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.ammo = data.ammo.filter((_, i) => i !== index)
+    await updateCharacterData(data)
+  }
+
+  const executeDiceRoll = (expr: string) => {
+    const parsed = parseDice(expr)
+    if (!parsed) return
+    const rolls = Array.from({ length: parsed.count }, () =>
+      Math.floor(Math.random() * parsed.sides) + 1
+    )
+    const total = rolls.reduce((sum, value) => sum + value, 0) + parsed.modifier
+    setDiceRolling(true)
+    setDiceResult(null)
+    setTimeout(() => {
+      setDiceResult({ total, rolls })
+      setDiceRolling(false)
+    }, 650)
+  }
+
+  const handleRollDice = () => executeDiceRoll(diceExpr)
+
+  const rollPreset = (expr: string) => {
+    setDiceExpr(expr)
+    executeDiceRoll(expr)
+  }
+
+  const rollQuickDice = (sides: number, count = 1, mode: 'normal' | 'adv' | 'dis' = 'normal') => {
+    const modValue = quickMod.trim() ? Number(quickMod) : 0
+    const rolls = Array.from({ length: count }, () =>
+      Math.floor(Math.random() * sides) + 1
+    )
+    let total = rolls.reduce((sum, value) => sum + value, 0) + (Number.isNaN(modValue) ? 0 : modValue)
+
+    if (mode !== 'normal' && sides === 20 && count === 1) {
+      const second = Math.floor(Math.random() * 20) + 1
+      const chosen = mode === 'adv' ? Math.max(rolls[0], second) : Math.min(rolls[0], second)
+      total = chosen + (Number.isNaN(modValue) ? 0 : modValue)
+      rolls.push(second)
+    }
+
+    const label =
+      mode === 'adv'
+        ? `d20 (преимущество)`
+        : mode === 'dis'
+          ? `d20 (помеха)`
+          : `${count}d${sides}`
+
+    setDiceExpr(`${count}d${sides}${modValue ? (modValue > 0 ? `+${modValue}` : `${modValue}`) : ''}`)
+    setDiceRolling(true)
+    setDiceResult(null)
+    setTimeout(() => {
+      setDiceResult({ total, rolls })
+      setDiceRolling(false)
+      let tone: CombatLogTone = 'normal'
+      if (sides === 20 && count === 1) {
+        const chosenRoll =
+          mode === 'adv' ? Math.max(rolls[0], rolls[1] ?? rolls[0]) :
+          mode === 'dis' ? Math.min(rolls[0], rolls[1] ?? rolls[0]) :
+          rolls[0]
+        tone = getD20Tone(chosenRoll)
+      }
+      pushCombatLog(
+        `Бросок: ${label}`,
+        total,
+        `${rolls.join(' + ')}${modValue ? ` ${modValue > 0 ? '+' : ''}${modValue}` : ''}`,
+        tone
+      )
+    }, 500)
+  }
+
+  const renderMonsterEntries = (entries: MonsterEntry[]) => (
+    <div className="detail__entries">
+      {entries.map((entry, index) => (
+        <div key={`${entry.name ?? 'entry'}-${index}`} className="detail__entry">
+          {entry.name && <div className="detail__entry-title">{entry.name}</div>}
+          {entry.text && <div className="detail__text">{renderFormattedText(entry.text)}</div>}
+        </div>
+      ))}
+    </div>
+  )
+
+  return (
+    <div className={`app theme-${themeMode}${isCombatBoardMode ? ' app--combat-board' : ''}${isReferenceWindowMode ? ' app--reference-window' : ''}${isCombatPanelMode ? ' app--combat-panel' : ''}`}>
+      {isCombatBoardMode ? (
+        <header className="app__header app__header--board">
+          <div className="brand">
+            <div className="brand__mark">BE</div>
+            <div>
+              <div className="brand__title">Beholder Eye's</div>
+              <div className="brand__subtitle">Боевой стол</div>
+            </div>
+          </div>
+          <div className="nav">
+            <button
+              className="button button--ghost"
+              onClick={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+            >
+              Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
+            </button>
+            <button
+              className="button button--ghost"
+              onClick={() => window.beholder.combatPanel.open()}
+            >
+              Окно панели
+            </button>
+            <button className="button" onClick={() => window.close()}>
+              Закрыть окно
+            </button>
+          </div>
+        </header>
+      ) : isCombatPanelMode ? (
+        <header className="app__header app__header--combat-panel">
+          <div className="brand">
+            <div className="brand__mark">BE</div>
+            <div>
+              <div className="brand__title">Beholder Eye's</div>
+              <div className="brand__subtitle">Панель боя</div>
+            </div>
+          </div>
+          <div className="nav">
+            <button
+              className="button button--ghost"
+              onClick={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+            >
+              Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
+            </button>
+            <button className="button" onClick={() => window.close()}>
+              Закрыть окно
+            </button>
+          </div>
+        </header>
+      ) : isReferenceWindowMode ? (
+        <header className="app__header app__header--reference">
+          <div className="brand">
+            <div className="brand__mark">BE</div>
+            <div>
+              <div className="brand__title">Beholder Eye's</div>
+              <div className="brand__subtitle">Справочник</div>
+            </div>
+          </div>
+          <div className="nav">
+            <button
+              className="button button--ghost"
+              onClick={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+            >
+              Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
+            </button>
+            <button className="button" onClick={() => window.close()}>
+              Закрыть окно
+            </button>
+          </div>
+        </header>
+      ) : (
+        <header className="app__header">
+          <div className="brand">
+            <div className="brand__mark">BE</div>
+            <div>
+              <div className="brand__title">Beholder Eye's</div>
+              <div className="brand__subtitle">Мастерский трекер D&D 5e</div>
+            </div>
+          </div>
+          <div className="nav">
+            <button
+              className="button button--ghost"
+              onClick={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+            >
+              Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
+            </button>
+            <SegmentedControl
+              value={activeView === 'reference' ? 'home' : activeView}
+              onChange={(value) => setView(value as ViewKey)}
+              data={[
+                { label: 'Главная', value: 'home' },
+                { label: 'Кампания', value: 'campaign' },
+                { label: 'Бой', value: 'combat' }
+              ]}
+            />
+            <button className="button button--ghost" onClick={() => setView('reference')}>
+              Справочник
+            </button>
+            <button
+              className="button button--ghost"
+              onClick={() => window.beholder.referenceWindow.open()}
+            >
+              Окно справочника
+            </button>
+            <button
+              className="button button--ghost"
+              onClick={() => window.beholder.combatPanel.open()}
+            >
+              Панель боя
+            </button>
+          </div>
+        </header>
+      )}
+
+
+      <main className="app__main">
+        {activeView === 'home' && (
+          <section className="panel panel--hero home">
+            <div>
+              <h2>Начни с боя</h2>
+              <p>Минималистичный центр управления. Всё остальное — по мере надобности.</p>
+            </div>
+            <div className="home__actions">
+              <button className="button" onClick={() => setView('combat')}>
+                Открыть бой
+              </button>
+              <button
+                className="button button--ghost"
+                onClick={() =>
+                  window.open(
+                    `${window.location.origin}${window.location.pathname}?mode=player-form`,
+                    '_blank'
+                  )
+                }
+              >
+                Форма игрока (web)
+              </button>
+              <button className="button button--ghost" onClick={() => setView('campaign')}>
+                Кампания
+              </button>
+              <button className="button button--ghost" onClick={() => setView('reference')}>
+                Справочник
+              </button>
+            </div>
+            {campaign && (
+              <div className="home__status">
+                Активная кампания: <strong>{campaign.name}</strong>
+              </div>
+            )}
+          </section>
+        )}
+        {view !== 'home' && (
+          <section className="panel panel--hero">
+            {isEntityLibraryView ? (
+              <>
+                <div className="tabs">
+                  <button
+                    className={referenceSection === 'ttg_classes' ? 'tab tab--active' : 'tab'}
+                    onClick={() => setReferenceSection('ttg_classes')}
+                  >
+                    TTG Классы
+                  </button>
+                  <button
+                    className={referenceSection === 'ttg_races' ? 'tab tab--active' : 'tab'}
+                    onClick={() => setReferenceSection('ttg_races')}
+                  >
+                    TTG Расы
+                  </button>
+                  <button
+                    className={referenceSection === 'ttg_rules' ? 'tab tab--active' : 'tab'}
+                    onClick={() => setReferenceSection('ttg_rules')}
+                  >
+                    TTG Правила
+                  </button>
+                  {(Object.keys(entityLabels) as EntityKey[]).map((key) => (
+                    <button
+                      key={key}
+                      className={referenceSection === key ? 'tab tab--active' : 'tab'}
+                      onClick={() => setReferenceSection(key)}
+                    >
+                      {entityLabels[key]}
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <h2>{`Справочник: ${entityLabels[entity]}`}</h2>
+                  <p>Единая точка материалов мастера: TTG + локальная база монстров/заклинаний/предметов.</p>
+                </div>
+                <div className="search">
+                  <input
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Поиск по имени или названию..."
+                  />
+                  <span>{isLoading ? 'Загрузка…' : `${data.total} результатов`}</span>
+                </div>
+              </>
+            ) : activeView === 'reference' ? (
+              <>
+                <div className="tabs">
+                  <button
+                    className={referenceSection === 'ttg_classes' ? 'tab tab--active' : 'tab'}
+                    onClick={() => setReferenceSection('ttg_classes')}
+                  >
+                    TTG Классы
+                  </button>
+                  <button
+                    className={referenceSection === 'ttg_races' ? 'tab tab--active' : 'tab'}
+                    onClick={() => setReferenceSection('ttg_races')}
+                  >
+                    TTG Расы
+                  </button>
+                  <button
+                    className={referenceSection === 'ttg_rules' ? 'tab tab--active' : 'tab'}
+                    onClick={() => setReferenceSection('ttg_rules')}
+                  >
+                    TTG Правила
+                  </button>
+                  {(Object.keys(entityLabels) as EntityKey[]).map((key) => (
+                    <button
+                      key={key}
+                      className={referenceSection === key ? 'tab tab--active' : 'tab'}
+                      onClick={() => setReferenceSection(key)}
+                    >
+                      {entityLabels[key]}
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <h2>Справочник материалов</h2>
+                  <p>Компактные данные TTG Club для быстрых подсказок мастеру.</p>
+                </div>
+                <div className="search">
+                  <input
+                    value={ttgQuery}
+                    onChange={(event) => setTtgQuery(event.target.value)}
+                    placeholder="Поиск по названию, источнику или slug..."
+                  />
+                  <span>{ttgLoading ? 'Загрузка…' : `${ttgItems.length} результатов`}</span>
+                </div>
+                {ttgKind === 'rules' && (
+                  <>
+                    {pinnedRules.length > 0 && (
+                      <div className="detail__section">
+                        <div className="detail__label">Избранные правила</div>
+                        <div className="chips">
+                          {pinnedRules.map((rule) => {
+                            const slug = rule.slug ?? `${rule.name_ru ?? rule.name_en ?? 'rule'}`
+                            const title = rule.name_ru ?? rule.name_en ?? slug
+                            return (
+                              <div key={slug} className="chip chip--accent chip--dismissible">
+                                <button
+                                  type="button"
+                                  className="chip__label"
+                                  onClick={() => {
+                                    setTtgSelectedSlug(rule.slug ?? null)
+                                    openReferenceTtgModal(rule)
+                                  }}
+                                >
+                                  {title}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="chip__close"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    toggleRulePin(slug)
+                                  }}
+                                  title="Убрать из избранного"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+                {ttgKind === 'rules' && (
+                  <div className="form form--grid ttg-rules-filters">
+                    <select
+                      value={ttgRuleTypeFilter}
+                      onChange={(event) => setTtgRuleTypeFilter(event.target.value)}
+                    >
+                      <option value="all">Все категории</option>
+                      {ttgRuleTypeOptions.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={ttgRuleSourceFilter}
+                      onChange={(event) => setTtgRuleSourceFilter(event.target.value)}
+                    >
+                      <option value="all">Все источники</option>
+                      {ttgRuleSourceOptions.map((source) => (
+                        <option key={source} value={source}>
+                          {source}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="button button--ghost"
+                      onClick={() => {
+                        setTtgRuleTypeFilter('all')
+                        setTtgRuleSourceFilter('all')
+                      }}
+                    >
+                      Сбросить
+                    </button>
+                  </div>
+                )}
+                {ttgError && <div className="error">{ttgError}</div>}
+              </>
+            ) : (
+              <>
+                <div>
+                  <h2>Кампания</h2>
+                  <p>Создай кампанию, добавь персонажей и управляй подготовкой.</p>
+                </div>
+                {!campaign && (
+                  <div className="form">
+                    <input
+                      value={campaignName}
+                      onChange={(event) => setCampaignName(event.target.value)}
+                      placeholder="Название кампании"
+                    />
+                    <button className="button" onClick={handleCreateCampaign}>
+                      Создать кампанию
+                    </button>
+                  </div>
+                )}
+                {campaign && (
+                  <>
+                    <div className="campaign-card">
+                      <div className="campaign-card__title">{campaign.name}</div>
+                      <div className="campaign-card__meta">ID: {campaign.id}</div>
+                    </div>
+                    <div className="form">
+                      <button className="button button--ghost" onClick={handleImportCharacterFromFile}>
+                        Импорт персонажа (JSON)
+                      </button>
+                      <button
+                        className="button button--ghost"
+                        onClick={openPlayerFormForOneClickImport}
+                      >
+                        Форма игрока → 1 клик импорт
+                      </button>
+                      <button
+                        className="button button--ghost"
+                        onClick={() => setFullCharacterFormOpen(true)}
+                      >
+                        Полная форма персонажа
+                      </button>
+                    </div>
+                  <details className="library-list">
+                    <summary className="library-list__summary">Создать персонажа (быстро)</summary>
+                    <div className="form form--grid">
+                      <input
+                        value={characterCreateName}
+                        onChange={(event) => setCharacterCreateName(event.target.value)}
+                        placeholder="Имя персонажа"
+                      />
+                      <input
+                        value={characterCreateRace}
+                        onChange={(event) => setCharacterCreateRace(event.target.value)}
+                        placeholder="Раса (опционально)"
+                      />
+                      <input
+                        value={characterCreateClass}
+                        onChange={(event) => setCharacterCreateClass(event.target.value)}
+                        placeholder="Класс (опционально)"
+                      />
+                      <input
+                        value={characterCreateLevel}
+                        onChange={(event) => setCharacterCreateLevel(event.target.value)}
+                        placeholder="Уровень"
+                      />
+                      <input
+                        value={characterCreateHpMax}
+                        onChange={(event) => setCharacterCreateHpMax(event.target.value)}
+                        placeholder="ХП макс"
+                      />
+                      <input
+                        value={characterCreateHpCurrent}
+                        onChange={(event) => setCharacterCreateHpCurrent(event.target.value)}
+                        placeholder="ХП тек (если пусто — = макс)"
+                      />
+                      <input
+                        value={characterCreateAc}
+                        onChange={(event) => setCharacterCreateAc(event.target.value)}
+                        placeholder="КД"
+                      />
+                      <input
+                        value={characterCreateInit}
+                        onChange={(event) => setCharacterCreateInit(event.target.value)}
+                        placeholder="Инициатива"
+                      />
+                      <button className="button" onClick={handleCreateQuickCharacter}>
+                        Создать
+                      </button>
+                    </div>
+                  </details>
+                  {campaignImportStatus && <div className="detail__text">{campaignImportStatus}</div>}
+                  <section className="detail__section campaign-character-manager">
+                    <h3>Учёт персонажа</h3>
+                    {characters.length === 0 && <div className="empty">Сначала добавь персонажа в кампанию</div>}
+                    {characters.length > 0 && (
+                      <>
+                        <div className="form">
+                          <select
+                            value={selectedCharacterId ?? ''}
+                            onChange={(event) =>
+                              setSelectedCharacterId(event.target.value ? Number(event.target.value) : null)
+                            }
+                          >
+                            {characters.map((char) => (
+                              <option key={char.id} value={char.id}>
+                                {char.name}
+                              </option>
+                            ))}
+                          </select>
+                          <button className="button button--ghost" onClick={() => void refreshSelectedCharacter()}>
+                            Обновить
+                          </button>
+                        </div>
+                        {selectedCharacter && selectedCharacterData && (
+                          <div className="campaign-character-grid">
+                            <div className="library-list campaign-character-card">
+                              <div className="library-list__summary">База персонажа</div>
+                              <div className="form form--grid">
+                                <input
+                                  value={editCharacter.name}
+                                  onChange={(event) =>
+                                    setEditCharacter((prev) => ({ ...prev, name: event.target.value }))
+                                  }
+                                  placeholder="Имя"
+                                />
+                                <input
+                                  value={editCharacter.race}
+                                  onChange={(event) =>
+                                    setEditCharacter((prev) => ({ ...prev, race: event.target.value }))
+                                  }
+                                  placeholder="Раса"
+                                />
+                                <input
+                                  value={editCharacter.class}
+                                  onChange={(event) =>
+                                    setEditCharacter((prev) => ({ ...prev, class: event.target.value }))
+                                  }
+                                  placeholder="Класс"
+                                />
+                                <input
+                                  value={editCharacter.level}
+                                  onChange={(event) =>
+                                    setEditCharacter((prev) => ({ ...prev, level: event.target.value }))
+                                  }
+                                  placeholder="Уровень"
+                                />
+                                <button className="button" onClick={() => void handleUpdateCharacterBase()}>
+                                  Сохранить базу
+                                </button>
+                              </div>
+                            </div>
+                            <div className="library-list campaign-character-card">
+                              <div className="library-list__summary">Валюта</div>
+                              <div className="campaign-currency-grid">
+                                {(
+                                  [
+                                    ['cp', 'Медь'],
+                                    ['sp', 'Серебро'],
+                                    ['ep', 'Электрум'],
+                                    ['gp', 'Золото'],
+                                    ['pp', 'Платина']
+                                  ] as Array<[keyof CharacterData['currency'], string]>
+                                ).map(([key, label]) => (
+                                  <div key={key} className="campaign-currency-row">
+                                    <span>{label}</span>
+                                    <div className="campaign-currency-controls">
+                                      <button
+                                        className="chip"
+                                        onClick={() => void handleAdjustCurrency(key, -1)}
+                                      >
+                                        -1
+                                      </button>
+                                      <input
+                                        type="number"
+                                        min={0}
+                                        defaultValue={selectedCharacterData.currency[key]}
+                                        key={`currency-${selectedCharacter.id}-${key}-${selectedCharacterData.currency[key]}`}
+                                        onBlur={(event) =>
+                                          void handleSetCurrency(key, Number(event.target.value))
+                                        }
+                                      />
+                                      <button
+                                        className="chip"
+                                        onClick={() => void handleAdjustCurrency(key, 1)}
+                                      >
+                                        +1
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="library-list campaign-character-card">
+                              <div className="library-list__summary">Инвентарь</div>
+                              <div className="form">
+                                <input
+                                  value={newInventoryItem.name}
+                                  onChange={(event) =>
+                                    setNewInventoryItem((prev) => ({ ...prev, name: event.target.value }))
+                                  }
+                                  placeholder="Название предмета"
+                                />
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={newInventoryItem.qty}
+                                  onChange={(event) =>
+                                    setNewInventoryItem((prev) => ({ ...prev, qty: event.target.value }))
+                                  }
+                                  placeholder="Кол-во"
+                                />
+                                <button className="button" onClick={() => void handleAddInventory()}>
+                                  Добавить
+                                </button>
+                              </div>
+                              <div className="campaign-library-adders">
+                                <div className="search">
+                                  <input
+                                    value={itemQuery}
+                                    onChange={(event) => setItemQuery(event.target.value)}
+                                    placeholder="Поиск предмета из справочника"
+                                  />
+                                  <span>
+                                    {itemQuery.trim()
+                                      ? `${itemResults.length} найдено`
+                                      : 'Введи название предмета'}
+                                  </span>
+                                </div>
+                                {itemResults.length > 0 && (
+                                  <div className="search-results">
+                                    {itemResults.map((item) => (
+                                      <button
+                                        key={`inv-item-${item.id}`}
+                                        className="search-result"
+                                        onClick={() => void handleAddInventoryFromLibrary('items', item.id)}
+                                      >
+                                        {item.name_ru ?? item.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="search">
+                                  <input
+                                    value={artifactQuery}
+                                    onChange={(event) => setArtifactQuery(event.target.value)}
+                                    placeholder="Поиск артефакта из справочника"
+                                  />
+                                  <span>
+                                    {artifactQuery.trim()
+                                      ? `${artifactResults.length} найдено`
+                                      : 'Введи название артефакта'}
+                                  </span>
+                                </div>
+                                {artifactResults.length > 0 && (
+                                  <div className="search-results">
+                                    {artifactResults.map((artifact) => (
+                                      <button
+                                        key={`inv-art-${artifact.id}`}
+                                        className="search-result"
+                                        onClick={() => void handleAddInventoryFromLibrary('artifacts', artifact.id)}
+                                      >
+                                        {artifact.name_ru ?? artifact.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              {selectedCharacterData.inventory.length === 0 && (
+                                <div className="empty">Инвентарь пуст</div>
+                              )}
+                              {selectedCharacterData.inventory.length > 0 && (
+                                <div className="campaign-inventory-list">
+                                  <div className="campaign-inventory-toolbar">
+                                    <div className="campaign-inventory-filters">
+                                      {[
+                                        ['all', 'Все'],
+                                        ['consumables', 'Расходники'],
+                                        ['weapons', 'Оружие'],
+                                        ['armor', 'Броня'],
+                                        ['artifacts', 'Артефакты']
+                                      ].map(([key, label]) => (
+                                        <button
+                                          key={key}
+                                          className={inventoryFilter === key ? 'chip chip--accent' : 'chip'}
+                                          onClick={() =>
+                                            setInventoryFilter(
+                                              key as 'all' | 'consumables' | 'weapons' | 'armor' | 'artifacts'
+                                            )
+                                          }
+                                        >
+                                          {label}
+                                        </button>
+                                      ))}
+                                    </div>
+                                    <div className="campaign-inventory-sort-row">
+                                      <select
+                                        value={inventorySort}
+                                        onChange={(event) =>
+                                          setInventorySort(event.target.value as 'name' | 'qty')
+                                        }
+                                      >
+                                        <option value="name">Сортировка: по имени</option>
+                                        <option value="qty">Сортировка: по количеству</option>
+                                      </select>
+                                      <button
+                                        className="chip"
+                                        onClick={() =>
+                                          setInventorySortDirection((prev) =>
+                                            prev === 'asc' ? 'desc' : 'asc'
+                                          )
+                                        }
+                                      >
+                                        {inventorySortDirection === 'asc' ? '↑ По возрастанию' : '↓ По убыванию'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                  {visibleInventory.length === 0 && (
+                                    <div className="empty">Нет предметов по выбранному фильтру</div>
+                                  )}
+                                  {visibleInventory.map(({ entry, index }) => (
+                                    <div
+                                      key={`inv-${selectedCharacter.id}-${index}-${entry.name}-${entry.qty}`}
+                                      className="campaign-inventory-row"
+                                    >
+                                      <input
+                                        defaultValue={entry.name}
+                                        onBlur={(event) =>
+                                          void handleUpdateInventoryItem(index, { name: event.target.value })
+                                        }
+                                      />
+                                      <div className="campaign-inventory-qty">
+                                        <button
+                                          className="chip"
+                                          onClick={() => void handleUpdateInventoryItem(index, { qty: entry.qty - 1 })}
+                                        >
+                                          -1
+                                        </button>
+                                        <input
+                                          type="number"
+                                          min={1}
+                                          defaultValue={entry.qty}
+                                          onBlur={(event) =>
+                                            void handleUpdateInventoryItem(index, { qty: Number(event.target.value) })
+                                          }
+                                        />
+                                        <button
+                                          className="chip"
+                                          onClick={() => void handleUpdateInventoryItem(index, { qty: entry.qty + 1 })}
+                                        >
+                                          +1
+                                        </button>
+                                      </div>
+                                      <input
+                                        defaultValue={entry.notes ?? ''}
+                                        placeholder="Заметка"
+                                        onBlur={(event) =>
+                                          void handleUpdateInventoryItem(index, { notes: event.target.value })
+                                        }
+                                      />
+                                      <button
+                                        className="chip chip--warn"
+                                        onClick={() => void handleRemoveInventory(index)}
+                                      >
+                                        Удалить
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </section>
+                </>
+              )}
+            </>
+            )}
+          </section>
+        )}
+        {isEntityLibraryView && (
+          <>
+            <section className="panel panel--list">
+              <details className="library-list">
+                <summary className="library-list__summary">
+                  Список: {entityLabels[entity]}
+                </summary>
+                {error && <div className="error">{error}</div>}
+                {!error && isLoading && <div className="empty">Загрузка…</div>}
+                {!error && !isLoading && data.items.length === 0 && (
+                  <div className="empty">Ничего не найдено</div>
+                )}
+                {!error && !isLoading && data.items.length > 0 && (
+                  <div className="list">
+                    {data.items.map((item) => (
+                        <article
+                          key={item.id}
+                          className={
+                            item.id === selectedId ? 'list__item list__item--active' : 'list__item'
+                          }
+                          onClick={() => {
+                            if (activeView === 'reference' && isReferenceEntitySection) {
+                              void openReferenceEntityModal(item)
+                              return
+                            }
+                            setSelectedId(item.id)
+                          }}
+                        >
+                        <div>
+                          <div className="list__title">{getDisplayName(item)}</div>
+                          {getSubtitle(item) && (
+                            <div className="list__subtitle">{getSubtitle(item)}</div>
+                          )}
+                        </div>
+                        <div className="list__meta">
+                          {getListMeta(entity, item).map((meta) => (
+                            <span key={meta}>{meta}</span>
+                          ))}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </details>
+            </section>
+
+            <section className="panel panel--detail">
+              <div className="detail__header">
+                <h2>{getDetailTitle(detail)}</h2>
+                {detail?.source && <span className="detail__tag">{detail.source}</span>}
+              </div>
+              {activeView === 'reference' ? (
+                <div className="detail__section">
+                  <div className="detail__text">
+                    В режиме справочника карточка открывается в модальном окне по клику на элемент списка.
+                  </div>
+                </div>
+              ) : (
+                <>
+              {isDetailLoading && <div className="empty">Загрузка…</div>}
+              {!isDetailLoading && !detail && <div className="empty">Выберите запись</div>}
+              {!isDetailLoading && detail && (
+                <div className="detail__content">
+                  {entity === 'monsters' && monster && (
+                    <>
+                      <div className="statblock">
+                        <div className="statblock__row">
+                          <div className="detail__label">Тип</div>
+                          <div>
+                            {[monster.size, monster.type, monster.alignment]
+                              .filter(Boolean)
+                              .join(' · ') || '—'}
+                          </div>
+                        </div>
+                        <div className="statblock__row">
+                          <div className="detail__label">Класс доспеха</div>
+                          <div>{toText(monster.ac)}</div>
+                        </div>
+                        <div className="statblock__row">
+                          <div className="detail__label">Хиты</div>
+                          <div>{toText(monster.hp)}</div>
+                        </div>
+                        <div className="statblock__row">
+                          <div className="detail__label">Скорость</div>
+                          <div>{toText(monster.speed)}</div>
+                        </div>
+                        <div className="statblock__row">
+                          <div className="detail__label">Спасброски</div>
+                          <div>{formatMonsterSaves(monster) ?? '—'}</div>
+                        </div>
+                        <div className="statblock__row">
+                          <div className="detail__label">Сенсоры</div>
+                          <div>{toText(monster.senses)}</div>
+                        </div>
+                        <div className="statblock__row">
+                          <div className="detail__label">Языки</div>
+                          <div>{toText(monster.languages)}</div>
+                        </div>
+                        <div className="statblock__row">
+                          <div className="detail__label">КС</div>
+                          <div>{toText(monster.cr)}</div>
+                        </div>
+                      </div>
+                      <div className="detail__grid detail__grid--stats">
+                        {abilityKeys.map((key) => {
+                          const score = typeof monster?.[key] === 'number' ? monster[key] : null
+                          return (
+                            <div key={key} className="stat-card">
+                              <div className="detail__label">{abilityLabels[key]}</div>
+                              <div className="stat-card__row">
+                                <strong>{toText(score)}</strong>
+                                <span className="stat-card__auto">
+                                  {formatMod(scoreToMod(score))}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      {monsterDescription && (
+                        <section className="detail__section">
+                          <h3>Описание</h3>
+                          <div className="detail__text">{renderFormattedText(monsterDescription)}</div>
+                        </section>
+                      )}
+                      {traits.length > 0 && (
+                        <details className="statblock-section">
+                          <summary>Черты</summary>
+                          {renderMonsterEntries(traits)}
+                        </details>
+                      )}
+                      {actions.length > 0 && (
+                        <details className="statblock-section" open>
+                          <summary>Действия</summary>
+                          {renderMonsterEntries(actions)}
+                        </details>
+                      )}
+                      {reactions.length > 0 && (
+                        <details className="statblock-section">
+                          <summary>Реакции</summary>
+                          {renderMonsterEntries(reactions)}
+                        </details>
+                      )}
+                      {legendaryList.length > 0 && (
+                        <details className="statblock-section">
+                          <summary>
+                            Легендарные действия <span className="statblock-badge">ЛЕГЕНДАРНЫЕ</span>
+                          </summary>
+                          {renderMonsterEntries(legendaryList)}
+                        </details>
+                      )}
+                      {lairList.length > 0 && (
+                        <details className="statblock-section">
+                          <summary>
+                            Действия логова <span className="statblock-badge statblock-badge--lair">ЛОГОВО</span>
+                          </summary>
+                          {renderMonsterEntries(lairList)}
+                        </details>
+                      )}
+                    </>
+                  )}
+                  {entity === 'spells' && spellData && (
+                    <div className="detail__grid">
+                      <div>
+                        <div className="detail__label">Уровень</div>
+                        <div>{getLocaleValue(spellData, 'level') ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Школа</div>
+                        <div>{getLocaleValue(spellData, 'school') ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Время</div>
+                        <div>{getLocaleValue(spellData, 'castingTime') ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Дистанция</div>
+                        <div>{getLocaleValue(spellData, 'range') ?? '—'}</div>
+                      </div>
+                    </div>
+                  )}
+                  {entity === 'items' && itemData && (
+                    <div className="detail__grid">
+                      <div>
+                        <div className="detail__label">Тип</div>
+                        <div>{getLocaleValue(itemData, 'type') ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Редкость</div>
+                        <div>{rarityLabel(itemData?.en?.rarity ?? itemData?.ru?.rarity)}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">КД</div>
+                        <div>{itemData?.en?.ac ?? itemData?.ru?.ac ?? '—'}</div>
+                      </div>
+                    </div>
+                  )}
+                  {entity === 'artifacts' && artifactData && (
+                    <div className="detail__grid">
+                      <div>
+                        <div className="detail__label">Тип</div>
+                        <div>{getLocaleValue(artifactData, 'type') ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Редкость</div>
+                        <div>{rarityLabel(artifactData?.en?.rarity ?? artifactData?.ru?.rarity)}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Настройка</div>
+                        <div>{artifactData?.en?.attunement ?? artifactData?.ru?.attunement ?? '—'}</div>
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <div className="detail__label">Описание</div>
+                    <div
+                      className="detail__text"
+                      dangerouslySetInnerHTML={{
+                        __html: getDescriptionHtml(detail.data) || 'Описание отсутствует'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+                </>
+              )}
+            </section>
+          </>
+        )}
+        {activeView === 'reference' && !isReferenceEntitySection && (
+          <>
+            <section className="panel panel--list">
+              <details className="library-list" open>
+                <summary className="library-list__summary">
+                  Список:{' '}
+                  {ttgKind === 'classes' ? 'Классы' : ttgKind === 'races' ? 'Расы' : 'Правила'}
+                </summary>
+                {ttgError && <div className="error">{ttgError}</div>}
+                {!ttgError && ttgLoading && <div className="empty">Загрузка…</div>}
+                {!ttgError && !ttgLoading && ttgItems.length === 0 && (
+                  <div className="empty">Ничего не найдено</div>
+                )}
+                {!ttgError && !ttgLoading && ttgItems.length > 0 && (
+                  <div className="list">
+                    {ttgItems.map((entry) => {
+                      const slug = entry.slug ?? `${entry.name_ru ?? entry.name_en ?? 'entry'}`
+                      const title = entry.name_ru ?? entry.name_en ?? slug
+                      const subtitle = entry.name_ru && entry.name_en ? entry.name_en : null
+                      const ruleType = 'type' in entry ? entry.type : null
+                      const meta = [ruleType, entry.source_short, entry.source_name]
+                        .filter(Boolean)
+                        .join(' · ')
+                      return (
+                        <article
+                          key={slug}
+                          className={
+                            slug === (ttgSelected?.slug ?? null)
+                              ? 'list__item list__item--active'
+                              : 'list__item'
+                          }
+                          onClick={() => {
+                            setTtgSelectedSlug(entry.slug ?? null)
+                            openReferenceTtgModal(entry)
+                          }}
+                        >
+                          <div>
+                            <div className="list__title">{title}</div>
+                            {subtitle && <div className="list__subtitle">{subtitle}</div>}
+                          </div>
+                          <div className="list__meta">
+                            <span>{meta || '—'}</span>
+                          </div>
+                        </article>
+                      )
+                    })}
+                  </div>
+                )}
+              </details>
+            </section>
+
+            <section className="panel panel--detail">
+              <div className="detail__header">
+                <h2>Просмотр карточки</h2>
+              </div>
+              <div className="detail__section">
+                <div className="detail__text">
+                  Кликни на карточку в списке слева — полная информация откроется в модальном окне.
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+        {activeView === 'combat' && (
+          <>
+            <section className="panel panel--list">
+              <div className="detail__header">
+                <h2>Сессия боя</h2>
+                <span className="detail__tag">
+                  {campaign ? `Кампания: ${campaign.name}` : 'Нет кампании'}
+                </span>
+              </div>
+              <div className="detail__stack">
+                <div className="form">
+                  <input
+                    value={combatName}
+                    onChange={(event) => setCombatName(event.target.value)}
+                    placeholder="Название сессии"
+                  />
+                  <button className="button" onClick={saveCombatSession}>
+                    Сохранить
+                  </button>
+                  <button className="button button--ghost" onClick={resetCombat}>
+                    Новая
+                  </button>
+                </div>
+                <div className="combat-toolbar">
+                  <button className="button button--ghost" onClick={importCombatSession}>
+                    Импорт
+                  </button>
+                  <button
+                    className="button button--ghost"
+                    onClick={exportCombatSession}
+                    disabled={!selectedCombatId}
+                  >
+                    Экспорт
+                  </button>
+                  {!isCombatBoardMode && (
+                    <button
+                      className="button"
+                      onClick={() => window.beholder.combatBoard.open()}
+                    >
+                      Боевой стол
+                    </button>
+                  )}
+                </div>
+              </div>
+              {combatSessions.length > 0 && (
+                <div className="detail__section">
+                  <div className="detail__label">Сохранённые сессии</div>
+                  <div className="search-results">
+                    {combatSessions.map((session) => (
+                      <button
+                        key={session.id}
+                        className={
+                          session.id === selectedCombatId
+                            ? 'search-result combat-session combat-session--active'
+                            : 'search-result combat-session'
+                        }
+                        onClick={() => loadCombatSession(session.id)}
+                      >
+                        {session.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <details className="library-list">
+                <summary className="library-list__summary">Добавить персонажа</summary>
+                {characters.length === 0 && <div className="empty">Персонажей пока нет</div>}
+                {characters.length > 0 && (
+                  <div className="form">
+                    <select
+                      value={selectedCharacterId ?? ''}
+                      onChange={(event) =>
+                        setSelectedCharacterId(event.target.value ? Number(event.target.value) : null)
+                      }
+                    >
+                      {characters.map((char) => (
+                        <option key={char.id} value={char.id}>
+                          {char.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button className="button" onClick={addCharacterToCombat}>
+                      Добавить
+                    </button>
+                  </div>
+                )}
+              </details>
+              <details className="library-list">
+                <summary className="library-list__summary">Добавить монстра</summary>
+                <div className="search">
+                  <input
+                    value={combatQuery}
+                    onChange={(event) => setCombatQuery(event.target.value)}
+                    placeholder="Поиск монстра..."
+                  />
+                  <span>
+                    {combatError
+                      ? 'Ошибка поиска'
+                      : combatQuery.trim()
+                        ? `${combatResults.length} результатов`
+                        : 'Введите имя'}
+                  </span>
+                </div>
+                {combatError && <div className="error">{combatError}</div>}
+                {combatResults.length > 0 && (
+                  <div className="search-results">
+                    {combatResults.map((monster) => (
+                      <button
+                        key={monster.id}
+                        className="search-result"
+                        onClick={() => addMonsterToCombat(monster)}
+                      >
+                        {monster.name_ru ?? monster.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </details>
+              <details className="library-list">
+                <summary className="library-list__summary">Кастомный монстр (D&D 5e)</summary>
+                <div className="form">
+                  <button className="button" onClick={openCreateCustomMonsterModal} disabled={!campaign}>
+                    Открыть конструктор
+                  </button>
+                </div>
+                <div className="search">
+                  <input
+                    value={customMonsterQuery}
+                    onChange={(event) => setCustomMonsterQuery(event.target.value)}
+                    placeholder="Поиск кастомного монстра"
+                  />
+                  <span>{customMonsterRows.length} в списке</span>
+                </div>
+                {customMonsterError && <div className="error">{customMonsterError}</div>}
+                {customMonsterRows.length > 0 && (
+                  <div className="search-results">
+                    {customMonsterRows.map((monster) => (
+                      <div key={monster.id} className="search-result search-result--split">
+                        <div>
+                          <strong>{monster.name}</strong>
+                          <div className="list__subtitle">CR: {monster.cr ?? '—'}</div>
+                        </div>
+                        <div className="search-result__actions">
+                          <button className="chip" onClick={() => addCustomMonsterToCombat(monster.id)}>
+                            В бой
+                          </button>
+                          <button className="chip" onClick={() => editCustomMonster(monster.id)}>
+                            Править
+                          </button>
+                          <button className="chip chip--warn" onClick={() => deleteCustomMonster(monster.id)}>
+                            Удалить
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </details>
+              <div className="detail__section combat-participants-section">
+                <div className="detail__label">Участники</div>
+                <div className="combat-filters">
+                  <div className="combat-filters__chips">
+                    {[
+                      { key: 'all', label: 'Все' },
+                      { key: 'alive', label: 'Живые' },
+                      { key: 'down', label: 'Без ХП' },
+                      { key: 'concentration', label: 'Концентрация' },
+                      { key: 'status', label: 'Статусы' }
+                    ].map((item) => (
+                      <button
+                        key={item.key}
+                        className={
+                          combatFilter === item.key
+                            ? 'dice-chip dice-chip--active'
+                            : 'dice-chip'
+                        }
+                        onClick={() => setCombatFilter(item.key as any)}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    className="combat-filters__search"
+                    value={combatSearch}
+                    onChange={(event) => setCombatSearch(event.target.value)}
+                    placeholder="Поиск по участникам"
+                  />
+                </div>
+                {orderedParticipants.length === 0 && (
+                  <div className="empty">Добавь участников</div>
+                )}
+                {orderedParticipants.length > 0 && visibleParticipants.length === 0 && (
+                  <div className="empty">Нет участников по фильтру</div>
+                )}
+                {visibleParticipants.length > 0 &&
+                  (isCombatBoardMode ? (
+                    <div className="combat-board-wrap">
+                      {targetingSourceId && (
+                        <div className="combat-target-hint">
+                          Выбери цель: кликни по карточке цели. Повторный клик отменит выбор.
+                        </div>
+                      )}
+                      <div
+                        className="combat-board"
+                        ref={combatBoardRef}
+                        onScroll={() => updateCombatLinks()}
+                        onPointerMove={(event) => {
+                          if (!targetingSourceId) return
+                          if (linkDragStart && !linkDragActive) {
+                            const dx = event.clientX - linkDragStart.x
+                            const dy = event.clientY - linkDragStart.y
+                            if (Math.hypot(dx, dy) > 6) {
+                              setLinkDragActive(true)
+                            }
+                          }
+                          if (!linkDragActive) return
+                          const board = combatBoardRef.current
+                          if (!board) return
+                          const rect = board.getBoundingClientRect()
+                          setTargetingCursor({
+                            x: event.clientX - rect.left,
+                            y: event.clientY - rect.top
+                          })
+                        }}
+                        onPointerLeave={() => {
+                          if (targetingSourceId) setTargetingCursor(null)
+                        }}
+                        onPointerUp={(event) => {
+                          if (!linkDragSourceId) return
+                          const sourceId = linkDragSourceId
+                          if (linkDragActive) {
+                            const targetEl = (event.target as HTMLElement | null)?.closest('.combat-card') as
+                              | HTMLElement
+                              | null
+                            const targetId = targetEl?.dataset?.id ?? null
+                            if (targetId && targetId !== sourceId) {
+                              updateParticipant(sourceId, { targetId })
+                            }
+                            setTargetingSourceId(null)
+                            setTargetingCursor(null)
+                          }
+                          setLinkDragSourceId(null)
+                          setLinkDragStart(null)
+                          setLinkDragActive(false)
+                        }}
+                      >
+                        <svg className="combat-links" aria-hidden="true">
+                          <defs>
+                            <marker
+                              id="combat-arrow"
+                              markerWidth="10"
+                              markerHeight="10"
+                              refX="8"
+                              refY="3"
+                              orient="auto"
+                            >
+                              <path d="M0,0 L8,3 L0,6 Z" />
+                            </marker>
+                          </defs>
+                          {combatLinks.map((link) => (
+                            <path
+                              key={link.id}
+                              className="combat-link"
+                              d={link.d}
+                              markerEnd="url(#combat-arrow)"
+                            />
+                          ))}
+                          {targetingSourceId && targetingCursor && (() => {
+                            const sourceCard = combatCardRefs.current.get(targetingSourceId)
+                            const board = combatBoardRef.current
+                            if (!sourceCard || !board) return null
+                            const boardRect = board.getBoundingClientRect()
+                            const sourceRect = sourceCard.getBoundingClientRect()
+                            const startX = sourceRect.left - boardRect.left + sourceRect.width
+                            const startY = sourceRect.top - boardRect.top + sourceRect.height / 2
+                            const endX = targetingCursor.x
+                            const endY = targetingCursor.y
+                            const midX = startX + (endX - startX) * 0.5
+                            const d = `M ${startX} ${startY} C ${midX} ${startY} ${midX} ${endY} ${endX} ${endY}`
+                            return (
+                              <path
+                                className="combat-link combat-link--live"
+                                d={d}
+                                stroke="rgba(120, 149, 255, 0.9)"
+                                strokeWidth={2.5}
+                                fill="none"
+                                markerEnd="url(#combat-arrow)"
+                              />
+                            )
+                          })()}
+                        </svg>
+                        <div className="combat-cards">
+                          {visibleParticipants.map((participant, index) => {
+                            const target = getParticipantById(participant.targetId)
+                            const isActive = participant.id === orderedParticipants[currentTurn]?.id
+                            const isTargeting = targetingSourceId === participant.id
+                            const isSelectable = Boolean(
+                              targetingSourceId && targetingSourceId !== participant.id
+                            )
+                            const baseX = 20 + (index % 4) * 260
+                            const baseY = 20 + Math.floor(index / 4) * 230
+                            const position = participant.position ?? { x: baseX, y: baseY }
+                            return (
+                          <div
+                            key={participant.id}
+                            ref={(el) => {
+                              if (el) {
+                                combatCardRefs.current.set(participant.id, el)
+                              } else {
+                                combatCardRefs.current.delete(participant.id)
+                              }
+                            }}
+                            data-id={participant.id}
+                            className={[
+                              'combat-card',
+                              isActive ? 'combat-card--active' : '',
+                              isTargeting ? 'combat-card--source' : '',
+                              isSelectable ? 'combat-card--selectable' : '',
+                              impactFlash?.id === participant.id
+                                ? impactFlash.tone === 'hit'
+                                  ? 'combat-card--hit'
+                                  : 'combat-card--miss'
+                                : ''
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
+                            style={{
+                              left: position.x,
+                              top: position.y,
+                              width: participant.size?.width ?? defaultCardSize.width,
+                              height: participant.size?.height ?? defaultCardSize.height
+                            }}
+                            onContextMenu={(event) => event.preventDefault()}
+                            onPointerDown={(event) => {
+                              if (event.button === 2) {
+                                event.preventDefault()
+                                const board = combatBoardRef.current
+                                if (!board) return
+                                setLinkDragSourceId(participant.id)
+                                setLinkDragStart({ x: event.clientX, y: event.clientY })
+                                setLinkDragActive(true)
+                                setTargetingSourceId(participant.id)
+                                const rect = board.getBoundingClientRect()
+                                setTargetingCursor({
+                                  x: event.clientX - rect.left,
+                                  y: event.clientY - rect.top
+                                })
+                                event.currentTarget.setPointerCapture(event.pointerId)
+                                return
+                              }
+                              if (event.button !== 0) return
+                              if (targetingSourceId) return
+                              const targetEl = event.target as HTMLElement
+                              if (targetEl.closest('input, button, textarea, select')) return
+                              const board = combatBoardRef.current
+                              if (!board) return
+                              const rect = board.getBoundingClientRect()
+                              const timerId = window.setTimeout(() => {
+                                setLinkDragSourceId(participant.id)
+                                setLinkDragStart({ x: event.clientX, y: event.clientY })
+                                setLinkDragActive(true)
+                                setTargetingSourceId(participant.id)
+                                setTargetingCursor({
+                                  x: event.clientX - rect.left,
+                                  y: event.clientY - rect.top
+                                })
+                                const press = cardPressRef.current
+                                if (press) press.linkActive = true
+                              }, 240)
+                              cardPressRef.current = {
+                                id: participant.id,
+                                pointerId: event.pointerId,
+                                startX: event.clientX,
+                                startY: event.clientY,
+                                timerId,
+                                linkActive: false
+                              }
+                            }}
+                            onDoubleClick={(event) => {
+                              event.stopPropagation()
+                              setCombatDetailId(participant.id)
+                            }}
+                                onClick={() => {
+                                  if (!targetingSourceId) return
+                                  if (targetingSourceId === participant.id) {
+                                    setTargetingSourceId(null)
+                                    setTargetingCursor(null)
+                                    setLinkDragSourceId(null)
+                                    setLinkDragStart(null)
+                                    setLinkDragActive(false)
+                                    return
+                                  }
+                                  updateParticipant(targetingSourceId, { targetId: participant.id })
+                                  setTargetingSourceId(null)
+                                  setTargetingCursor(null)
+                                  setLinkDragSourceId(null)
+                                  setLinkDragStart(null)
+                                  setLinkDragActive(false)
+                                }}
+                              >
+                                <div className="combat-card__header">
+                                  <div className="combat-card__title">
+                                    <input
+                                      className="combat-card__name"
+                                      value={participant.name}
+                                      onClick={(event) => event.stopPropagation()}
+                                      onChange={(event) =>
+                                        updateParticipant(participant.id, {
+                                          name: event.target.value
+                                        })
+                                      }
+                                      onBlur={(event) => {
+                                        const nextName = event.target.value.trim()
+                                        if (!nextName) {
+                                          updateParticipant(participant.id, {
+                                            name:
+                                              participant.kind === 'character'
+                                                ? 'Персонаж'
+                                                : 'Монстр'
+                                          })
+                                        } else if (nextName !== participant.name) {
+                                          updateParticipant(participant.id, { name: nextName })
+                                        }
+                                      }}
+                                    />
+                                    <span className="list__subtitle">
+                                      {participant.kind === 'character' ? 'персонаж' : 'монстр'}
+                                    </span>
+                                  </div>
+                              <div className="combat-card__quick">
+                                <button
+                                  className="chip"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    rollInitiative(participant)
+                                  }}
+                                >
+                                  Иниц
+                                </button>
+                                <button
+                                  className="chip chip--warn"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    applyDamage(participant, 5)
+                                  }}
+                                >
+                                  -5
+                                </button>
+                                    <button
+                                      className="chip"
+                                      onClick={(event) => {
+                                        event.stopPropagation()
+                                        applyHeal(participant, 5)
+                                      }}
+                                    >
+                                      +5
+                                    </button>
+                                <button
+                                  className="chip"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    removeParticipant(participant.id)
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                                </div>
+                                <div className="combat-card__stats">
+                                  <div className="combat-card__stat">
+                                    <label>ХП</label>
+                                    <input
+                                      value={participant.hpCurrent ?? ''}
+                                      onClick={(event) => event.stopPropagation()}
+                                      onChange={(event) =>
+                                        updateParticipant(participant.id, {
+                                          hpCurrent: event.target.value
+                                            ? Number(event.target.value)
+                                            : null
+                                        })
+                                      }
+                                      placeholder="тек"
+                                    />
+                                    <span>/</span>
+                                    <input
+                                      value={participant.hpMax ?? ''}
+                                      onClick={(event) => event.stopPropagation()}
+                                      onChange={(event) =>
+                                        updateParticipant(participant.id, {
+                                          hpMax: event.target.value ? Number(event.target.value) : null
+                                        })
+                                      }
+                                      placeholder="макс"
+                                    />
+                                  </div>
+                                  <div className="combat-card__stat">
+                                    <label>КД</label>
+                                    <input
+                                      value={participant.ac ?? ''}
+                                      onClick={(event) => event.stopPropagation()}
+                                      onChange={(event) =>
+                                        updateParticipant(participant.id, {
+                                          ac: event.target.value ? Number(event.target.value) : null
+                                        })
+                                      }
+                                      placeholder="AC"
+                                    />
+                                  </div>
+                                  <div className="combat-card__stat">
+                                    <label>Иниц</label>
+                                    <input
+                                      value={participant.initiative ?? ''}
+                                      onClick={(event) => event.stopPropagation()}
+                                      onChange={(event) =>
+                                        updateParticipant(participant.id, {
+                                          initiative: event.target.value
+                                            ? Number(event.target.value)
+                                            : null
+                                        })
+                                      }
+                                      placeholder="иниц"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="combat-card__target">
+                                  <span className="combat-card__target-label">
+                                    Цель: {target ? target.name : '—'}
+                                  </span>
+                                  <div className="combat-card__target-actions">
+                                    <button
+                                      className="chip"
+                                      onPointerDown={(event) => {
+                                        event.stopPropagation()
+                                        if (event.button !== 0) return
+                                        setLinkDragSourceId(participant.id)
+                                        setLinkDragStart({ x: event.clientX, y: event.clientY })
+                                        setLinkDragActive(false)
+                                        setTargetingSourceId(participant.id)
+                                        setTargetingCursor(null)
+                                        event.currentTarget.setPointerCapture(event.pointerId)
+                                      }}
+                                      onClick={(event) => {
+                                        event.stopPropagation()
+                                        setTargetingSourceId(participant.id)
+                                        setTargetingCursor(null)
+                                      }}
+                                    >
+                                      {participant.targetId ? 'Сменить' : 'Выбрать'}
+                                    </button>
+                                    {participant.targetId && (
+                                      <button
+                                        className="chip"
+                                        onClick={(event) => {
+                                          event.stopPropagation()
+                                          updateParticipant(participant.id, { targetId: null })
+                                        }}
+                                      >
+                                        Сброс
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="combat-card__basic">
+                                  <input
+                                    value={participant.attackBonus ?? ''}
+                                    onClick={(event) => event.stopPropagation()}
+                                    onChange={(event) =>
+                                      updateParticipant(participant.id, {
+                                        attackBonus: event.target.value ? Number(event.target.value) : null
+                                      })
+                                    }
+                                    placeholder="бонус атаки"
+                                  />
+                                  <input
+                                    value={participant.damageExpr}
+                                    onClick={(event) => event.stopPropagation()}
+                                    onChange={(event) =>
+                                      updateParticipant(participant.id, { damageExpr: event.target.value })
+                                    }
+                                    placeholder="урон"
+                                  />
+                                  <button
+                                    className="button button--ghost"
+                                    onClick={(event) => {
+                                      event.stopPropagation()
+                                      performAttackAgainstTarget(participant, {
+                                        name: 'Базовая атака',
+                                        text: '',
+                                        attackBonus: participant.attackBonus,
+                                        damageExpr: participant.damageExpr
+                                      })
+                                    }}
+                                  >
+                                    Атака
+                                  </button>
+                                </div>
+                                {participant.actions && participant.actions.length > 0 && (
+                                  <div className="combat-card__actions">
+                                    {participant.actions.map((action, index) => (
+                                      <button
+                                        key={`${participant.id}-card-action-${index}`}
+                                        className="chip"
+                                        onClick={(event) => {
+                                          event.stopPropagation()
+                                          performAttackAgainstTarget(participant, action)
+                                        }}
+                                        title={stripHtml(action.text || '')}
+                                      >
+                                        {action.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                                {impactFlash?.id === participant.id && impactFlash.value != null && (
+                                  <div className="combat-card__impact">
+                                    -{impactFlash.value}
+                                  </div>
+                                )}
+                                <div
+                                  className="combat-card__resize combat-card__resize--e"
+                                  onPointerDown={(event) => {
+                                    event.stopPropagation()
+                                    if (event.button !== 0) return
+                                    setResizingCard({
+                                      id: participant.id,
+                                      dir: 'e',
+                                      startX: event.clientX,
+                                      startY: event.clientY,
+                                      startWidth:
+                                        participant.size?.width ?? defaultCardSize.width,
+                                      startHeight:
+                                        participant.size?.height ?? defaultCardSize.height
+                                    })
+                                  }}
+                                />
+                                <div
+                                  className="combat-card__resize combat-card__resize--s"
+                                  onPointerDown={(event) => {
+                                    event.stopPropagation()
+                                    if (event.button !== 0) return
+                                    setResizingCard({
+                                      id: participant.id,
+                                      dir: 's',
+                                      startX: event.clientX,
+                                      startY: event.clientY,
+                                      startWidth:
+                                        participant.size?.width ?? defaultCardSize.width,
+                                      startHeight:
+                                        participant.size?.height ?? defaultCardSize.height
+                                    })
+                                  }}
+                                />
+                                <div
+                                  className="combat-card__resize combat-card__resize--se"
+                                  onPointerDown={(event) => {
+                                    event.stopPropagation()
+                                    if (event.button !== 0) return
+                                    setResizingCard({
+                                      id: participant.id,
+                                      dir: 'se',
+                                      startX: event.clientX,
+                                      startY: event.clientY,
+                                      startWidth:
+                                        participant.size?.width ?? defaultCardSize.width,
+                                      startHeight:
+                                        participant.size?.height ?? defaultCardSize.height
+                                    })
+                                  }}
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="combat-list">
+                      {visibleParticipants.map((participant) => (
+                        <details
+                          key={participant.id}
+                          className={
+                            participant.id === orderedParticipants[currentTurn]?.id
+                              ? 'combat-row combat-row--active'
+                              : 'combat-row'
+                          }
+                        >
+                          <summary className="combat-row__summary">
+                            <div className="combat-row__title">
+                              <strong>{participant.name}</strong>
+                              <span className="list__subtitle">
+                                {participant.kind === 'character' ? 'персонаж' : 'монстр'}
+                              </span>
+                            </div>
+                            <div className="combat-row__stats">
+                              <span>Иниц: {participant.initiative ?? '—'}</span>
+                              <span>
+                                ХП: {participant.hpCurrent ?? '—'}/{participant.hpMax ?? '—'}
+                              </span>
+                              <span>КД: {participant.ac ?? '—'}</span>
+                            </div>
+                            <div className="combat-row__quick">
+                              <button
+                                className="chip chip--warn"
+                                onClick={(event) => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  applyDamage(participant, 5)
+                                }}
+                              >
+                                -5
+                              </button>
+                              <button
+                                className="chip"
+                                onClick={(event) => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  applyHeal(participant, 5)
+                                }}
+                              >
+                                +5
+                              </button>
+                              <button
+                                className="chip"
+                                onClick={(event) => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  removeParticipant(participant.id)
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </summary>
+                          <div className="combat-grid">
+                            <input
+                              value={participant.name}
+                              onChange={(event) =>
+                                updateParticipant(participant.id, { name: event.target.value })
+                              }
+                              onBlur={(event) => {
+                                const nextName = event.target.value.trim()
+                                if (!nextName) {
+                                  updateParticipant(participant.id, {
+                                    name:
+                                      participant.kind === 'character' ? 'Персонаж' : 'Монстр'
+                                  })
+                                  return
+                                }
+                                if (nextName !== participant.name) {
+                                  updateParticipant(participant.id, { name: nextName })
+                                }
+                              }}
+                              placeholder="Имя в бою"
+                            />
+                            <input
+                              value={participant.hpCurrent ?? ''}
+                              onChange={(event) =>
+                                updateParticipant(participant.id, {
+                                  hpCurrent: event.target.value ? Number(event.target.value) : null
+                                })
+                              }
+                              placeholder="ХП"
+                            />
+                            <input
+                              value={participant.hpMax ?? ''}
+                              onChange={(event) =>
+                                updateParticipant(participant.id, {
+                                  hpMax: event.target.value ? Number(event.target.value) : null
+                                })
+                              }
+                              placeholder="ХП макс"
+                            />
+                            <input
+                              value={participant.ac ?? ''}
+                              onChange={(event) =>
+                                updateParticipant(participant.id, {
+                                  ac: event.target.value ? Number(event.target.value) : null
+                                })
+                              }
+                              placeholder="КД"
+                            />
+                            <input
+                              value={participant.initiative ?? ''}
+                              onChange={(event) =>
+                                updateParticipant(participant.id, {
+                                  initiative: event.target.value ? Number(event.target.value) : null
+                                })
+                              }
+                              placeholder="Иниц"
+                            />
+                            <input
+                              value={participant.attackBonus ?? ''}
+                              onChange={(event) =>
+                                updateParticipant(participant.id, {
+                                  attackBonus: event.target.value ? Number(event.target.value) : null
+                                })
+                              }
+                              placeholder="Бонус"
+                            />
+                            <input
+                              value={participant.damageExpr}
+                              onChange={(event) =>
+                                updateParticipant(participant.id, { damageExpr: event.target.value })
+                              }
+                              placeholder="Урон"
+                            />
+                            <div className="combat-buttons">
+                              <button
+                                className="button button--ghost"
+                                onClick={() => rollInitiative(participant)}
+                              >
+                                Инициатива
+                              </button>
+                              <button
+                                className="button button--ghost"
+                                onClick={() => rollAttack(participant)}
+                              >
+                                Атака
+                              </button>
+                              <button
+                                className="button button--ghost"
+                                onClick={() => rollDamage(participant)}
+                              >
+                                Урон
+                              </button>
+                              <button
+                                className="button button--ghost"
+                                onClick={() => removeParticipant(participant.id)}
+                              >
+                                Удалить
+                              </button>
+                            </div>
+                          </div>
+                          <div className="combat-saves">
+                            {abilityKeys.map((key) => (
+                              <div key={`${participant.id}-${key}`} className="combat-save">
+                                <span>{abilityLabels[key]}</span>
+                                <input
+                                  value={participant.saves[key] ?? ''}
+                                  onChange={(event) =>
+                                    updateParticipant(participant.id, {
+                                      saves: {
+                                        ...participant.saves,
+                                        [key]: event.target.value
+                                          ? Number(event.target.value)
+                                          : null
+                                      }
+                                    })
+                                  }
+                                  placeholder="мод"
+                                />
+                                <button
+                                  className="button button--ghost"
+                                  onClick={() => rollSave(participant, key)}
+                                >
+                                  d20
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                          {participant.actions && participant.actions.length > 0 && (
+                            <div className="combat-actions__list">
+                              <div className="detail__label">Действия монстра</div>
+                              {participant.actions.map((action, index) => (
+                                <div
+                                  key={`${participant.id}-action-${index}`}
+                                  className="combat-action-card"
+                                >
+                                  <div className="combat-action-card__name">{action.name}</div>
+                                  {action.text && (
+                                    <div className="combat-action-card__text">
+                                      {stripHtml(action.text)}
+                                    </div>
+                                  )}
+                                  <div className="combat-buttons">
+                                    <button
+                                      className="button button--ghost"
+                                      onClick={() => performAction(participant, action)}
+                                    >
+                                      Атака: {action.name}
+                                    </button>
+                                    <button
+                                      className="button button--ghost"
+                                      onClick={() => rollActionSaveForTarget(participant, action)}
+                                    >
+                                      Спасбросок цели
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </details>
+                      ))}
+                    </div>
+                  ))}
+</div>
+            </section>
+            <section className="panel panel--detail">
+              <div className="detail__header">
+                <h2>Ход боя</h2>
+                <span className="detail__tag">
+                  {orderedParticipants.length > 0
+                    ? `Раунд: ${currentTurn + 1}/${orderedParticipants.length}`
+                    : 'Нет участников'}
+                </span>
+              </div>
+              {isCombatBoardMode && (
+                <div className="detail__content">
+                  <div className="detail__section">
+                    <div className="detail__label">Сессия боя</div>
+                    <div className="detail__stack">
+                      <div className="form">
+                        <input
+                          value={combatName}
+                          onChange={(event) => setCombatName(event.target.value)}
+                          placeholder="Название сессии"
+                        />
+                        <button className="button" onClick={saveCombatSession}>
+                          Сохранить
+                        </button>
+                        <button className="button button--ghost" onClick={resetCombat}>
+                          Новая
+                        </button>
+                      </div>
+                      <div className="combat-toolbar">
+                        <button className="button button--ghost" onClick={importCombatSession}>
+                          Импорт
+                        </button>
+                        <button
+                          className="button button--ghost"
+                          onClick={exportCombatSession}
+                          disabled={!selectedCombatId}
+                        >
+                          Экспорт
+                        </button>
+                      </div>
+                    </div>
+                    {combatSessions.length > 0 && (
+                      <div className="detail__section">
+                        <div className="detail__label">Сохранённые сессии</div>
+                        <div className="search-results">
+                          {combatSessions.map((session) => (
+                            <button
+                              key={session.id}
+                              className={
+                                session.id === selectedCombatId
+                                  ? 'search-result combat-session combat-session--active'
+                                  : 'search-result combat-session'
+                              }
+                              onClick={() => loadCombatSession(session.id)}
+                            >
+                              {session.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <details className="library-list">
+                    <summary className="library-list__summary">Добавить персонажа</summary>
+                    {characters.length === 0 && <div className="empty">Персонажей пока нет</div>}
+                    {characters.length > 0 && (
+                      <div className="form">
+                        <select
+                          value={selectedCharacterId ?? ''}
+                          onChange={(event) =>
+                            setSelectedCharacterId(event.target.value ? Number(event.target.value) : null)
+                          }
+                        >
+                          {characters.map((char) => (
+                            <option key={char.id} value={char.id}>
+                              {char.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button className="button" onClick={addCharacterToCombat}>
+                          Добавить
+                        </button>
+                      </div>
+                    )}
+                  </details>
+                  <details className="library-list">
+                    <summary className="library-list__summary">Добавить монстра</summary>
+                    <div className="search">
+                      <input
+                        value={combatQuery}
+                        onChange={(event) => setCombatQuery(event.target.value)}
+                        placeholder="Поиск монстра..."
+                      />
+                      <span>
+                        {combatError
+                          ? 'Ошибка поиска'
+                          : combatQuery.trim()
+                            ? `${combatResults.length} результатов`
+                            : 'Введите имя'}
+                      </span>
+                    </div>
+                    {combatError && <div className="error">{combatError}</div>}
+                    {combatResults.length > 0 && (
+                      <div className="search-results">
+                        {combatResults.map((monster) => (
+                          <button
+                            key={monster.id}
+                            className="search-result"
+                            onClick={() => addMonsterToCombat(monster)}
+                          >
+                            {monster.name_ru ?? monster.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </details>
+                  <details className="library-list">
+                    <summary className="library-list__summary">Кастомный монстр (D&D 5e)</summary>
+                    <div className="form">
+                      <button className="button" onClick={openCreateCustomMonsterModal} disabled={!campaign}>
+                        Открыть конструктор
+                      </button>
+                    </div>
+                    <div className="search">
+                      <input
+                        value={customMonsterQuery}
+                        onChange={(event) => setCustomMonsterQuery(event.target.value)}
+                        placeholder="Поиск кастомного монстра"
+                      />
+                      <span>{customMonsterRows.length} в списке</span>
+                    </div>
+                    {customMonsterError && <div className="error">{customMonsterError}</div>}
+                    {customMonsterRows.length > 0 && (
+                      <div className="search-results">
+                        {customMonsterRows.map((monster) => (
+                          <div key={monster.id} className="search-result search-result--split">
+                            <div>
+                              <strong>{monster.name}</strong>
+                              <div className="list__subtitle">CR: {monster.cr ?? '—'}</div>
+                            </div>
+                            <div className="search-result__actions">
+                              <button className="chip" onClick={() => addCustomMonsterToCombat(monster.id)}>
+                                В бой
+                              </button>
+                              <button className="chip" onClick={() => editCustomMonster(monster.id)}>
+                                Править
+                              </button>
+                              <button className="chip chip--warn" onClick={() => deleteCustomMonster(monster.id)}>
+                                Удалить
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </details>
+                </div>
+              )}
+              {orderedParticipants.length > 0 && (
+                <div className="detail__content">
+                  <div className="combat-turn">
+                    <div className="combat-turn__label">Сейчас ход</div>
+                    <div className="combat-turn__name">
+                      {orderedParticipants[currentTurn]?.name}
+                    </div>
+                    <div className="combat-turn__meta">
+                      инициатива: {orderedParticipants[currentTurn]?.initiative ?? '—'} ·
+                      хп: {orderedParticipants[currentTurn]?.hpCurrent ?? '—'}/
+                      {orderedParticipants[currentTurn]?.hpMax ?? '—'} ·
+                      кд: {orderedParticipants[currentTurn]?.ac ?? '—'}
+                    </div>
+                  </div>
+                  <button className="button" onClick={nextTurn}>
+                    Следующий ход
+                  </button>
+                  {orderedParticipants[currentTurn] && (
+                    <div className="combat-actions">
+                      <div className="detail__label">Быстрые действия</div>
+                      <div className="combat-actions__row">
+                        <input
+                          value={damageValue}
+                          onChange={(event) => setDamageValue(event.target.value)}
+                          placeholder="Значение (например 8)"
+                        />
+                        <button
+                          className="button button--ghost"
+                          onClick={() =>
+                            applyDamage(
+                              orderedParticipants[currentTurn],
+                              Number(damageValue || 0)
+                            )
+                          }
+                        >
+                          Урон
+                        </button>
+                        <button
+                          className="button button--ghost"
+                          onClick={() =>
+                            applyHeal(
+                              orderedParticipants[currentTurn],
+                              Number(damageValue || 0)
+                            )
+                          }
+                        >
+                          Лечение
+                        </button>
+                      </div>
+                      <div className="detail__label">Эффекты</div>
+                      <div className="combat-actions__row">
+                        <input
+                          value={effectName}
+                          onChange={(event) => setEffectName(event.target.value)}
+                          placeholder="Название эффекта"
+                        />
+                        <input
+                          value={effectRounds}
+                          onChange={(event) => setEffectRounds(event.target.value)}
+                          placeholder="Раунды"
+                        />
+                        <button className="button button--ghost" onClick={addEffectToCurrent}>
+                          Добавить
+                        </button>
+                      </div>
+                      <div className="chips">
+                        {effectPresets.map((preset) => (
+                          <button
+                            key={preset}
+                            className="chip"
+                            onClick={() => addPresetEffect(preset)}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="detail__label">Состояния</div>
+                      <div className="combat-actions__row">
+                        <input
+                          value={conditionName}
+                          onChange={(event) => setConditionName(event.target.value)}
+                          placeholder="Название состояния"
+                        />
+                        <input
+                          value={conditionRounds}
+                          onChange={(event) => setConditionRounds(event.target.value)}
+                          placeholder="Раунды"
+                        />
+                        <button className="button button--ghost" onClick={addConditionToCurrent}>
+                          Добавить
+                        </button>
+                      </div>
+                      <div className="chips">
+                        {conditionPresets.map((preset) => (
+                          <button
+                            key={preset}
+                            className="chip chip--warn"
+                            onClick={() => addPresetCondition(preset)}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="detail__label">Концентрация</div>
+                      <div className="combat-actions__row">
+                        <input
+                          value={concentrationName}
+                          onChange={(event) => setConcentrationName(event.target.value)}
+                          placeholder="Заклинание/эффект"
+                        />
+                        <input
+                          value={concentrationRounds}
+                          onChange={(event) => setConcentrationRounds(event.target.value)}
+                          placeholder="Раунды"
+                        />
+                        <button className="button button--ghost" onClick={setConcentrationForCurrent}>
+                          Установить
+                        </button>
+                      </div>
+                      <div className="detail__label">Массовые действия</div>
+                      <div className="combat-actions__row">
+                        <input
+                          value={massValue}
+                          onChange={(event) => setMassValue(event.target.value)}
+                          placeholder="Значение (например 5)"
+                        />
+                        <button
+                          className="button button--ghost"
+                          onClick={() => applyDamageAll(Number(massValue || 0))}
+                        >
+                          Урон всем
+                        </button>
+                        <button
+                          className="button button--ghost"
+                          onClick={() => applyHealAll(Number(massValue || 0))}
+                        >
+                          Лечение всем
+                        </button>
+                      </div>
+                      <div className="chips">
+                        {orderedParticipants[currentTurn].concentration && (
+                          <div className="chip chip--accent">
+                            <span>
+                              Конц.: {orderedParticipants[currentTurn].concentration?.name}
+                              {orderedParticipants[currentTurn].concentration?.rounds !== null
+                                ? ` · ${orderedParticipants[currentTurn].concentration?.rounds}р`
+                                : ''}
+                            </span>
+                            <button
+                              onClick={() =>
+                                clearConcentration(orderedParticipants[currentTurn].id)
+                              }
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
+                        {orderedParticipants[currentTurn].conditions.map((condition, index) => (
+                          <div key={`${condition.name}-${index}`} className="chip chip--warn">
+                            <span>
+                              {condition.name}
+                              {condition.rounds !== null ? ` · ${condition.rounds}р` : ''}
+                            </span>
+                            <button
+                              onClick={() =>
+                                removeCondition(orderedParticipants[currentTurn].id, index)
+                              }
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                        {orderedParticipants[currentTurn].effects.map((effect, index) => (
+                          <div key={`${effect.name}-${index}`} className="chip">
+                            <span>
+                              {effect.name}
+                              {effect.rounds !== null ? ` · ${effect.rounds}р` : ''}
+                            </span>
+                            <button
+                              onClick={() =>
+                                removeEffect(orderedParticipants[currentTurn].id, index)
+                              }
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                        {orderedParticipants[currentTurn].effects.length === 0 &&
+                          orderedParticipants[currentTurn].conditions.length === 0 &&
+                          !orderedParticipants[currentTurn].concentration && (
+                            <div className="empty">Нет эффектов</div>
+                          )}
+                      </div>
+                      {orderedParticipants[currentTurn].actions &&
+                        orderedParticipants[currentTurn].actions!.length > 0 && (
+                          <>
+                            <div className="detail__label">Быстрые действия</div>
+                            <div className="combat-actions__quicklist">
+                              {orderedParticipants[currentTurn].actions!.map((action, index) => (
+                                <div key={`${action.name}-${index}`} className="combat-buttons">
+                                  <button
+                                    className="button button--ghost combat-action-button"
+                                    onClick={() => performAction(orderedParticipants[currentTurn], action)}
+                                  >
+                                    {action.name}
+                                  </button>
+                                  <button
+                                    className="button button--ghost combat-action-button"
+                                    onClick={() => rollActionSaveForTarget(orderedParticipants[currentTurn], action)}
+                                  >
+                                    СЛ
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                    </div>
+                  )}
+                  {combatLog.length > 0 && (
+                    <div className="combat-log">
+                      <div className="combat-log__header">
+                        <div className="combat-log__title">
+                          <span className="detail__label">Последние броски</span>
+                          <span className="combat-log__count">всего: {combatLog.length}</span>
+                        </div>
+                        <div className="combat-log__actions">
+                          <button
+                            className="button button--ghost"
+                            onClick={() => setCombatLogExpanded((prev) => !prev)}
+                          >
+                            {combatLogExpanded ? 'Свернуть' : 'Развернуть'}
+                          </button>
+                          <button className="button button--ghost" onClick={clearCombatLog}>
+                            Очистить
+                          </button>
+                        </div>
+                      </div>
+                      {(combatLogExpanded ? combatLog : combatLog.slice(0, 6)).map(
+                        (entry, index) => (
+                          <div
+                            key={`${entry.label}-${index}`}
+                            className={`combat-log__item combat-log__item--${entry.tone}`}
+                          >
+                            <span>{entry.label}</span>
+                            <strong>{entry.total ?? '—'}</strong>
+                            <span className="combat-log__detail">{entry.detail}</span>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
+                  <section className="detail__section">
+                    <h3>Бросок кубиков</h3>
+                    <div className="dice-quick">
+                      <div className="dice-quick__row">
+                        <button className="dice-chip" onClick={() => rollQuickDice(20)}>
+                          d20
+                        </button>
+                        <button className="dice-chip" onClick={() => rollQuickDice(12)}>
+                          d12
+                        </button>
+                        <button className="dice-chip" onClick={() => rollQuickDice(10)}>
+                          d10
+                        </button>
+                        <button className="dice-chip" onClick={() => rollQuickDice(8)}>
+                          d8
+                        </button>
+                        <button className="dice-chip" onClick={() => rollQuickDice(6)}>
+                          d6
+                        </button>
+                        <button className="dice-chip" onClick={() => rollQuickDice(4)}>
+                          d4
+                        </button>
+                        <button className="dice-chip" onClick={() => rollQuickDice(100)}>
+                          d100
+                        </button>
+                      </div>
+                      <div className="dice-quick__row">
+                        <button className="dice-chip" onClick={() => rollQuickDice(20, 1, 'adv')}>
+                          d20 adv
+                        </button>
+                        <button className="dice-chip" onClick={() => rollQuickDice(20, 1, 'dis')}>
+                          d20 dis
+                        </button>
+                        <input
+                          className="dice-quick__mod"
+                          value={quickMod}
+                          onChange={(event) => setQuickMod(event.target.value)}
+                          placeholder="Мод."
+                        />
+                      </div>
+                    </div>
+                    <div className="dice">
+                      <input
+                        value={diceExpr}
+                        onChange={(event) => setDiceExpr(event.target.value)}
+                        placeholder="например 2d20+3"
+                      />
+                      <button className="button" onClick={handleRollDice}>
+                        Бросить
+                      </button>
+                    </div>
+                    <div className={diceRolling ? 'dice-result dice-result--rolling' : 'dice-result'}>
+                      {diceRolling && <div className="dice-result__value">…</div>}
+                      {!diceRolling && diceResult && (
+                        <>
+                          <div className="dice-result__value">{diceResult.total}</div>
+                          <div className="dice-result__rolls">{diceResult.rolls.join(' · ')}</div>
+                        </>
+                      )}
+                      {!diceRolling && !diceResult && <div className="empty">Нет бросков</div>}
+                    </div>
+                  </section>
+                </div>
+              )}
+              {orderedParticipants.length === 0 && <div className="empty">Добавь участников</div>}
+            </section>
+          </>
+        )}
+      </main>
+      {fullCharacterFormOpen && (
+        <div className="modal" onClick={() => setFullCharacterFormOpen(false)}>
+          <div className="modal__card modal__card--wide" onClick={(event) => event.stopPropagation()}>
+            <div className="modal__header">
+              <h3>Полная форма персонажа</h3>
+              <button className="modal__close" onClick={() => setFullCharacterFormOpen(false)}>
+                X
+              </button>
+            </div>
+            <div className="modal__content">
+              <PlayerForm onSaveCharacter={handleCreateCharacterFromFullForm} embedded />
+            </div>
+          </div>
+        </div>
+      )}
+      {combatDetailId && (
+        <div className="modal" onClick={closeCombatDetail}>
+          <div className="modal__card modal__card--wide" onClick={(event) => event.stopPropagation()}>
+            {(() => {
+              const participant = getParticipantById(combatDetailId)
+              if (!participant) return null
+              return (
+                <>
+                  <div className="modal__header">
+                    <h3>{participant.name}</h3>
+                    <button className="modal__close" onClick={closeCombatDetail}>
+                      X
+                    </button>
+                  </div>
+                  <div className="modal__tag">
+                    {participant.kind === 'character' ? 'персонаж' : 'монстр'}
+                  </div>
+                  <div className="modal__content">
+                    <div className="detail__grid">
+                      <div>
+                        <div className="detail__label">ХП</div>
+                        <div>
+                          {participant.hpCurrent ?? '—'} / {participant.hpMax ?? '—'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="detail__label">КД</div>
+                        <div>{participant.ac ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Инициатива</div>
+                        <div>{participant.initiative ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Цель</div>
+                        <div>{getParticipantById(participant.targetId)?.name ?? '—'}</div>
+                      </div>
+                    </div>
+                    <div className="detail__section">
+                      <div className="detail__label">Действия</div>
+                      {participant.actions && participant.actions.length > 0 ? (
+                        <div className="detail__entries">
+                          {participant.actions.map((action, index) => (
+                            <div key={`${participant.id}-detail-action-${index}`} className="detail__entry">
+                              <div className="detail__entry-title">{action.name}</div>
+                              {action.text && (
+                                <div className="detail__text">{normalizeActionText(action.text)}</div>
+                              )}
+                              <div className="combat-buttons">
+                                <button
+                                  className="button button--ghost"
+                                  onClick={() => performAttackAgainstTarget(participant, action)}
+                                >
+                                  Атака по цели
+                                </button>
+                                <button
+                                  className="button button--ghost"
+                                  onClick={() => rollActionSaveForTarget(participant, action)}
+                                >
+                                  Спасбросок цели
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="empty">Действий нет</div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        </div>
+      )}
+      {modal && (
+        <div className="modal" onClick={closeModal}>
+          <div className="modal__card" onClick={(event) => event.stopPropagation()}>
+            <div className="modal__header">
+              <h3>{modalDetail?.name_ru ?? modalDetail?.name ?? 'Детали'}</h3>
+              <button className="modal__close" onClick={closeModal}>
+                X
+              </button>
+            </div>
+            {modalDetail?.source && <div className="modal__tag">{modalDetail.source}</div>}
+            {modal.type === 'spells' && modalDetail && (
+              <div className="modal__content">
+                <div className="detail__grid">
+                  <div>
+                    <div className="detail__label">Уровень</div>
+                    <div>{getLocaleValue(modalDetail.data, 'level') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Школа</div>
+                    <div>{getLocaleValue(modalDetail.data, 'school') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Время</div>
+                    <div>{getLocaleValue(modalDetail.data, 'castingTime') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Дистанция</div>
+                    <div>{getLocaleValue(modalDetail.data, 'range') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Длительность</div>
+                    <div>{getLocaleValue(modalDetail.data, 'duration') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Компоненты</div>
+                    <div>{getLocaleValue(modalDetail.data, 'components') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Материалы</div>
+                    <div>{getLocaleValue(modalDetail.data, 'materials') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Ритуал</div>
+                    <div>{getLocaleValue(modalDetail.data, 'ritual') ?? '—'}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="detail__label">Описание</div>
+                  <div
+                    className="detail__text"
+                    dangerouslySetInnerHTML={{
+                      __html: getDescriptionHtml(modalDetail.data) || 'Описание отсутствует'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            {modal.type === 'items' && modalDetail && (
+              <div className="modal__content">
+                <div className="detail__grid">
+                  <div>
+                    <div className="detail__label">Тип</div>
+                    <div>{getLocaleValue(modalDetail.data, 'type') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Дополнения</div>
+                    <div>{getLocaleValue(modalDetail.data, 'typeAdditions') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Редкость</div>
+                    <div>{rarityLabel(modalDetail.data?.en?.rarity ?? modalDetail.data?.ru?.rarity)}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Стоимость</div>
+                    <div>{modalDetail.data?.en?.coast ?? modalDetail.data?.ru?.coast ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Вес</div>
+                    <div>{modalDetail.data?.en?.weight ?? modalDetail.data?.ru?.weight ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">КД</div>
+                    <div>{modalDetail.data?.en?.ac ?? modalDetail.data?.ru?.ac ?? '—'}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="detail__label">Описание</div>
+                  <div
+                    className="detail__text"
+                    dangerouslySetInnerHTML={{
+                      __html: getDescriptionHtml(modalDetail.data) || 'Описание отсутствует'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            {modal.type === 'artifacts' && modalDetail && (
+              <div className="modal__content">
+                <div className="detail__grid">
+                  <div>
+                    <div className="detail__label">Тип</div>
+                    <div>{getLocaleValue(modalDetail.data, 'type') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Дополнения</div>
+                    <div>{getLocaleValue(modalDetail.data, 'typeAdditions') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Редкость</div>
+                    <div>{rarityLabel(modalDetail.data?.en?.rarity ?? modalDetail.data?.ru?.rarity)}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Настройка</div>
+                    <div>{modalDetail.data?.en?.attunement ?? modalDetail.data?.ru?.attunement ?? '—'}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="detail__label">Описание</div>
+                  <div
+                    className="detail__text"
+                    dangerouslySetInnerHTML={{
+                      __html: getDescriptionHtml(modalDetail.data) || 'Описание отсутствует'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {referenceModal && (
+        <div className="modal" onClick={() => setReferenceModal(null)}>
+          <div className="modal__card" onClick={(event) => event.stopPropagation()}>
+            <div className="modal__header">
+              <h3>{referenceModal.title}</h3>
+              <div className="modal__actions">
+                {referenceModal.kind === 'ttg_rule' && (
+                  <button
+                    type="button"
+                    className={`modal__pin${
+                      referenceModal.slug && ttgPinnedRuleSlugs.includes(referenceModal.slug)
+                        ? ' modal__pin--active'
+                        : ''
+                    }`}
+                    onClick={() => {
+                      const slug = referenceModal.slug
+                      if (slug) toggleRulePin(slug)
+                    }}
+                    title="Закрепить правило"
+                  >
+                    {referenceModal.slug && ttgPinnedRuleSlugs.includes(referenceModal.slug) ? '★' : '☆'}
+                  </button>
+                )}
+                <button className="modal__close" onClick={() => setReferenceModal(null)}>
+                  X
+                </button>
+              </div>
+            </div>
+            {referenceModal.subtitle && <div className="modal__tag">{referenceModal.subtitle}</div>}
+            <div className="modal__content">
+              {referenceModal.columns && referenceModal.columns.length > 0 && (
+                <div className="detail__grid">
+                  {referenceModal.columns.map((column) => (
+                    <div key={column.label}>
+                      <div className="detail__label">{column.label}</div>
+                      <div>{column.value || '—'}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {referenceModal.text && (
+                <div>
+                  <div className="detail__label">Описание</div>
+                  <div className="detail__text">{renderSectionContent('Описание', referenceModal.text)}</div>
+                </div>
+              )}
+              {referenceModal.sections && referenceModal.sections.length > 0 && (
+                <div>
+                  {referenceModal.kind === 'ttg_rule' && (
+                    <div className="chips modal-anchors">
+                      {(['base', 'mechanic', 'exception'] as const).map((bucket) => {
+                        const idx = referenceModal.sections?.findIndex(
+                          (section) => getRuleSectionBucket(section.title) === bucket
+                        )
+                        if (idx === undefined || idx < 0) return null
+                        const label =
+                          bucket === 'base'
+                            ? 'Базово'
+                            : bucket === 'mechanic'
+                              ? 'Механика'
+                              : 'Исключения'
+                        return (
+                          <button
+                            key={bucket}
+                            type="button"
+                            className="chip"
+                            onClick={() => {
+                              const node = document.getElementById(`rule-section-${idx}`)
+                              node?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }}
+                          >
+                            {label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                  <div className="detail__label">Структура</div>
+                  <div className="reference-sections">
+                    {referenceModal.sections.map((section, index) => (
+                      <details
+                        key={`${section.title}-${index}`}
+                        id={
+                          referenceModal.kind === 'ttg_rule'
+                            ? `rule-section-${index}`
+                            : undefined
+                        }
+                        className="statblock-section"
+                        open={index < 2}
+                      >
+                        <summary>{section.title}</summary>
+                        <div className="detail__text">{renderSectionContent(section.title, section.content)}</div>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {referenceModal.related && referenceModal.related.length > 0 && (
+                <div>
+                  <div className="detail__label">Подклассы / подрасы</div>
+                  <div className="detail__entries">
+                    {referenceModal.related.map((related, index) => (
+                      <details key={`${related.title}-${index}`} className="statblock-section">
+                        <summary>{related.title}</summary>
+                        {related.subtitle && <div className="detail__label">{related.subtitle}</div>}
+                        <div className="detail__text">
+                          {related.text ? renderSectionContent(related.title, related.text) : 'Описание отсутствует'}
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {customMonsterModalOpen && (
+        <div className="modal" onClick={() => setCustomMonsterModalOpen(false)}>
+          <div className="modal__card modal__card--wide" onClick={(event) => event.stopPropagation()}>
+            <div className="modal__header">
+              <h3>{editingCustomMonsterId ? 'Редактирование кастомного монстра' : 'Создание кастомного монстра (D&D 5e)'}</h3>
+              <button className="modal__close" onClick={() => setCustomMonsterModalOpen(false)}>
+                X
+              </button>
+            </div>
+            <div className="modal__content custom-monster-modal">
+              <div className="custom-monster-panel">
+                <div className="detail__label">Базовые данные</div>
+                <div className="form custom-monster-grid">
+                  <input
+                    value={customMonsterDraft.name}
+                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, name: event.target.value }))}
+                    placeholder="Имя монстра"
+                  />
+                  <select
+                    value={customMonsterDraft.size}
+                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, size: event.target.value }))}
+                  >
+                    {customMonsterSizeOptions.map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                  <input
+                    value={customMonsterDraft.type}
+                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, type: event.target.value }))}
+                    placeholder="Тип (humanoid, dragon...)"
+                  />
+                  <input
+                    value={customMonsterDraft.alignment}
+                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, alignment: event.target.value }))}
+                    placeholder="Мировоззрение"
+                  />
+                  <input
+                    value={customMonsterDraft.cr}
+                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, cr: event.target.value }))}
+                    placeholder="CR"
+                  />
+                  <input
+                    value={customMonsterDraft.ac}
+                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, ac: event.target.value }))}
+                    placeholder="AC"
+                  />
+                  <input
+                    value={customMonsterDraft.hp}
+                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, hp: event.target.value }))}
+                    placeholder="HP (например 84 (13d8+26))"
+                  />
+                  <input
+                    value={customMonsterDraft.speed}
+                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, speed: event.target.value }))}
+                    placeholder="Скорость"
+                  />
+                </div>
+              </div>
+              <div className="custom-monster-panel">
+                <div className="detail__label">Характеристики и защиты</div>
+                <div className="combat-grid custom-monster-stats">
+                  <input value={customMonsterDraft.str} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, str: event.target.value }))} placeholder="СИЛ" />
+                  <input value={customMonsterDraft.dex} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, dex: event.target.value }))} placeholder="ЛВК" />
+                  <input value={customMonsterDraft.con} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, con: event.target.value }))} placeholder="ТЕЛ" />
+                  <input value={customMonsterDraft.int} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, int: event.target.value }))} placeholder="ИНТ" />
+                  <input value={customMonsterDraft.wis} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, wis: event.target.value }))} placeholder="МДР" />
+                  <input value={customMonsterDraft.cha} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, cha: event.target.value }))} placeholder="ХАР" />
+                </div>
+                <div className="form custom-monster-grid">
+                  <input value={customMonsterDraft.savesText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, savesText: event.target.value }))} placeholder="Спасброски (опц.)" />
+                  <input value={customMonsterDraft.skillsText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, skillsText: event.target.value }))} placeholder="Навыки (опц.)" />
+                  <input value={customMonsterDraft.vulnerabilities} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, vulnerabilities: event.target.value }))} placeholder="Уязвимости через запятую" />
+                  <input value={customMonsterDraft.resistances} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, resistances: event.target.value }))} placeholder="Сопротивления через запятую" />
+                  <input value={customMonsterDraft.immunities} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, immunities: event.target.value }))} placeholder="Иммунитеты к урону" />
+                  <input value={customMonsterDraft.conditionImmunities} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, conditionImmunities: event.target.value }))} placeholder="Иммунитеты к состояниям" />
+                  <input value={customMonsterDraft.senses} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, senses: event.target.value }))} placeholder="Чувства" />
+                  <input value={customMonsterDraft.languages} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, languages: event.target.value }))} placeholder="Языки" />
+                </div>
+              </div>
+              <div className="custom-monster-panel">
+                <div className="detail__label">Структурированные действия</div>
+                <div className="custom-actions-list">
+                  {customMonsterActions.map((action) => (
+                    <div key={action.id} className="custom-action-row">
+                      <div className="form custom-monster-grid">
+                        <input
+                          value={action.name}
+                          onChange={(event) => updateCustomActionRow(action.id, 'name', event.target.value)}
+                          placeholder="Название действия (например, Когти)"
+                        />
+                        <select
+                          value={action.attackKind}
+                          onChange={(event) =>
+                            updateCustomActionRow(action.id, 'attackKind', event.target.value)
+                          }
+                        >
+                          <option value="melee">Рукопашная</option>
+                          <option value="ranged">Дальнобойная</option>
+                          <option value="spell">Заклинанием</option>
+                          <option value="melee_or_ranged">Рукопашная/дальнобойная</option>
+                        </select>
+                        <input
+                          value={action.attackBonus}
+                          onChange={(event) => updateCustomActionRow(action.id, 'attackBonus', event.target.value)}
+                          placeholder="Бонус атаки (например, 7)"
+                        />
+                        <input
+                          value={action.rangeText}
+                          onChange={(event) => updateCustomActionRow(action.id, 'rangeText', event.target.value)}
+                          placeholder="Досягаемость/дистанция (например, 3 клетки)"
+                        />
+                        <input
+                          value={action.targetText}
+                          onChange={(event) => updateCustomActionRow(action.id, 'targetText', event.target.value)}
+                          placeholder="Цель (например, одна цель)"
+                        />
+                        <input
+                          value={action.damageExpr}
+                          onChange={(event) => updateCustomActionRow(action.id, 'damageExpr', event.target.value)}
+                          placeholder="Кость урона (например, 2d6+4)"
+                        />
+                        <input
+                          value={action.damageType}
+                          onChange={(event) => updateCustomActionRow(action.id, 'damageType', event.target.value)}
+                          placeholder="Тип урона (колющий/огонь...)"
+                        />
+                        <input
+                          value={action.saveDc}
+                          onChange={(event) => updateCustomActionRow(action.id, 'saveDc', event.target.value)}
+                          placeholder="СЛ спасброска (например, 15)"
+                        />
+                        <select
+                          value={action.saveAbility}
+                          onChange={(event) =>
+                            updateCustomActionRow(action.id, 'saveAbility', event.target.value)
+                          }
+                        >
+                          <option value="">Без спасброска</option>
+                          <option value="СИЛ">СИЛ</option>
+                          <option value="ЛВК">ЛВК</option>
+                          <option value="ТЕЛ">ТЕЛ</option>
+                          <option value="ИНТ">ИНТ</option>
+                          <option value="МДР">МДР</option>
+                          <option value="ХАР">ХАР</option>
+                        </select>
+                        <input
+                          value={action.saveFailText}
+                          onChange={(event) => updateCustomActionRow(action.id, 'saveFailText', event.target.value)}
+                          placeholder="Эффект при провале"
+                        />
+                        <input
+                          value={action.saveSuccessText}
+                          onChange={(event) => updateCustomActionRow(action.id, 'saveSuccessText', event.target.value)}
+                          placeholder="Эффект при успехе"
+                        />
+                        <input
+                          value={action.extraText}
+                          onChange={(event) => updateCustomActionRow(action.id, 'extraText', event.target.value)}
+                          placeholder="Доп. текст (эффекты/КС/условия)"
+                        />
+                      </div>
+                      <div className="search-result__actions">
+                        <button className="chip chip--warn" onClick={() => removeCustomActionRow(action.id)}>
+                          Удалить действие
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="form">
+                  <button className="button button--ghost" onClick={addCustomActionRow}>
+                    Добавить действие
+                  </button>
+                </div>
+              </div>
+              <div className="custom-monster-panel">
+                <div className="detail__label">Текстовые секции</div>
+                <div className="form custom-monster-grid">
+                  <textarea value={customMonsterDraft.traitsText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, traitsText: event.target.value }))} placeholder="Черты: Название: описание (по одной на строку)" rows={4} />
+                  <textarea value={customMonsterDraft.actionsText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, actionsText: event.target.value }))} placeholder="Доп. действия текстом: Название: описание" rows={4} />
+                  <textarea value={customMonsterDraft.reactionsText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, reactionsText: event.target.value }))} placeholder="Реакции" rows={3} />
+                  <textarea value={customMonsterDraft.legendaryText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, legendaryText: event.target.value }))} placeholder="Легендарные действия" rows={3} />
+                  <textarea value={customMonsterDraft.lairText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, lairText: event.target.value }))} placeholder="Действия логова" rows={3} />
+                </div>
+              </div>
+              {customMonsterError && <div className="error">{customMonsterError}</div>}
+              <div className="form">
+                <button className="button" onClick={saveCustomMonster} disabled={savingCustomMonster || !campaign}>
+                  {editingCustomMonsterId ? 'Сохранить изменения' : 'Создать монстра'}
+                </button>
+                <button className="button button--ghost" onClick={resetCustomMonsterForm} disabled={savingCustomMonster}>
+                  Очистить форму
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {rollOverlay && (
+        <div className={`roll-overlay roll-overlay--${rollOverlay.tone}`} role="status" aria-live="polite">
+          <div className="roll-overlay__header">
+            <span>{rollOverlay.label}</span>
+            <button
+              className="roll-overlay__close"
+              onClick={() => setRollOverlay(null)}
+            >
+              X
+            </button>
+          </div>
+          <div className="roll-overlay__value">{rollOverlay.total}</div>
+          <div className="roll-overlay__detail">{rollOverlay.detail}</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+
+
+
+
+
+
+
+

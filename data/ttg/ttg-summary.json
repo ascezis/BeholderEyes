@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-02-12T03:57:10.049Z",
+  "input_dir": "c:\\Users\\azis\\Desktop\\parser\\_full\\output",
+  "output_dir": "c:\\Users\\azis\\Desktop\\DndFightTracker\\data\\ttg",
+  "input_files": [
+    "ttg_classes_races.json"
+  ],
+  "source": "https://5e14.ttg.club",
+  "source_generated_at": "2026-02-12T03:56:46Z",
+  "class_books_count": 40,
+  "race_books_count": 31,
+  "classes_count": 25,
+  "races_count": 110,
+  "rules_count": 141,
+  "screens_count": 31
+}

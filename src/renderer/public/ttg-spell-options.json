@@ -1,0 +1,3670 @@
+[
+  {
+    "nameRu": "Адское возмездие",
+    "nameEn": "Hellish Rebuke",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Антипатия/Симпатия",
+    "nameEn": "Antipathy/Sympathy",
+    "level": 8,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Астральная проекция",
+    "nameEn": "Astral Projection",
+    "level": 9,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Аура жизненной силы",
+    "nameEn": "Aura of Vitality",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Аура жизни",
+    "nameEn": "Aura of Life",
+    "level": 4,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Аура святости",
+    "nameEn": "Holy Aura",
+    "level": 8,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Аура чистоты",
+    "nameEn": "Aura of Purity",
+    "level": 4,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ашардалонова поступь",
+    "nameEn": "Ashardalon's Stride",
+    "level": 3,
+    "school": "преобразование",
+    "source": "FTD"
+  },
+  {
+    "nameRu": "Безмолвный образ",
+    "nameEn": "Silent Image",
+    "level": 1,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Бесплотность",
+    "nameEn": "Etherealness",
+    "level": 7,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Благословение",
+    "nameEn": "Bless",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Божественное благоволение",
+    "nameEn": "Divine Favor",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Божественное слово",
+    "nameEn": "Divine Word",
+    "level": 7,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Болезненное сияние",
+    "nameEn": "SICKENING RADIANCE",
+    "level": 4,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "боль",
+    "nameEn": "POWER WORD PAIN",
+    "level": 7,
+    "school": "очарование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Буря Возмездия",
+    "nameEn": "Storm of Vengeance",
+    "level": 9,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Быстрые друзья",
+    "nameEn": "Fast Friends",
+    "level": 3,
+    "school": "очарование",
+    "source": "AI"
+  },
+  {
+    "nameRu": "Быстрый колчан",
+    "nameEn": "Swift Quiver",
+    "level": 5,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Великолепный особняк Морденкайнена",
+    "nameEn": "Mordenkainen's Magnificent Mansion",
+    "level": 7,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Венец безумия",
+    "nameEn": "Crown of Madness",
+    "level": 2,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Верный пес Морденкайнена",
+    "nameEn": "Mordenkainen's Faithful Hound",
+    "level": 4,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Вечный огонь",
+    "nameEn": "Continual Flame",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Вещий сон",
+    "nameEn": "Dream",
+    "level": 5,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ВЗРЫВНОЕ ЗЕРНО",
+    "nameEn": "Explosive Seed",
+    "level": 2,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Вибрация",
+    "nameEn": "Shatter",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Видеть невидимое",
+    "nameEn": "See Invisibility",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Вихрь искривления",
+    "nameEn": "Vortex Warp",
+    "level": 2,
+    "school": "вызов",
+    "source": "SCC"
+  },
+  {
+    "nameRu": "Власть над водами",
+    "nameEn": "Control Water",
+    "level": 4,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Власть над погодой",
+    "nameEn": "Control Weather",
+    "level": 8,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Внушение",
+    "nameEn": "Suggestion",
+    "level": 2,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Водоворот",
+    "nameEn": "Maelstrom",
+    "level": 5,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Волшебная рука",
+    "nameEn": "Mage Hand",
+    "level": 0,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Волшебная стрела Джима",
+    "nameEn": "Jim's Magic Missle",
+    "level": 1,
+    "school": "воплощение",
+    "source": "AI"
+  },
+  {
+    "nameRu": "Волшебное оружие",
+    "nameEn": "Magic Weapon",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Волшебные врата",
+    "nameEn": "Arcane Gate",
+    "level": 6,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Волшебные уста",
+    "nameEn": "Magic Mouth",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Волшебный замок",
+    "nameEn": "Arcane Lock",
+    "level": 2,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Волшебный камень",
+    "nameEn": "Magic Stone",
+    "level": 0,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Волшебный огонь",
+    "nameEn": "Faerie Fire",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Волшебный сосуд",
+    "nameEn": "Magic Jar",
+    "level": 6,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Волшебство",
+    "nameEn": "Thaumaturgy",
+    "level": 0,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Воображаемый убийца",
+    "nameEn": "Phantasmal Killer",
+    "level": 4,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Воскрешение",
+    "nameEn": "Resurrection",
+    "level": 7,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Воспламеняющееся облако",
+    "nameEn": "Incendiary Cloud",
+    "level": 8,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Восставший труп",
+    "nameEn": "Animate Dead",
+    "level": 3,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Врата",
+    "nameEn": "Gate",
+    "level": 9,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Вред",
+    "nameEn": "Harm",
+    "level": 6,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Вспышка мечей",
+    "nameEn": "SWORD BURST",
+    "level": 0,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Вспышка Мечей",
+    "nameEn": "SWORD BURST",
+    "level": 0,
+    "school": "вызов",
+    "source": "SCAG"
+  },
+  {
+    "nameRu": "Вызов страха",
+    "nameEn": "CAUSE FEAR",
+    "level": 1,
+    "school": "некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Вынужденная дуэль",
+    "nameEn": "Compelled Duel",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Гадание",
+    "nameEn": "Augury",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Газообразная форма",
+    "nameEn": "Gaseous Form",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Героизм",
+    "nameEn": "Heroism",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Гигантское насекомое",
+    "nameEn": "Giant Insect",
+    "level": 4,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Гипнотический Узор",
+    "nameEn": "Hypnotic Pattern",
+    "level": 3,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Гнев природы",
+    "nameEn": "WRATH OF NATURE",
+    "level": 5,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Гневный удар",
+    "nameEn": "Wrathful Smite",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Голод Хадара",
+    "nameEn": "Hunger of Hadar",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Горящие руки",
+    "nameEn": "Burning Hands",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Громовая волна",
+    "nameEn": "Thunderwave",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Громовой клинок",
+    "nameEn": "BOOMING BLADE",
+    "level": 0,
+    "school": "воплощение",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Громовой Клинок",
+    "nameEn": "BOOMING BLADE",
+    "level": 0,
+    "school": "прорицание",
+    "source": "SCAG"
+  },
+  {
+    "nameRu": "Громовой удар",
+    "nameEn": "Thunderous Smite",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Громовой шаг",
+    "nameEn": "THUNDER STEP",
+    "level": 3,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Далекий шаг",
+    "nameEn": "FAR STEP",
+    "level": 5,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Дверь между измерениями",
+    "nameEn": "Dimension Door",
+    "level": 4,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Движение почвы",
+    "nameEn": "Move Earth",
+    "level": 6,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Двойник",
+    "nameEn": "Clone",
+    "level": 8,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Дезинтеграция",
+    "nameEn": "Disintegrate",
+    "level": 6,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Дневной свет",
+    "nameEn": "Daylight",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Добряника",
+    "nameEn": "Goodberry",
+    "level": 1,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Дождь со снегом",
+    "nameEn": "Sleet Storm",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Доспехи Агатиса",
+    "nameEn": "Armor of Agathys",
+    "level": 1,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Доспехи мага",
+    "nameEn": "Mage Armor",
+    "level": 1,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Драконоподобное превращение",
+    "nameEn": "Draconic Transformation",
+    "level": 7,
+    "school": "преобразование",
+    "source": "FTD"
+  },
+  {
+    "nameRu": "ДРЕВЕСНЫЙ ЗАХВАТ",
+    "nameEn": "Tree Strike",
+    "level": 4,
+    "school": "Преобразование",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "ДРЕВЕСНЫЙ МОСТ",
+    "nameEn": "Bridge of Branches",
+    "level": 1,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Дрёма",
+    "nameEn": "CATNAP",
+    "level": 3,
+    "school": "Enchantment",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Дрожь земли",
+    "nameEn": "Earth Tremor",
+    "level": 1,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Дружба с животными",
+    "nameEn": "Animal Friendship",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Друзья",
+    "nameEn": "Friends",
+    "level": 0,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Дубинка",
+    "nameEn": "Shillelagh",
+    "level": 0,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Дубовая кожа",
+    "nameEn": "Barkskin",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Духовное оружие",
+    "nameEn": "Spiritual Weapon",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Духовные защитники",
+    "nameEn": "Spirit Guardians",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Душеловка",
+    "nameEn": "Maze",
+    "level": 8,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Дыхание дракона",
+    "nameEn": "DRAGON'S BREATH",
+    "level": 2,
+    "school": "Преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Едкая сфера",
+    "nameEn": "Vitriolic Sphere",
+    "level": 4,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Едкое варево Таши",
+    "nameEn": "TASHA'S CAUSTIC BREW",
+    "level": 1,
+    "school": "воплощение",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Жалость к умирающим",
+    "nameEn": "Spare the Dying",
+    "level": 0,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Животное-посланник",
+    "nameEn": "Animal Messenger",
+    "level": 2,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Жир",
+    "nameEn": "Grease",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Жуткое увядание Аби-Дальцима",
+    "nameEn": "Abi-Dalzim's Horrid Wilting",
+    "level": 8,
+    "school": "Некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "ЗАВЕСА СТРЕЛ",
+    "nameEn": "Cordon of Arrows",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Заданный образ",
+    "nameEn": "Programmed Illusion",
+    "level": 6,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Заимствованные знания",
+    "nameEn": "Borrowed Knowledge",
+    "level": 2,
+    "school": "прорицание",
+    "source": "SCC"
+  },
+  {
+    "nameRu": "Залп ШИПОВ",
+    "nameEn": "Spray of Thorns",
+    "level": 3,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Замедление",
+    "nameEn": "Slow",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Замешательство",
+    "nameEn": "Confusion",
+    "level": 4,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Запрет",
+    "nameEn": "Forbiddance",
+    "level": 6,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ЗАРАЖАЮЩИЙ УДАР",
+    "nameEn": "Sporecaller's Smite",
+    "level": 2,
+    "school": "Преобразование",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Заражение",
+    "nameEn": "Contagion",
+    "level": 5,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Заросли",
+    "nameEn": "Overgrowth",
+    "level": 1,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Заточение",
+    "nameEn": "Imprisonment",
+    "level": 9,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Защита от Зла и Добра",
+    "nameEn": "Protection from Evil and Good",
+    "level": 1,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Защита от оружия",
+    "nameEn": "Blade Ward",
+    "level": 0,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Защита от смерти",
+    "nameEn": "Death Ward",
+    "level": 4,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Защита от энергии",
+    "nameEn": "Protection from Energy",
+    "level": 3,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Защита от яда",
+    "nameEn": "Protection from Poison",
+    "level": 2,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Защитник веры",
+    "nameEn": "Guardian of Faith",
+    "level": 4,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Защитные узы",
+    "nameEn": "Warding Bond",
+    "level": 2,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Защитный ветер",
+    "nameEn": "Warding Wind",
+    "level": 2,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Звериные чувства",
+    "nameEn": "Beast Sense",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Землетрясение",
+    "nameEn": "Earthquake",
+    "level": 8,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Земляной захват Максимилиана",
+    "nameEn": "Maximilian's Earthen Grasp",
+    "level": 2,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Зеркальное отражение",
+    "nameEn": "Mirror Image",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Злая насмешка",
+    "nameEn": "Vicious Mockery",
+    "level": 0,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Зловонное облако",
+    "nameEn": "Stinking Cloud",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Знак",
+    "nameEn": "Symbol",
+    "level": 7,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Знание легенд",
+    "nameEn": "Legend Lore",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Зной Аганаззара",
+    "nameEn": "Aganazzar's Scorcher",
+    "level": 2,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Зона правды",
+    "nameEn": "Zone of Truth",
+    "level": 2,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Извержение земли",
+    "nameEn": "Erupting Earth",
+    "level": 3,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Изгнание",
+    "nameEn": "Banishment",
+    "level": 4,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Изгоняющий удар",
+    "nameEn": "Banishing Smite",
+    "level": 5,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Изготовление",
+    "nameEn": "Fabricate",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Изменение памяти",
+    "nameEn": "Modify Memory",
+    "level": 5,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ИЗМЕНЕНИЕ РАСТЕНИЙ",
+    "nameEn": "Mold Plant",
+    "level": 0,
+    "school": "Преобразование",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Изменить землю",
+    "nameEn": "Mold Earth",
+    "level": 0,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Изначальная защита",
+    "nameEn": "Primordial Ward",
+    "level": 6,
+    "school": "ограждение",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Изобилие врагов",
+    "nameEn": "ENEMIES ABOUND",
+    "level": 3,
+    "school": "очарование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Изоляция",
+    "nameEn": "Sequester",
+    "level": 7,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Иллюзорный дракон",
+    "nameEn": "ILLUSORY DRAGON",
+    "level": 8,
+    "school": "иллюзия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Инфернальный зов",
+    "nameEn": "INFERNAL CALLING",
+    "level": 5,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Искажение цены",
+    "nameEn": "Distort Value",
+    "level": 1,
+    "school": "иллюзия",
+    "source": "AI"
+  },
+  {
+    "nameRu": "Искусная острота",
+    "nameEn": "Silvery Barbs",
+    "level": 1,
+    "school": "очарование",
+    "source": "SCC"
+  },
+  {
+    "nameRu": "Искусство друидов",
+    "nameEn": "Druidcraft",
+    "level": 0,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Исполнение желаний",
+    "nameEn": "Wish",
+    "level": 9,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Истеричный смех Таши",
+    "nameEn": "Tasha's Hideous Laughter",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Истинное воскрешение",
+    "nameEn": "True Resurrection",
+    "level": 9,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Истинное зрение",
+    "nameEn": "True Seeing",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Истинное перевоплощение",
+    "nameEn": "True Polymorph",
+    "level": 9,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Исцеление ран",
+    "nameEn": "Cure Wounds",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Исцеляющая молитва",
+    "nameEn": "Prayer of Healing",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Исцеляющее слово",
+    "nameEn": "Healing Word",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Исцеляющий дух",
+    "nameEn": "HEALING SPIRIT",
+    "level": 2,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Каменная кожа",
+    "nameEn": "Stoneskin",
+    "level": 4,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Каменная стена",
+    "nameEn": "Wall of Stone",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Катапульта",
+    "nameEn": "Catapult",
+    "level": 1,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Кислотная стрела Мельфа",
+    "nameEn": "Melf's Acid Arrow",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Кислотные брызги",
+    "nameEn": "Acid Splash",
+    "level": 0,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Клеймящий удар",
+    "nameEn": "Branding Smite",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Клетка душ",
+    "nameEn": "SOUL CAGE",
+    "level": 6,
+    "school": "некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Клинок Зеленого Пламени",
+    "nameEn": "GREEN-FLAME BLADE",
+    "level": 0,
+    "school": "прорицание",
+    "source": "SCAG"
+  },
+  {
+    "nameRu": "Клинок зелёного пламени",
+    "nameEn": "GREEN-FLAME BLADE",
+    "level": 0,
+    "school": "воплощение",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Клинок пламени",
+    "nameEn": "Flame Blade",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Клинок разрушения",
+    "nameEn": "BLADE OF DISASTER",
+    "level": 9,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Контрзаклятье",
+    "nameEn": "Counterspell",
+    "level": 3,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Конус холода",
+    "nameEn": "Cone of Cold",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Корона звёзд",
+    "nameEn": "CROWN OF STARS",
+    "level": 7,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Кости земли",
+    "nameEn": "Bones of the Earth",
+    "level": 6,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Крепость интеллекта",
+    "nameEn": "INTELLECT FORTRESS",
+    "level": 3,
+    "school": "ограждение",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Крошечный слуга",
+    "nameEn": "TINY SERVANT",
+    "level": 3,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Круг силы",
+    "nameEn": "Circle of Power",
+    "level": 5,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Круг смерти",
+    "nameEn": "Circle of Death",
+    "level": 6,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Круг телепортации",
+    "nameEn": "Teleportation Circle",
+    "level": 5,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Лассо молнии",
+    "nameEn": "LIGHTNING LURE",
+    "level": 0,
+    "school": "воплощение",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Лассо Молнии",
+    "nameEn": "LIGHTNING LURE",
+    "level": 0,
+    "school": "прорицание",
+    "source": "SCAG"
+  },
+  {
+    "nameRu": "Левитация",
+    "nameEn": "Levitate",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Леденящее прикосновение",
+    "nameEn": "Chill Touch",
+    "level": 0,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ледяная стена",
+    "nameEn": "Wall of Ice",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ледяной нож",
+    "nameEn": "Ice Knife",
+    "level": 1,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Ледяной шар Отилюка",
+    "nameEn": "Otiluke's Freezing Sphere",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ледяной шторм",
+    "nameEn": "Ice Storm",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Лечение",
+    "nameEn": "Heal",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Личное убежище Морденкайнена",
+    "nameEn": "Mordenkainen's Private Sanctum",
+    "level": 4,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ложная аура Нистула",
+    "nameEn": "Nystul's Magic Aura",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Лунный свет",
+    "nameEn": "Moonbeam",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Луч болезни",
+    "nameEn": "Ray of Sickness",
+    "level": 1,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Луч ведьмы",
+    "nameEn": "Witch Bolt",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Луч слабости",
+    "nameEn": "Ray of Enfeeblement",
+    "level": 2,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Луч холода",
+    "nameEn": "Ray of Frost",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Магическая стрела",
+    "nameEn": "Magic Missile",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Магический круг",
+    "nameEn": "Magic Circle",
+    "level": 3,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Магическое око",
+    "nameEn": "Arcane Eye",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Малая иллюзия",
+    "nameEn": "Minor Illusion",
+    "level": 0,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Малое восстановление",
+    "nameEn": "Lesser Restoration",
+    "level": 2,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Манипулирование водой",
+    "nameEn": "Shape Water",
+    "level": 0,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Мантия крестоносца",
+    "nameEn": "Crusader's Mantle",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Маскировка",
+    "nameEn": "Disguise Self",
+    "level": 1,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Массовое внушение",
+    "nameEn": "Mass Suggestion",
+    "level": 6,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Массовое исцеление ран",
+    "nameEn": "Mass Cure Wounds",
+    "level": 5,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Массовое исцеляющее слово",
+    "nameEn": "Mass Healing Word",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Массовое лечение",
+    "nameEn": "Mass Heal",
+    "level": 9,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Маяк надежды",
+    "nameEn": "Beacon of Hope",
+    "level": 3,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Мгновенный призыв Дромиджа",
+    "nameEn": "Drawmij's Instant Summon",
+    "level": 6,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Медленное падение",
+    "nameEn": "Feather Fall",
+    "level": 1,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Мелкие метеоры Мелфа",
+    "nameEn": "Melf's Minute Meteors",
+    "level": 3,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Ментальная тюрьма",
+    "nameEn": "MENTAL PRISON",
+    "level": 6,
+    "school": "иллюзия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Мерцание",
+    "nameEn": "Blink",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Метеоритный дождь",
+    "nameEn": "Meteor Swarm",
+    "level": 9,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Метка охотника",
+    "nameEn": "Hunter's Mark",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Меткий удар",
+    "nameEn": "True Strike",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Меч Морденкайнена",
+    "nameEn": "Mordenkainen's Sword",
+    "level": 7,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Мираж",
+    "nameEn": "Hallucinatory Terrain",
+    "level": 4,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Миссия",
+    "nameEn": "Geas",
+    "level": 5,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Мистический выстрел",
+    "nameEn": "Eldritch Blast",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Множественное превращение",
+    "nameEn": "MASS POLYMORPH",
+    "level": 9,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Могучая крепость",
+    "nameEn": "MIGHTY FORTRESS",
+    "level": 8,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Мозговая СПОРА",
+    "nameEn": "Mind Spore",
+    "level": 5,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Молния",
+    "nameEn": "Lightning Bolt",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Мотивирующая речь",
+    "nameEn": "Motivational Speech",
+    "level": 3,
+    "school": "очарование",
+    "source": "AI"
+  },
+  {
+    "nameRu": "Наблюдение",
+    "nameEn": "Scrying",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Нанесение ран",
+    "nameEn": "Inflict Wounds",
+    "level": 1,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Натайрово озорство",
+    "nameEn": "Nathair's Mischief",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "FTD"
+  },
+  {
+    "nameRu": "Находчивость",
+    "nameEn": "Glibness",
+    "level": 8,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Нашествие",
+    "nameEn": "INFESTATION",
+    "level": 0,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Нашествие насекомых",
+    "nameEn": "Insect Plague",
+    "level": 5,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Небесное письмо",
+    "nameEn": "Skywrite",
+    "level": 2,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Невидимое письмо",
+    "nameEn": "Illusory Script",
+    "level": 1,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Невидимость",
+    "nameEn": "Invisibility",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Невидимый слуга",
+    "nameEn": "Unseen Servant",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Необнаружимость",
+    "nameEn": "Nondetection",
+    "level": 3,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Нетленные останки",
+    "nameEn": "Gentle Repose",
+    "level": 2,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Неудержимая пляска Отто",
+    "nameEn": "Otto's Irresistible Dance",
+    "level": 6,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Неуязвимость",
+    "nameEn": "INVULNERABILITY",
+    "level": 9,
+    "school": "ограждение",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Обессиливание",
+    "nameEn": "ENERVATION",
+    "level": 5,
+    "school": "некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Обжигающий луч",
+    "nameEn": "Scorching Ray",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Обжигающий удар",
+    "nameEn": "Searing Smite",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Облако кинжалов",
+    "nameEn": "Cloud of Daggers",
+    "level": 2,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Облако смерти",
+    "nameEn": "Cloudkill",
+    "level": 5,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ОБЛАКО СПОР",
+    "nameEn": "Cloud of Spores",
+    "level": 4,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Облако тумана",
+    "nameEn": "Fog Cloud",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Облачение ветра",
+    "nameEn": "Investiture of Wind",
+    "level": 6,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Облачение камня",
+    "nameEn": "Investiture of Stone",
+    "level": 6,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Облачение льда",
+    "nameEn": "Investiture of Ice",
+    "level": 6,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Облачение пламени",
+    "nameEn": "Investiture of Flame",
+    "level": 6,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Облачение тени",
+    "nameEn": "SHADOW OF MOIL",
+    "level": 4,
+    "school": "некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Обморожение",
+    "nameEn": "Frostbite",
+    "level": 0,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Обнаружение животных и растений",
+    "nameEn": "Locate Animals or Plants",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Обнаружение Зла и Добра",
+    "nameEn": "Detect Evil and Good",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Обнаружение ловушек",
+    "nameEn": "Find Traps",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Обнаружение магии",
+    "nameEn": "Detect Magic",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Обнаружение предметов",
+    "nameEn": "Locate Object",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Обнаружение существ",
+    "nameEn": "Locate Creature",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Обнаружение яда и болезней",
+    "nameEn": "Detect Poison and Disease",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Образ",
+    "nameEn": "Major Image",
+    "level": 3,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Обратное притяжение",
+    "nameEn": "Reverse Gravity",
+    "level": 7,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Общение с животными",
+    "nameEn": "Speak with Animals",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Общение с мертвыми",
+    "nameEn": "Speak with Dead",
+    "level": 3,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Общение с природой",
+    "nameEn": "Commune with Nature",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Общение с растениями",
+    "nameEn": "Speak with Plants",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Огненная буря",
+    "nameEn": "Fire Storm",
+    "level": 7,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Огненная стена",
+    "nameEn": "Wall of Fire",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Огненная стрела",
+    "nameEn": "Fire Bolt",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Огненный шар",
+    "nameEn": "Fireball",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Огненный шар замедленного действия",
+    "nameEn": "Delayed Blast Fireball",
+    "level": 7,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Огненный щит",
+    "nameEn": "Fire Shield",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Одуряющая тьма",
+    "nameEn": "MADDENING DARKNESS",
+    "level": 8,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Оживление",
+    "nameEn": "Revivify",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Оживление предметов",
+    "nameEn": "Animate Objects",
+    "level": 5,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Озарение",
+    "nameEn": "Commune",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ОПЛЕТАЮЩАЯ ЛОЗА",
+    "nameEn": "Bonding Vine",
+    "level": 0,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Опутывание",
+    "nameEn": "Entangle",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Опутывающая лоза",
+    "nameEn": "Grasping Vine",
+    "level": 4,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Опутывающие тернии",
+    "nameEn": "Engulfing Thorns",
+    "level": 3,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "ОПУТЫВАЮЩИЙ УДАР",
+    "nameEn": "Ensnaring Strike",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ослепляющий удар",
+    "nameEn": "Blinding Smite",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Остановка времени",
+    "nameEn": "Time Stop",
+    "level": 9,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ОСТРЫЕ ЛИСТЬЯ",
+    "nameEn": "Slicing Leaves",
+    "level": 1,
+    "school": "Преобразование",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "От дерева к дереву",
+    "nameEn": "Tree Stride",
+    "level": 5,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Охранные руны",
+    "nameEn": "Glyph of Warding",
+    "level": 3,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Оценка",
+    "nameEn": "Identify",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Очарование монстра",
+    "nameEn": "CHARM MONSTER",
+    "level": 4,
+    "school": "очарование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Очаровать персону",
+    "nameEn": "Charm Person",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Очищение пищи и воды",
+    "nameEn": "Purify Food and Drink",
+    "level": 1,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ошеломляющий удар",
+    "nameEn": "Staggering Smite",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ПАДЕНИЕ",
+    "nameEn": "Fell",
+    "level": 3,
+    "school": "прорицание",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Паутина",
+    "nameEn": "Web",
+    "level": 2,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Паучья цепкость",
+    "nameEn": "Spider Climb",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Пекло Аганаззара",
+    "nameEn": "AGANAEZAR'S SCORCHER",
+    "level": 2,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Первобытная дикость",
+    "nameEn": "PRIMAL SAVAGERY",
+    "level": 0,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Перевоплощение",
+    "nameEn": "Polymorph",
+    "level": 4,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Передача жизни",
+    "nameEn": "LIFE TRANSFERENCE",
+    "level": 3,
+    "school": "некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Перемещение между планами",
+    "nameEn": "Plane Shift",
+    "level": 7,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Перемещение через растения",
+    "nameEn": "Transport via Plants",
+    "level": 6,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Перст смерти",
+    "nameEn": "Finger of Death",
+    "level": 7,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Песчаная стена",
+    "nameEn": "WALL of SAND",
+    "level": 3,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Пир Героев",
+    "nameEn": "Heroes' Feast",
+    "level": 6,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Пиротехника",
+    "nameEn": "Pyrotechnics",
+    "level": 2,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Пламенные стрелы",
+    "nameEn": "Flame Arrows",
+    "level": 3,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Планарные узы",
+    "nameEn": "Planar Binding",
+    "level": 5,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Планарный союзник",
+    "nameEn": "Planar Ally",
+    "level": 6,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Платиновый щит Физбана",
+    "nameEn": "Fizban's Platinum Shield",
+    "level": 6,
+    "school": "ограждение",
+    "source": "FTD"
+  },
+  {
+    "nameRu": "Плоть в камень",
+    "nameEn": "Flesh to Stone",
+    "level": 6,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Пляска смерти",
+    "nameEn": "DANSE MACABRE",
+    "level": 5,
+    "school": "некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Поглощение стихий",
+    "nameEn": "Absorb Elements",
+    "level": 1,
+    "school": "Ограждение",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Погребальный звон",
+    "nameEn": "TOLL THE DEAD",
+    "level": 0,
+    "school": "некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Подарок болтуна",
+    "nameEn": "Gift of Gab",
+    "level": 2,
+    "school": "очарование",
+    "source": "AI"
+  },
+  {
+    "nameRu": "Подводное дыхание",
+    "nameEn": "Water Breathing",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Поджигание",
+    "nameEn": "Immolation",
+    "level": 5,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Подмога",
+    "nameEn": "Aid",
+    "level": 2,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Поднять мертвого",
+    "nameEn": "Raise Dead",
+    "level": 5,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Подобие",
+    "nameEn": "Simulacrum",
+    "level": 7,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Подпространство",
+    "nameEn": "Demiplane",
+    "level": 8,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Подчинение животного",
+    "nameEn": "Dominate Beast",
+    "level": 4,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Подчинение монстра",
+    "nameEn": "Dominate Monster",
+    "level": 8,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Подчинение персоны",
+    "nameEn": "Dominate Person",
+    "level": 5,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Поиск высшего скакуна",
+    "nameEn": "FIND GREATER STEED",
+    "level": 4,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Поиск пути",
+    "nameEn": "Find the Path",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Покров духа",
+    "nameEn": "SPIRIT SHROUD",
+    "level": 3,
+    "school": "преобразование",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Поле антимагии",
+    "nameEn": "Antimagic Field",
+    "level": 8,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Полет",
+    "nameEn": "Fly",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Полное превращение",
+    "nameEn": "Shapechange",
+    "level": 9,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Понимание языков",
+    "nameEn": "Comprehend Languages",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Порча",
+    "nameEn": "Bane",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Порыв ветра",
+    "nameEn": "Gust of Wind",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Послание",
+    "nameEn": "Sending",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Поспешное отступление",
+    "nameEn": "Expeditious Retreat",
+    "level": 1,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Потайной сундук Леомунда",
+    "nameEn": "Leomund's Secret Chest",
+    "level": 4,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Поток негативной энергии",
+    "nameEn": "NEGATIVE ENERGY FLOOD",
+    "level": 5,
+    "school": "некромантия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Потусторонний облик Таши",
+    "nameEn": "TASHA'S OTHERWORLDLY GUISE",
+    "level": 6,
+    "school": "преобразование",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Починка",
+    "nameEn": "Mending",
+    "level": 0,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Превращение в животных",
+    "nameEn": "Animal Shapes",
+    "level": 8,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Преграда жизни",
+    "nameEn": "Antilife Shell",
+    "level": 5,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Предвидение",
+    "nameEn": "Foresight",
+    "level": 9,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Предосторожность",
+    "nameEn": "Contingency",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Предсказание",
+    "nameEn": "Divination",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Преобразовать скалу",
+    "nameEn": "Transmute Rock",
+    "level": 5,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Приземление",
+    "nameEn": "Earthbind",
+    "level": 2,
+    "school": "Преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Призрачный образ",
+    "nameEn": "Phantasmal Force",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призрачный скакун",
+    "nameEn": "Phantom Steed",
+    "level": 3,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв божественного существа",
+    "nameEn": "Conjure Celestial",
+    "level": 7,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв высшего демона",
+    "nameEn": "SUMMON GREATER DEMON",
+    "level": 4,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Призыв Древня",
+    "nameEn": "Conjure Plant Creature",
+    "level": 5,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Призыв духа аберрации",
+    "nameEn": "SUMMON ABERRATION",
+    "level": 4,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв духа дракона",
+    "nameEn": "Summon Draconic Spirit",
+    "level": 5,
+    "school": "вызов",
+    "source": "FTD"
+  },
+  {
+    "nameRu": "Призыв духа зверя",
+    "nameEn": "SUMMON BEAST",
+    "level": 2,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв духа исчадия",
+    "nameEn": "SUMMON FIEND",
+    "level": 6,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв духа конструкта",
+    "nameEn": "SUMMON CONSTRUCT",
+    "level": 4,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв духа небожителя",
+    "nameEn": "SUMMON CELESTIAL",
+    "level": 5,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв духа нежити",
+    "nameEn": "SUMMON UNDEAD",
+    "level": 3,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв духа стихии",
+    "nameEn": "SUMMON ELEMENTAL",
+    "level": 4,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв духа тени",
+    "nameEn": "SUMMON SHADOWSPAWN",
+    "level": 3,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв духа феи",
+    "nameEn": "SUMMON FEY",
+    "level": 3,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Призыв животных",
+    "nameEn": "Conjure Animals",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ПРИЗЫВ ЗАГРАЖДЕНИЯ",
+    "nameEn": "Conjure Barrage",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв лесных существ",
+    "nameEn": "Conjure Woodland Beings",
+    "level": 4,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ПРИЗЫВ МАЛЫХ ДРЕВНЕЙ",
+    "nameEn": "Conjure Minor Plant Creatures",
+    "level": 4,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Призыв малых элементалей",
+    "nameEn": "Conjure Minor Elementals",
+    "level": 4,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв молнии",
+    "nameEn": "Call Lightning",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв низших демонов",
+    "nameEn": "SUMMON LESSER DEMONS",
+    "level": 3,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Призыв скакуна",
+    "nameEn": "Find Steed",
+    "level": 2,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв фамильяра",
+    "nameEn": "Find Familiar",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв фей",
+    "nameEn": "Conjure Fey",
+    "level": 6,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв шквала стрел",
+    "nameEn": "Conjure Volley",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Призыв элементалей",
+    "nameEn": "Conjure Elemental",
+    "level": 5,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Приказ",
+    "nameEn": "Command",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Прикосновение вампира",
+    "nameEn": "Vampiric Touch",
+    "level": 3,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Приливная волна",
+    "nameEn": "Tidal Wave",
+    "level": 3,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Принуждение",
+    "nameEn": "Compulsion",
+    "level": 4,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Притворство",
+    "nameEn": "Seeming",
+    "level": 5,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Пробуждение",
+    "nameEn": "Awaken",
+    "level": 5,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Проекция",
+    "nameEn": "Project Image",
+    "level": 7,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Пройти без следа",
+    "nameEn": "Pass without Trace",
+    "level": 2,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Проклятие",
+    "nameEn": "Bestow Curse",
+    "level": 3,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Пронзание разума",
+    "nameEn": "MIND SPIKE",
+    "level": 5,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "ПРОНЗАЮЩИЙ КОРЕНЬ",
+    "nameEn": "Skewering Branch",
+    "level": 3,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "ПРОНЗАЮЩИЙ ШИП",
+    "nameEn": "Piercing Thorn",
+    "level": 0,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Прыжок",
+    "nameEn": "Jump",
+    "level": 1,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Псевдожизнь",
+    "nameEn": "False Life",
+    "level": 1,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Психическая плеть Таши",
+    "nameEn": "TASHA'S MIND WHIP",
+    "level": 2,
+    "school": "очарование",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Психический крик",
+    "nameEn": "PSYCHIC SCREAM",
+    "level": 9,
+    "school": "очарование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Психическое копье Раулотима",
+    "nameEn": "Raulothim's Psychic Lance",
+    "level": 4,
+    "school": "очарование",
+    "source": "FTD"
+  },
+  {
+    "nameRu": "ПУТИ ДРИАДЫ",
+    "nameEn": "Dryad's Leap",
+    "level": 6,
+    "school": "Transmutation",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Пылающий шар",
+    "nameEn": "Flaming Sphere",
+    "level": 2,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Пылевой дьявол",
+    "nameEn": "Dust Devil",
+    "level": 2,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Радужная стена",
+    "nameEn": "Prismatic Wall",
+    "level": 9,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Радужные брызги",
+    "nameEn": "Prismatic Spray",
+    "level": 7,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Развеять Зло и Добро",
+    "nameEn": "Dispel Evil and Good",
+    "level": 5,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Развеять магию",
+    "nameEn": "Dispel Magic",
+    "level": 3,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Размытый образ",
+    "nameEn": "Blur",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Разноцветные брызги",
+    "nameEn": "Color Spray",
+    "level": 1,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Разноцветный шар",
+    "nameEn": "Chromatic Orb",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Разящее око",
+    "nameEn": "Eyebite",
+    "level": 6,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Раскаленный металл",
+    "nameEn": "Heat Metal",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Раскидывание",
+    "nameEn": "SCATTER",
+    "level": 6,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Рассвет",
+    "nameEn": "DAWN",
+    "level": 5,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Расщепление разума",
+    "nameEn": "MIND SLIVER",
+    "level": 0,
+    "school": "очарование",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Регенерация",
+    "nameEn": "Regenerate",
+    "level": 7,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Реинкарнация",
+    "nameEn": "Reincarnate",
+    "level": 5,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Речь златоуста",
+    "nameEn": "Enthrall",
+    "level": 2,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Рой снежков Сниллока",
+    "nameEn": "Snilloc's Snowball Swarm",
+    "level": 2,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Рост растений",
+    "nameEn": "Plant Growth",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Рост шипов",
+    "nameEn": "Spike Growth",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Роща друида",
+    "nameEn": "DRUID GROVE",
+    "level": 6,
+    "school": "ограждение",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Рука Бигби",
+    "nameEn": "Bigby's Hand",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "РУКА ГАИ",
+    "nameEn": "Gaea's Hand",
+    "level": 1,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Рука-лоза",
+    "nameEn": "Arm of the Wild",
+    "level": 2,
+    "school": "Transmutation",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Руки Хадара",
+    "nameEn": "Arms of Hadar",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Самонаводящаяся стрела",
+    "nameEn": "Guiding Bolt",
+    "level": 1,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сверкающая монета Джима",
+    "nameEn": "Jim's Glowing Coin",
+    "level": 2,
+    "school": "очарование",
+    "source": "AI"
+  },
+  {
+    "nameRu": "Свет",
+    "nameEn": "Light",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Свобода передвижения",
+    "nameEn": "Freedom of Movement",
+    "level": 4,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Связь с иным планом",
+    "nameEn": "Contact Other Plane",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Связь со Зверем",
+    "nameEn": "Beast Bond",
+    "level": 1,
+    "school": "Прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Святилище",
+    "nameEn": "Hallow",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Священное оружие",
+    "nameEn": "HOLY WEAPON",
+    "level": 5,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Священное пламя",
+    "nameEn": "Sacred Flame",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сглаз",
+    "nameEn": "Hex",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Силовая стена",
+    "nameEn": "Wall of Force",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Силок",
+    "nameEn": "SNARE",
+    "level": 1,
+    "school": "ограждение",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Симуляция смерти",
+    "nameEn": "Feign Death",
+    "level": 3,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Синоптический разряд",
+    "nameEn": "SYNAPTIC STATIC",
+    "level": 5,
+    "school": "очарование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Сковывающий лёд Райма",
+    "nameEn": "Rime's Binding Ice",
+    "level": 2,
+    "school": "воплощение",
+    "source": "FTD"
+  },
+  {
+    "nameRu": "Скороход",
+    "nameEn": "Longstrider",
+    "level": 1,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Слабоумие",
+    "nameEn": "Feeblemind",
+    "level": 8,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Слепота/Глухота",
+    "nameEn": "Blindness/Deafness",
+    "level": 2,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Слиться с камнем",
+    "nameEn": "Meld into Stone",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Слово возврата",
+    "nameEn": "Word of Recall",
+    "level": 6,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Слово Силы: исцеление",
+    "nameEn": "Power Word Heal",
+    "level": 9,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Слово Силы: оглушение",
+    "nameEn": "Power Word Stun",
+    "level": 8,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Слово Силы: смерть",
+    "nameEn": "Power Word Kill",
+    "level": 9,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Слово сияния",
+    "nameEn": "WORD of RADIANCE",
+    "level": 0,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Смена обличья",
+    "nameEn": "Alter Self",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Смертный ужас",
+    "nameEn": "Weird",
+    "level": 9,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Смерч",
+    "nameEn": "Whirlwind",
+    "level": 7,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Снаряд Хаоса",
+    "nameEn": "CHAOS BOLT",
+    "level": 1,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Снятие проклятия",
+    "nameEn": "Remove Curse",
+    "level": 3,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Создание и уничтожение воды",
+    "nameEn": "Create or Destroy Water",
+    "level": 1,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Создание нежити",
+    "nameEn": "Create Undead",
+    "level": 6,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Создание прохода",
+    "nameEn": "Passwall",
+    "level": 5,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Создать костер",
+    "nameEn": "Create Bonfire",
+    "level": 0,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Созидание",
+    "nameEn": "Creation",
+    "level": 5,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сокрушительная волна",
+    "nameEn": "Destructive Wave",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сокрытие разума",
+    "nameEn": "Mind Blank",
+    "level": 8,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Солнечная вспышка",
+    "nameEn": "Sunburst",
+    "level": 8,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Солнечный луч",
+    "nameEn": "Sunbeam",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сон",
+    "nameEn": "Sleep",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сон синей вуали",
+    "nameEn": "DREAM OF THE BLUE VEIL",
+    "level": 7,
+    "school": "вызов",
+    "source": "TCoE"
+  },
+  {
+    "nameRu": "Сообщение",
+    "nameEn": "Message",
+    "level": 0,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сопротивление",
+    "nameEn": "Resistance",
+    "level": 0,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сотворение гомункула",
+    "nameEn": "CREATE HOMUNCULUS",
+    "level": 6,
+    "school": "Преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Сотворение пищи и воды",
+    "nameEn": "Create Food and Water",
+    "level": 3,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сотворение пламени",
+    "nameEn": "Produce Flame",
+    "level": 0,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Споры телепатии",
+    "nameEn": "Rapport Spores",
+    "level": 1,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Спровоцированная жадность",
+    "nameEn": "Incite Greed",
+    "level": 3,
+    "school": "очарование",
+    "source": "AI"
+  },
+  {
+    "nameRu": "Стена ветра",
+    "nameEn": "Wind Wall",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Стена воды",
+    "nameEn": "WALL OF WATER",
+    "level": 3,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Стена клинков",
+    "nameEn": "Blade Barrier",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Стена колючек",
+    "nameEn": "Wall of Thorns",
+    "level": 6,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Стена света",
+    "nameEn": "WALL OF LIGHT",
+    "level": 5,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Стихийная кара",
+    "nameEn": "Elemental Bane",
+    "level": 4,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Стихийное оружие",
+    "nameEn": "Elemental Weapon",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Страж природы",
+    "nameEn": "GUARDIAN OF NATURE",
+    "level": 4,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Стражи",
+    "nameEn": "Guards and Wards",
+    "level": 6,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Страх",
+    "nameEn": "Fear",
+    "level": 3,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Стрела молний",
+    "nameEn": "Lightning Arrow",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Стук",
+    "nameEn": "Knock",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сфера Воды",
+    "nameEn": "Watery Sphere",
+    "level": 4,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Сфера неуязвимости",
+    "nameEn": "Globe of Invulnerability",
+    "level": 6,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Сфера Шторма",
+    "nameEn": "Storm Sphere",
+    "level": 4,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Таинственный мираж",
+    "nameEn": "Mirage Arcane",
+    "level": 7,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Танцующие огоньки",
+    "nameEn": "Dancing Lights",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Телекинез",
+    "nameEn": "Telekinesis",
+    "level": 5,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Телепатическая связь Рэри",
+    "nameEn": "Rary's Telepathic Bond",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Телепатия",
+    "nameEn": "Telepathy",
+    "level": 8,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Телепортация",
+    "nameEn": "Teleport",
+    "level": 7,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Темновидение",
+    "nameEn": "Darkvision",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Теневой клинок",
+    "nameEn": "SHADOW BLADE",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Тензеров парящий диск",
+    "nameEn": "Tenser's Floating Disk",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Тишина",
+    "nameEn": "Silence",
+    "level": 2,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Трансформация Тензера",
+    "nameEn": "TENSER'S TRANSFORMATION",
+    "level": 6,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Тревога",
+    "nameEn": "Alarm",
+    "level": 1,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Трюк с веревкой",
+    "nameEn": "Rope Trick",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Туманный шаг",
+    "nameEn": "Misty Step",
+    "level": 2,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Тьма",
+    "nameEn": "Darkness",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Убежище",
+    "nameEn": "Sanctuary",
+    "level": 1,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Увеличить/Уменьшить",
+    "nameEn": "Enlarge/Reduce",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Увлекательная прогулка",
+    "nameEn": "Kinetic Jaunt",
+    "level": 2,
+    "school": "преобразование",
+    "source": "SCC"
+  },
+  {
+    "nameRu": "Увядание и цветение",
+    "nameEn": "Wither and Bloom",
+    "level": 2,
+    "school": "некромантия",
+    "source": "SCC"
+  },
+  {
+    "nameRu": "Удар грома",
+    "nameEn": "Thunderclap",
+    "level": 0,
+    "school": "прорицание",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Удар Зефира",
+    "nameEn": "ZEPHYR STRIKE",
+    "level": 1,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Удар пламени",
+    "nameEn": "Flame Strike",
+    "level": 5,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Удар стального ветра",
+    "nameEn": "STEEL WIND STRIKE",
+    "level": 5,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Удержание монстра",
+    "nameEn": "Hold Monster",
+    "level": 5,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Удержание персоны",
+    "nameEn": "Hold Person",
+    "level": 2,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Узилище",
+    "nameEn": "Forcecage",
+    "level": 7,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Указание",
+    "nameEn": "Guidance",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Улучшенная невидимость",
+    "nameEn": "Greater Invisibility",
+    "level": 4,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Улучшенное восстановление",
+    "nameEn": "Greater Restoration",
+    "level": 5,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Умиротворение",
+    "nameEn": "Calm Emotions",
+    "level": 2,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Управление ветром",
+    "nameEn": "Control Winds",
+    "level": 5,
+    "school": "Преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Управление пламенем",
+    "nameEn": "Control Flames",
+    "level": 0,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Упругий шар Отилюка",
+    "nameEn": "Otiluke's Resilient Sphere",
+    "level": 4,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Усиление навыка",
+    "nameEn": "SKILL EMPOWERMENT",
+    "level": 5,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Усиление способностей",
+    "nameEn": "Enhance Ability",
+    "level": 2,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ускорение",
+    "nameEn": "Haste",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Усыхание",
+    "nameEn": "Blight",
+    "level": 4,
+    "school": "некромантия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ФАЛЬШИВЫЙ ДВОЙНИК",
+    "nameEn": "Mislead",
+    "level": 5,
+    "school": "иллюзия",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Фокусы",
+    "nameEn": "Prestidigitation",
+    "level": 0,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Форма камня",
+    "nameEn": "Stone Shape",
+    "level": 4,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Хижина Леомунда",
+    "nameEn": "Leomund's Tiny Hut",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Хождение по ветру",
+    "nameEn": "Wind Walk",
+    "level": 6,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Хождение по воде",
+    "nameEn": "Water Walk",
+    "level": 3,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Храм богов",
+    "nameEn": "TEMPLE OF THE GODS",
+    "level": 7,
+    "school": "вызов",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Цепкий росток",
+    "nameEn": "Grasping Sprout",
+    "level": 0,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Цепная молния",
+    "nameEn": "Chain Lightning",
+    "level": 6,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Церемония",
+    "nameEn": "CEREMONY",
+    "level": 1,
+    "school": "ограждение",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Цунами",
+    "nameEn": "Tsunami",
+    "level": 8,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Черные щупальца Эварда",
+    "nameEn": "Evard's Black Tentacles",
+    "level": 4,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Чтение мыслей",
+    "nameEn": "Detect Thoughts",
+    "level": 2,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Шепот диссонанса",
+    "nameEn": "Dissonant Whispers",
+    "level": 1,
+    "school": "очарование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Шипастый кнут",
+    "nameEn": "Thorn Whip",
+    "level": 0,
+    "school": "преобразование",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "ШИПАСТЫЙ ЩИТ",
+    "nameEn": "Thorn Shield",
+    "level": 0,
+    "school": "вызов",
+    "source": "SCPC"
+  },
+  {
+    "nameRu": "Шквал",
+    "nameEn": "Gust",
+    "level": 0,
+    "school": "преобразование",
+    "source": "XG"
+  },
+  {
+    "nameRu": "Шквал шипов",
+    "nameEn": "Hail of Thorns",
+    "level": 1,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Щит",
+    "nameEn": "Shield",
+    "level": 1,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Щит веры",
+    "nameEn": "Shield of Faith",
+    "level": 1,
+    "school": "ограждение",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Электрошок",
+    "nameEn": "Shocking Grasp",
+    "level": 0,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ядовитые брызги",
+    "nameEn": "Poison Spray",
+    "level": 0,
+    "school": "вызов",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Языки",
+    "nameEn": "Tongues",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  },
+  {
+    "nameRu": "Ясновидение",
+    "nameEn": "Clairvoyance",
+    "level": 3,
+    "school": "прорицание",
+    "source": "PHB"
+  }
+]
