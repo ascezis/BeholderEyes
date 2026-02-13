@@ -4,6 +4,10 @@ node_modules/
 # Build
 /dist/
 
+# SQLite runtime files
+*.sqlite-shm
+*.sqlite-wal
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
