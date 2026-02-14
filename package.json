@@ -14,6 +14,7 @@
                     "lint":  "eslint . --ext .ts,.tsx --max-warnings 0",
                     "typecheck":  "tsc -p tsconfig.json --noEmit",
                     "import:assets":  "node scripts/import-assets.cjs",
+                    "extract:weapons":  "node scripts/extract-weapons-json.cjs",
                     "prepare:ttg":  "node scripts/prepare-ttg-output.cjs",
                     "rebuild:electron":  "electron-rebuild -f -w better-sqlite3",
                     "postinstall":  "npm run rebuild:electron"

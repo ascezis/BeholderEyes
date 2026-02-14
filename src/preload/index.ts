@@ -15,7 +15,10 @@ contextBridge.exposeInMainWorld('beholder', {
   version: '0.1.0',
   campaign: {
     get: (): Promise<{ id: number; name: string } | null> => ipcRenderer.invoke('campaign:get'),
-    create: (name: string): Promise<{ id: number }> => ipcRenderer.invoke('campaign:create', name)
+    create: (name: string): Promise<{ id: number }> => ipcRenderer.invoke('campaign:create', name),
+    update: (payload: { id: number; name: string }): Promise<{ ok: true }> =>
+      ipcRenderer.invoke('campaign:update', payload),
+    delete: (id: number): Promise<{ ok: true }> => ipcRenderer.invoke('campaign:delete', id)
   },
   characters: {
     list: (campaignId: number): Promise<any[]> =>
@@ -41,7 +44,10 @@ contextBridge.exposeInMainWorld('beholder', {
     import: (campaignId: number): Promise<
       | { canceled: true }
       | { canceled: false; id?: number; name?: string; error?: string }
-    > => ipcRenderer.invoke('characters:import', campaignId)
+    > => ipcRenderer.invoke('characters:import', campaignId),
+    export: (id: number): Promise<{ ok: boolean; canceled?: boolean }> =>
+      ipcRenderer.invoke('characters:export', id),
+    delete: (id: number): Promise<{ ok: true }> => ipcRenderer.invoke('characters:delete', id)
   },
   combats: {
     list: (campaignId: number): Promise<Array<{ id: number; name: string; updated_at: string }>> =>
@@ -54,9 +60,10 @@ contextBridge.exposeInMainWorld('beholder', {
     }): Promise<{ id: number }> => ipcRenderer.invoke('combats:save', payload),
     get: (id: number): Promise<{ id: number; name: string; data: unknown } | null> =>
       ipcRenderer.invoke('combats:get', id),
-    export: (id: number): Promise<{ ok: boolean; canceled?: boolean }> =>
+    delete: (id: number): Promise<{ ok: true }> => ipcRenderer.invoke('combats:delete', id),
+    export: (id: number): Promise<{ ok: boolean; canceled?: boolean; error?: string }> =>
       ipcRenderer.invoke('combats:export', id),
-    import: (campaignId: number): Promise<{ ok: boolean; canceled?: boolean; id?: number }> =>
+    import: (campaignId: number): Promise<{ ok: boolean; canceled?: boolean; id?: number; error?: string }> =>
       ipcRenderer.invoke('combats:import', campaignId)
   },
   monsters: {
@@ -96,10 +103,47 @@ contextBridge.exposeInMainWorld('beholder', {
       ipcRenderer.invoke('items:list', params),
     get: (id: number): Promise<unknown> => ipcRenderer.invoke('items:get', id)
   },
+  weapons: {
+    list: (params?: ListParams): Promise<ListResponse<unknown>> =>
+      ipcRenderer.invoke('weapons:list', params),
+    get: (id: number): Promise<unknown> => ipcRenderer.invoke('weapons:get', id)
+  },
   artifacts: {
     list: (params?: ListParams): Promise<ListResponse<unknown>> =>
       ipcRenderer.invoke('artifacts:list', params),
     get: (id: number): Promise<unknown> => ipcRenderer.invoke('artifacts:get', id)
+  },
+  customWeapons: {
+    list: (payload: {
+      campaignId: number
+      query?: string
+      limit?: number
+      offset?: number
+    }): Promise<ListResponse<unknown>> => ipcRenderer.invoke('customWeapons:list', payload),
+    get: (id: number): Promise<unknown> => ipcRenderer.invoke('customWeapons:get', id),
+    create: (payload: {
+      campaignId: number
+      name: string
+      kind?: string | null
+      attackBonus?: number | null
+      damage?: string | null
+      damageType?: string | null
+      rangeText?: string | null
+      notes?: string | null
+      data?: unknown
+    }): Promise<{ id: number }> => ipcRenderer.invoke('customWeapons:create', payload),
+    update: (payload: {
+      id: number
+      name: string
+      kind?: string | null
+      attackBonus?: number | null
+      damage?: string | null
+      damageType?: string | null
+      rangeText?: string | null
+      notes?: string | null
+      data?: unknown
+    }): Promise<{ ok: true }> => ipcRenderer.invoke('customWeapons:update', payload),
+    delete: (id: number): Promise<{ ok: true }> => ipcRenderer.invoke('customWeapons:delete', id)
   },
   ttg: {
     getAll: (): Promise<{ summary: unknown; classes: unknown[]; races: unknown[]; rules: unknown[] }> =>

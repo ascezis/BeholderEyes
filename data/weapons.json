@@ -1,0 +1,863 @@
+[
+  {
+    "en": {
+      "name": "Club",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "1 sp",
+      "source": "PHB",
+      "img": "CLUB.jpg",
+      "weight": "2",
+      "damageVal": "1d4",
+      "damageType": "bludgeoning",
+      "props": [
+        "Light"
+      ]
+    },
+    "ru": {
+      "name": "Дубинка",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Dagger",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "2 gp",
+      "source": "PHB",
+      "img": "DAGGER.jpg",
+      "weight": "1",
+      "damageVal": "1d4",
+      "damageType": "piercing",
+      "props": [
+        "Finesse",
+        "light",
+        "thrown (range 20/60)"
+      ]
+    },
+    "ru": {
+      "name": "Кинжал",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Greatclub",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "2 sp",
+      "source": "PHB",
+      "img": "GREATCLUB.jpg",
+      "weight": "10",
+      "damageVal": "1d8",
+      "damageType": "bludgeoning",
+      "props": [
+        "Two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Палица",
+      "nic": "Дубина",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Handaxe",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "5 gp",
+      "source": "PHB",
+      "img": "HANDAXE.jpg",
+      "weight": "2",
+      "damageVal": "1d6",
+      "damageType": "slashing",
+      "props": [
+        "Light",
+        "thrown (range 20/60)"
+      ]
+    },
+    "ru": {
+      "name": "Ручной топор",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Javelin",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "5 sp",
+      "source": "PHB",
+      "img": "JAVELIN.jpg",
+      "weight": "2",
+      "damageVal": "1d6",
+      "damageType": "piercing",
+      "props": [
+        "Thrown (range 30/120)"
+      ]
+    },
+    "ru": {
+      "name": "Метательное копьё",
+      "nic": "Метательное копье, Дрот",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Light hammer",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "2 gp",
+      "source": "PHB",
+      "img": "LIGHT_HAMMER.jpg",
+      "weight": "2",
+      "damageVal": "1d4",
+      "damageType": "bludgeoning",
+      "props": [
+        "Light",
+        "thrown (range 20/60)"
+      ]
+    },
+    "ru": {
+      "name": "Лёгкий молот",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Mace",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "5 gp",
+      "source": "PHB",
+      "img": "MACE.jpg",
+      "weight": "4",
+      "damageVal": "1d6",
+      "damageType": "bludgeoning"
+    },
+    "ru": {
+      "name": "Булава",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Quarterstaff",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "2 sp",
+      "source": "PHB",
+      "img": "QUARTERSTAFF.jpg",
+      "weight": "4",
+      "damageVal": "1d6",
+      "damageType": "bludgeoning",
+      "props": [
+        "Versatile (1d8)"
+      ]
+    },
+    "ru": {
+      "name": "Боевой посох",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Sickle",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "1 gp",
+      "source": "PHB",
+      "img": "SICKLE.jpg",
+      "weight": "2",
+      "damageVal": "1d4",
+      "damageType": "slashing",
+      "props": [
+        "Light"
+      ]
+    },
+    "ru": {
+      "name": "Серп",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Spear",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "1 gp",
+      "source": "PHB",
+      "img": "SPEAR.jpg",
+      "weight": "32",
+      "damageVal": "1d6",
+      "damageType": "piercing",
+      "props": [
+        "Thrown (range 20/60)",
+        "versatile (1d8)"
+      ]
+    },
+    "ru": {
+      "name": "Копьё",
+      "nic": "копье",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Unarmed strike",
+      "type": "weapon",
+      "typeAdditions": "(Simple Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "Бисплатна!!",
+      "source": "PHB",
+      "img": "UNARMED_STRIKE.jpg",
+      "damageVal": "1",
+      "damageType": "bludgeoning"
+    },
+    "ru": {
+      "name": "Безоружный удар",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Crossbow, light",
+      "type": "weapon",
+      "typeAdditions": "(Simple Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "25 gp",
+      "source": "PHB",
+      "img": "CROSSBOW_LIGHT.jpg",
+      "weight": "5",
+      "damageVal": "1d8",
+      "damageType": "piercing",
+      "props": [
+        "Ammunition (range 80/320)",
+        "loading",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Арбалет, легкий",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Dart",
+      "type": "weapon",
+      "typeAdditions": "(Simple Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "5 sp",
+      "source": "PHB",
+      "img": "DART.jpg",
+      "weight": "1/4",
+      "damageVal": "1d4",
+      "damageType": "piercing",
+      "props": [
+        "Finesse",
+        "thrown (range 20/60)"
+      ]
+    },
+    "ru": {
+      "name": "Дротик",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Shortbow",
+      "type": "weapon",
+      "typeAdditions": "(Simple Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "25 gp",
+      "source": "PHB",
+      "img": "SHORTBOW.jpg",
+      "weight": "2",
+      "damageVal": "1d6",
+      "damageType": "piercing",
+      "props": [
+        "Ammunition (range 80/320)",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Короткий лук",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Sling",
+      "type": "weapon",
+      "typeAdditions": "(Simple Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "1 sp",
+      "source": "PHB",
+      "img": "SLING.jpg",
+      "weight": "0",
+      "damageVal": "1d4",
+      "damageType": "bludgeoning",
+      "props": [
+        "Ammunition (range 30/120)"
+      ]
+    },
+    "ru": {
+      "name": "Праща",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Battleaxe",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "10 gp",
+      "source": "PHB",
+      "img": "BATTLEAXE.jpg",
+      "weight": "4",
+      "damageVal": "1d8",
+      "damageType": "slashing",
+      "props": [
+        "Versatile (1d10)"
+      ]
+    },
+    "ru": {
+      "name": "Боевой топор",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Flail",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "10 gp",
+      "source": "PHB",
+      "img": "FLAIL.jpg",
+      "weight": "2",
+      "damageVal": "1d8",
+      "damageType": "bludgeoning"
+    },
+    "ru": {
+      "name": "Цеп",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Glaive",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "20 gp",
+      "source": "PHB",
+      "img": "GLAIVE.jpg",
+      "weight": "6",
+      "damageVal": "1d10",
+      "damageType": "slashing",
+      "props": [
+        "Heavy",
+        "reach",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Глефа",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Greataxe",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "30 gp",
+      "source": "PHB",
+      "img": "GREATAXE.jpg",
+      "weight": "7",
+      "damageVal": "1d12",
+      "damageType": "slashing",
+      "props": [
+        "Heavy",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Секира",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Greatsword",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "50 gp",
+      "source": "PHB",
+      "img": "GREATSWORD.jpg",
+      "weight": "6",
+      "damageVal": "2d6",
+      "damageType": "slashing",
+      "props": [
+        "Heavy",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Двуручный меч",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Halberd",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "20 gp",
+      "source": "PHB",
+      "img": "HALBERD.jpg",
+      "weight": "6",
+      "damageVal": "1d10",
+      "damageType": "slashing",
+      "props": [
+        "Heavy",
+        "reach",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Алебарда",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Lance",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "10 gp",
+      "source": "PHB",
+      "img": "LANCE.jpg",
+      "weight": "6",
+      "damageVal": "1d12",
+      "damageType": "piercing",
+      "props": [
+        "Reach",
+        "special"
+      ]
+    },
+    "ru": {
+      "name": "Длинное копьё",
+      "nic": "длинное копье",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Longsword",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "15 gp",
+      "source": "PHB",
+      "img": "LONGSWORD.jpg",
+      "weight": "3",
+      "damageVal": "1d8",
+      "damageType": "slashing",
+      "props": [
+        "Versatile (1dl0)"
+      ]
+    },
+    "ru": {
+      "name": "Длинный меч",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Morningstar",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "15 gp",
+      "source": "PHB",
+      "img": "MORNINGSTAR.jpg",
+      "weight": "4",
+      "damageVal": "1d8",
+      "damageType": "piercing"
+    },
+    "ru": {
+      "name": "Моргенштерн",
+      "nic": "Утренняя звезда",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Maul",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "10 gp",
+      "source": "PHB",
+      "img": "MAUL.jpg",
+      "weight": "10",
+      "damageVal": "2d6",
+      "damageType": "bludgeoning",
+      "props": [
+        "Heavy",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Молот",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Pike",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "5 gp",
+      "source": "PHB",
+      "img": "PIKE.jpg",
+      "weight": "18",
+      "damageVal": "1d10",
+      "damageType": "piercing",
+      "props": [
+        "Heavy",
+        "reach",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Пика",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Rapier",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "25 gp",
+      "source": "PHB",
+      "img": "RAPIER.jpg",
+      "weight": "2",
+      "damageVal": "1d8",
+      "damageType": "piercing",
+      "props": [
+        "Finesse"
+      ]
+    },
+    "ru": {
+      "name": "Рапира",
+      "nic": "Шпага",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Scimitar",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "25 gp",
+      "source": "PHB",
+      "img": "SCIMITAR.jpg",
+      "weight": "3",
+      "damageVal": "1d6",
+      "damageType": "slashing",
+      "props": [
+        "Finesse",
+        "light"
+      ]
+    },
+    "ru": {
+      "name": "Скимитар",
+      "nic": "ятаган",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Shortsword",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "10 gp",
+      "source": "PHB",
+      "img": "SHORTSWORD.jpg",
+      "weight": "2",
+      "damageVal": "1d6",
+      "damageType": "piercing",
+      "props": [
+        "Finesse",
+        "light"
+      ]
+    },
+    "ru": {
+      "name": "Короткий меч",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Trident",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "5 gp",
+      "source": "PHB",
+      "img": "TRIDENT.jpg",
+      "weight": "4",
+      "damageVal": "1d6",
+      "damageType": "piercing",
+      "props": [
+        "Thrown (range 20/60)",
+        "versatile (1d8)"
+      ]
+    },
+    "ru": {
+      "name": "Трезубец",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "War pick",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "5 gp",
+      "source": "PHB",
+      "img": "WAR_PICK.jpg",
+      "weight": "2",
+      "damageVal": "1d8",
+      "damageType": "piercing"
+    },
+    "ru": {
+      "name": "Боевая кирка",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Whip",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "2 gp",
+      "source": "PHB",
+      "img": "WHIP.jpg",
+      "weight": "3",
+      "damageVal": "1d4",
+      "damageType": "slashing",
+      "props": [
+        "Finesse",
+        "reach"
+      ]
+    },
+    "ru": {
+      "name": "Кнут",
+      "nic": "Хлыст, бич",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Warhammer",
+      "type": "weapon",
+      "typeAdditions": "(Martial Melee)",
+      "rarity": 0,
+      "text": "",
+      "coast": "15 gp",
+      "source": "PHB",
+      "img": "WARHAMMER.jpg",
+      "weight": "2",
+      "damageVal": "1d8",
+      "damageType": "bludgeoning",
+      "props": [
+        "Versatile (1d10)"
+      ]
+    },
+    "ru": {
+      "name": "Боевой молот",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Blowgun",
+      "type": "weapon",
+      "typeAdditions": "(Martial Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "10 gp",
+      "source": "PHB",
+      "img": "BLOWGUN.jpg",
+      "weight": "1",
+      "damageVal": "1",
+      "damageType": "piercing",
+      "props": [
+        "Ammunition (range 25/100)",
+        "loading"
+      ]
+    },
+    "ru": {
+      "name": "Духовая трубка",
+      "nic": "Духовое ружье, Духовое ружьё",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Crossbow, hand",
+      "type": "weapon",
+      "typeAdditions": "(Martial Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "75 gp",
+      "source": "PHB",
+      "img": "CROSSBOW_HAND.jpg",
+      "weight": "3",
+      "damageVal": "1d6",
+      "damageType": "piercing",
+      "props": [
+        "Ammunition (range 30/120)",
+        "light",
+        "loading"
+      ]
+    },
+    "ru": {
+      "name": "Арбалет, ручной",
+      "nic": "ручной арбалет",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Crossbow, heavy",
+      "type": "weapon",
+      "typeAdditions": "(Martial Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "50 gp",
+      "source": "PHB",
+      "img": "CROSSBOW_HEAVY.jpg",
+      "weight": "18",
+      "damageVal": "1d10",
+      "damageType": "piercing",
+      "props": [
+        "Ammunition (range 100/400)",
+        "heavy",
+        "loading",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Арбалет, тяжёлый",
+      "nic": "Тяжелый арбалет, Тяжёлый арбалет",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Longbow",
+      "type": "weapon",
+      "typeAdditions": "(Martial Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "50 gp",
+      "source": "PHB",
+      "img": "LONGBOW.jpg",
+      "weight": "2",
+      "damageVal": "1d8",
+      "damageType": "piercing",
+      "props": [
+        "Ammunition (range 150/600)",
+        "heavy",
+        "two-handed"
+      ]
+    },
+    "ru": {
+      "name": "Длинный лук",
+      "text": ""
+    }
+  },
+  {
+    "en": {
+      "name": "Net",
+      "type": "weapon",
+      "typeAdditions": "(Martial Ranged)",
+      "rarity": 0,
+      "text": "",
+      "coast": "1 gp",
+      "source": "PHB",
+      "img": "NET.jpg",
+      "weight": "3",
+      "props": [
+        "Special",
+        "thrown (range 5/15)"
+      ]
+    },
+    "ru": {
+      "name": "Сеть",
+      "text": ""
+    }
+  }
+]

@@ -51,6 +51,16 @@ const ensureDb = (db) => {
       data json not null
     );
 
+    create table if not exists weapons (
+      id integer primary key,
+      name text not null,
+      name_ru text,
+      source text,
+      type text,
+      rarity integer,
+      data json not null
+    );
+
     create table if not exists spells (
       id integer primary key,
       name text not null,
@@ -74,6 +84,8 @@ const ensureDb = (db) => {
     create index if not exists idx_monsters_name_ru on monsters(name_ru);
     create index if not exists idx_items_name on items(name);
     create index if not exists idx_items_name_ru on items(name_ru);
+    create index if not exists idx_weapons_name on weapons(name);
+    create index if not exists idx_weapons_name_ru on weapons(name_ru);
     create index if not exists idx_spells_name on spells(name);
     create index if not exists idx_spells_name_ru on spells(name_ru);
     create index if not exists idx_artifacts_name on artifacts(name);
@@ -85,6 +97,15 @@ const sanitize = (value) => {
   if (value === undefined || value === null) return null
   if (typeof value === 'string') return value.trim() || null
   return value
+}
+
+const isWeaponItem = (item) => {
+  const en = item?.en || {}
+  const ru = item?.ru || {}
+  const raw = [en.type, ru.type, en.typeAdditions, ru.typeAdditions, en.name, ru.name]
+    .map((value) => (typeof value === 'string' ? value.toLowerCase() : ''))
+    .join(' ')
+  return raw.includes('weapon') || raw.includes('оруж')
 }
 
 const importMonsters = (db) => {
@@ -132,7 +153,35 @@ const importItems = (db) => {
     }
   })
   insertMany(items)
-  return items.length
+  return items
+}
+
+const importWeapons = (db, items) => {
+  const weapons = items.filter(isWeaponItem)
+  db.exec('delete from weapons')
+  const stmt = db.prepare(`
+    insert into weapons (name, name_ru, source, type, rarity, data)
+    values (@name, @name_ru, @source, @type, @rarity, @data)
+  `)
+  const insertMany = db.transaction((rows) => {
+    for (const item of rows) {
+      const en = item.en || {}
+      const ru = item.ru || {}
+      stmt.run({
+        name: sanitize(en.name) ?? 'Без имени',
+        name_ru: sanitize(ru.name),
+        source: sanitize(en.source || ru.source),
+        type: sanitize(en.type),
+        rarity: en.rarity ?? null,
+        data: JSON.stringify(item)
+      })
+    }
+  })
+  insertMany(weapons)
+
+  const weaponsJsonPath = path.join(root, 'data', 'weapons.json')
+  fs.writeFileSync(weaponsJsonPath, JSON.stringify(weapons, null, 2), 'utf8')
+  return weapons.length
 }
 
 const importSpells = (db) => {
@@ -188,9 +237,12 @@ const importArtifacts = (db) => {
 const db = new Database(dbPath)
 ensureDb(db)
 
+const importedItems = importItems(db)
+
 const counts = {
   monsters: importMonsters(db),
-  items: importItems(db),
+  items: importedItems.length,
+  weapons: importWeapons(db, importedItems),
   spells: importSpells(db),
   artifacts: importArtifacts(db)
 }

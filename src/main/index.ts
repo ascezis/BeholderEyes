@@ -19,6 +19,15 @@ type CustomMonsterRow = {
   updated_at: string
 }
 
+type CustomWeaponRow = {
+  id: number
+  name: string
+  kind: string | null
+  damage: string | null
+  attack_bonus: number | null
+  updated_at: string
+}
+
 type ListPayload = {
   query?: string
   limit?: number
@@ -110,7 +119,12 @@ const createDefaultCharacterData = () => ({
   },
   spells: [],
   items: [],
+  weapons: [],
   artifacts: [],
+  equipment: {
+    primaryWeaponKey: null,
+    secondaryWeaponKey: null
+  },
   ammo: [],
   notes: '',
   combat: {
@@ -283,17 +297,201 @@ const ensureDbFile = (): { path: string; shouldCreate: boolean } => {
   }
 
   mkdirSync(dirname(targetPath), { recursive: true })
-  const bundledPath = join(app.getAppPath(), 'data', 'beholder.sqlite')
-  if (existsSync(bundledPath)) {
+  const candidateSources = [
+    join(app.getAppPath(), 'data', 'beholder.sqlite'),
+    join(process.resourcesPath, 'data', 'beholder.sqlite'),
+    join(process.resourcesPath, 'app.asar.unpacked', 'data', 'beholder.sqlite'),
+    join(process.cwd(), 'data', 'beholder.sqlite')
+  ]
+
+  for (const sourcePath of candidateSources) {
+    if (!existsSync(sourcePath)) continue
     try {
-      copyFileSync(bundledPath, targetPath)
+      copyFileSync(sourcePath, targetPath)
       return { path: targetPath, shouldCreate: false }
     } catch {
-      // Fall through to create an empty database.
+      // Try the next candidate source.
     }
   }
 
   return { path: targetPath, shouldCreate: true }
+}
+
+const buildExportCharacterTemplateV1 = (row: {
+  name: string
+  race: string | null
+  class: string | null
+  level: number | null
+  data: any
+}) => {
+  const data = row.data ?? {}
+  const level = typeof row.level === 'number' && row.level > 0 ? row.level : 1
+  const proficiencyBonus = 2 + Math.floor((Math.max(level, 1) - 1) / 4)
+  const speedValue =
+    typeof data?.combat?.speed === 'number' && data.combat.speed > 0
+      ? `${data.combat.speed} ft.`
+      : '30 ft.'
+  const abilityKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
+  const skillsOrder = [
+    'acrobatics',
+    'animalHandling',
+    'arcana',
+    'athletics',
+    'deception',
+    'history',
+    'insight',
+    'intimidation',
+    'investigation',
+    'medicine',
+    'nature',
+    'perception',
+    'performance',
+    'persuasion',
+    'religion',
+    'sleightOfHand',
+    'stealth',
+    'survival'
+  ] as const
+  const skillAbility: Record<string, 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha'> = {
+    acrobatics: 'dex',
+    animalHandling: 'wis',
+    arcana: 'int',
+    athletics: 'str',
+    deception: 'cha',
+    history: 'int',
+    insight: 'wis',
+    intimidation: 'cha',
+    investigation: 'int',
+    medicine: 'wis',
+    nature: 'int',
+    perception: 'wis',
+    performance: 'cha',
+    persuasion: 'cha',
+    religion: 'int',
+    sleightOfHand: 'dex',
+    stealth: 'dex',
+    survival: 'wis'
+  }
+  return {
+    version: 'beholder.character.v1' as const,
+    meta: {
+      createdAt: new Date().toISOString(),
+      locale: 'ru' as const
+    },
+    identity: {
+      name: row.name ?? '',
+      race: row.race ?? '',
+      className: row.class ?? '',
+      subclass: '',
+      background: '',
+      alignment: '',
+      level,
+      xp: 0,
+      playerName: ''
+    },
+    core: {
+      proficiencyBonus,
+      inspiration: 0,
+      passivePerception: 10,
+      armorClass: typeof data?.combat?.ac === 'number' ? data.combat.ac : 10,
+      initiative: typeof data?.combat?.initiativeOverride === 'number' ? data.combat.initiativeOverride : 0,
+      speed: speedValue,
+      hitPointsMax: typeof data?.combat?.hpMax === 'number' ? data.combat.hpMax : 0,
+      hitPointsCurrent:
+        typeof data?.combat?.hpCurrent === 'number'
+          ? data.combat.hpCurrent
+          : typeof data?.combat?.hpMax === 'number'
+            ? data.combat.hpMax
+            : 0,
+      hitPointsTemp: 0,
+      hitDice: '1d8'
+    },
+    abilities: Object.fromEntries(
+      abilityKeys.map((key) => [key, { score: typeof data?.stats?.[key]?.score === 'number' ? data.stats[key].score : 10 }])
+    ),
+    saves: Object.fromEntries(
+      abilityKeys.map((key) => [
+        key,
+        {
+          proficient: Boolean(data?.saves?.[key]?.prof),
+          bonusOverride: typeof data?.saves?.[key]?.override === 'number' ? data.saves[key].override : null
+        }
+      ])
+    ),
+    skills: skillsOrder.map((key) => ({
+      key,
+      label: key,
+      ability: skillAbility[key],
+      proficient: Boolean(data?.skills?.[key]?.prof),
+      expertise: false,
+      bonusOverride: typeof data?.skills?.[key]?.override === 'number' ? data.skills[key].override : null
+    })),
+    attacks: [
+      { name: '', attackBonus: '', damage: '', notes: '' },
+      { name: '', attackBonus: '', damage: '', notes: '' }
+    ],
+    equipment: {
+      currency: {
+        cp: typeof data?.currency?.cp === 'number' ? data.currency.cp : 0,
+        sp: typeof data?.currency?.sp === 'number' ? data.currency.sp : 0,
+        ep: typeof data?.currency?.ep === 'number' ? data.currency.ep : 0,
+        gp: typeof data?.currency?.gp === 'number' ? data.currency.gp : 0,
+        pp: typeof data?.currency?.pp === 'number' ? data.currency.pp : 0
+      },
+      inventory: Array.isArray(data?.inventory)
+        ? data.inventory
+            .filter((item: any) => typeof item?.name === 'string' && item.name.trim())
+            .map((item: any) => ({
+              name: String(item.name).trim(),
+              qty: typeof item?.qty === 'number' ? item.qty : 1,
+              notes: typeof item?.notes === 'string' ? item.notes : ''
+            }))
+        : []
+    },
+    traits: {
+      proficiencies: '',
+      languages: '',
+      featuresAndTraits: typeof data?.notes === 'string' ? data.notes : '',
+      personalityTraits: '',
+      ideals: '',
+      bonds: '',
+      flaws: '',
+      backstory: '',
+      alliesOrganizations: '',
+      treasures: ''
+    },
+    spellcasting: {
+      ability: '',
+      spellSaveDc: 10,
+      spellAttackBonus: 0,
+      slots: {
+        '1': { max: 0, used: 0 },
+        '2': { max: 0, used: 0 },
+        '3': { max: 0, used: 0 },
+        '4': { max: 0, used: 0 },
+        '5': { max: 0, used: 0 },
+        '6': { max: 0, used: 0 },
+        '7': { max: 0, used: 0 },
+        '8': { max: 0, used: 0 },
+        '9': { max: 0, used: 0 }
+      },
+      spellsKnown: Array.isArray(data?.spells)
+        ? data.spells
+            .filter((spell: any) => typeof spell?.name === 'string' && spell.name.trim())
+            .map((spell: any) => ({
+              name: String(spell.name).trim(),
+              level: typeof spell?.level === 'number' ? spell.level : 0,
+              prepared: Boolean(spell?.prepared),
+              notes:
+                typeof spell?.notes === 'string'
+                  ? spell.notes
+                  : typeof spell?.summary === 'string'
+                    ? spell.summary
+                    : ''
+            }))
+        : []
+    }
+  }
 }
 
 const getDb = (): Database.Database => {
@@ -352,6 +550,38 @@ const getDb = (): Database.Database => {
 
       create index if not exists idx_custom_monsters_campaign on custom_monsters(campaign_id);
       create index if not exists idx_custom_monsters_name on custom_monsters(name);
+
+      create table if not exists custom_weapons (
+        id integer primary key,
+        campaign_id integer not null,
+        name text not null,
+        kind text,
+        attack_bonus integer,
+        damage text,
+        damage_type text,
+        range_text text,
+        notes text,
+        data json not null,
+        created_at text not null,
+        updated_at text not null,
+        foreign key (campaign_id) references campaigns(id) on delete cascade
+      );
+
+      create index if not exists idx_custom_weapons_campaign on custom_weapons(campaign_id);
+      create index if not exists idx_custom_weapons_name on custom_weapons(name);
+
+      create table if not exists weapons (
+        id integer primary key,
+        name text not null,
+        name_ru text,
+        source text,
+        type text,
+        rarity integer,
+        data json not null
+      );
+
+      create index if not exists idx_weapons_name on weapons(name);
+      create index if not exists idx_weapons_name_ru on weapons(name_ru);
     `)
   }
   return db
@@ -573,6 +803,19 @@ const registerIpc = (): void => {
     )
   })
 
+  ipcMain.handle('weapons:list', (_event, payload?: ListPayload) => {
+    const dbRef = getDb()
+    return listWithQuery(
+      dbRef,
+      'weapons',
+      'select id, name, name_ru, type, rarity, source from weapons',
+      payload,
+      ['name', 'name_ru', 'type', 'rarity', 'source', 'data'],
+      'select id, name, name_ru, type, rarity, source, data as data_json from weapons',
+      ['name', 'name_ru', 'type', 'rarity', 'source', 'data_json']
+    )
+  })
+
   ipcMain.handle('artifacts:list', (_event, payload?: ListPayload) => {
     const dbRef = getDb()
     return listWithQuery(
@@ -711,6 +954,175 @@ const registerIpc = (): void => {
     return { ok: true }
   })
 
+  ipcMain.handle(
+    'customWeapons:list',
+    (_event, payload: { campaignId: number; query?: string; limit?: number; offset?: number }) => {
+      const dbRef = getDb()
+      const query = payload?.query?.trim() ?? ''
+      const limit = clampLimit(payload?.limit)
+      const offset = payload?.offset ?? 0
+
+      if (!query) {
+        const total = dbRef
+          .prepare('select count(*) as count from custom_weapons where campaign_id = ?')
+          .get(payload.campaignId) as { count: number }
+        const items = dbRef
+          .prepare(
+            'select id, name, kind, damage, attack_bonus, updated_at from custom_weapons where campaign_id = ? order by updated_at desc limit ? offset ?'
+          )
+          .all(payload.campaignId, limit, offset) as CustomWeaponRow[]
+        return { total: total.count, items }
+      }
+
+      const tokens = query.split(/\s+/).filter(Boolean)
+      const { where, params } = buildSearchWhere(
+        ['name', 'kind', 'damage', 'damage_type', 'range_text', 'notes', 'data'],
+        tokens
+      )
+      const total = dbRef
+        .prepare(
+          `select count(*) as count from custom_weapons where campaign_id = ? and ${where}`
+        )
+        .get(payload.campaignId, ...params) as { count: number }
+      const items = dbRef
+        .prepare(
+          `select id, name, kind, damage, attack_bonus, updated_at from custom_weapons where campaign_id = ? and ${where} order by updated_at desc limit ? offset ?`
+        )
+        .all(payload.campaignId, ...params, limit, offset) as CustomWeaponRow[]
+      if (total.count > 0) {
+        return { total: total.count, items }
+      }
+      const rows = dbRef
+        .prepare(
+          'select id, name, kind, damage, attack_bonus, updated_at, data as data_json from custom_weapons where campaign_id = ?'
+        )
+        .all(payload.campaignId) as Array<Record<string, unknown>>
+      const scored = rows
+        .map((row) => {
+          const haystack = [
+            row.name ? String(row.name) : '',
+            row.kind ? String(row.kind) : '',
+            row.damage ? String(row.damage) : '',
+            row.data_json ? String(row.data_json) : ''
+          ].join(' ')
+          const score = fuzzyScore(tokens, haystack)
+          return score === null ? null : { row, score }
+        })
+        .filter(Boolean) as Array<{ row: Record<string, unknown>; score: number }>
+      scored.sort((a, b) => a.score - b.score)
+      const fuzzyItems = scored.slice(0, limit).map(({ row }) => {
+        const { data_json, ...rest } = row
+        return rest as CustomWeaponRow
+      })
+      return { total: scored.length, items: fuzzyItems }
+    }
+  )
+
+  ipcMain.handle('customWeapons:get', (_event, id: number) => {
+    const dbRef = getDb()
+    const row = dbRef
+      .prepare(
+        'select id, campaign_id, name, kind, attack_bonus, damage, damage_type, range_text, notes, data as data_json from custom_weapons where id = ?'
+      )
+      .get(id) as any
+    if (!row) return null
+    return {
+      id: row.id,
+      campaignId: row.campaign_id,
+      name: row.name,
+      kind: row.kind,
+      attackBonus: row.attack_bonus,
+      damage: row.damage,
+      damageType: row.damage_type,
+      rangeText: row.range_text,
+      notes: row.notes,
+      data: row.data_json ? JSON.parse(row.data_json) : null
+    }
+  })
+
+  ipcMain.handle(
+    'customWeapons:create',
+    (
+      _event,
+      payload: {
+        campaignId: number
+        name: string
+        kind?: string | null
+        attackBonus?: number | null
+        damage?: string | null
+        damageType?: string | null
+        rangeText?: string | null
+        notes?: string | null
+        data?: unknown
+      }
+    ) => {
+      const dbRef = getDb()
+      const now = new Date().toISOString()
+      const result = dbRef
+        .prepare(
+          'insert into custom_weapons (campaign_id, name, kind, attack_bonus, damage, damage_type, range_text, notes, data, created_at, updated_at) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        )
+        .run(
+          payload.campaignId,
+          payload.name,
+          payload.kind ?? null,
+          payload.attackBonus ?? null,
+          payload.damage ?? null,
+          payload.damageType ?? null,
+          payload.rangeText ?? null,
+          payload.notes ?? null,
+          JSON.stringify(payload.data ?? {}),
+          now,
+          now
+        )
+      return { id: Number(result.lastInsertRowid) }
+    }
+  )
+
+  ipcMain.handle(
+    'customWeapons:update',
+    (
+      _event,
+      payload: {
+        id: number
+        name: string
+        kind?: string | null
+        attackBonus?: number | null
+        damage?: string | null
+        damageType?: string | null
+        rangeText?: string | null
+        notes?: string | null
+        data?: unknown
+      }
+    ) => {
+      const dbRef = getDb()
+      const now = new Date().toISOString()
+      dbRef
+        .prepare(
+          'update custom_weapons set name = ?, kind = ?, attack_bonus = ?, damage = ?, damage_type = ?, range_text = ?, notes = ?, data = ?, updated_at = ? where id = ?'
+        )
+        .run(
+          payload.name,
+          payload.kind ?? null,
+          payload.attackBonus ?? null,
+          payload.damage ?? null,
+          payload.damageType ?? null,
+          payload.rangeText ?? null,
+          payload.notes ?? null,
+          JSON.stringify(payload.data ?? {}),
+          now,
+          payload.id
+        )
+      return { ok: true }
+    }
+  )
+
+  ipcMain.handle('customWeapons:delete', (_event, id: number) => {
+    const dbRef = getDb()
+    dbRef.prepare('delete from custom_weapons where id = ?').run(id)
+    return { ok: true }
+  })
+
   ipcMain.handle('spells:get', (_event, id: number) => {
     const dbRef = getDb()
     return getById(dbRef, 'spells', id)
@@ -719,6 +1131,11 @@ const registerIpc = (): void => {
   ipcMain.handle('items:get', (_event, id: number) => {
     const dbRef = getDb()
     return getById(dbRef, 'items', id)
+  })
+
+  ipcMain.handle('weapons:get', (_event, id: number) => {
+    const dbRef = getDb()
+    return getById(dbRef, 'weapons', id)
   })
 
   ipcMain.handle('artifacts:get', (_event, id: number) => {
@@ -747,6 +1164,19 @@ const registerIpc = (): void => {
       .prepare('insert into campaigns (name, created_at, updated_at) values (?, ?, ?)')
       .run(name, now, now)
     return { id: Number(result.lastInsertRowid) }
+  })
+
+  ipcMain.handle('campaign:update', (_event, payload: { id: number; name: string }) => {
+    const dbRef = getDb()
+    const now = new Date().toISOString()
+    dbRef.prepare('update campaigns set name = ?, updated_at = ? where id = ?').run(payload.name, now, payload.id)
+    return { ok: true }
+  })
+
+  ipcMain.handle('campaign:delete', (_event, id: number) => {
+    const dbRef = getDb()
+    dbRef.prepare('delete from campaigns where id = ?').run(id)
+    return { ok: true }
   })
 
   ipcMain.handle('characters:list', (_event, campaignId: number) => {
@@ -888,6 +1318,44 @@ const registerIpc = (): void => {
     }
   )
 
+  ipcMain.handle('characters:delete', (_event, id: number) => {
+    const dbRef = getDb()
+    dbRef.prepare('delete from characters where id = ?').run(id)
+    return { ok: true }
+  })
+
+  ipcMain.handle('characters:export', async (_event, id: number) => {
+    const dbRef = getDb()
+    const row = dbRef
+      .prepare('select id, name, race, class, level, data as data_json from characters where id = ?')
+      .get(id) as any
+    if (!row) {
+      throw new Error('Character not found')
+    }
+    const payload = buildExportCharacterTemplateV1({
+      name: row.name,
+      race: row.race,
+      class: row.class,
+      level: row.level,
+      data: row.data_json ? JSON.parse(row.data_json) : {}
+    })
+    const safeName = String(row.name || 'character')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9а-яё_-]+/gi, '-')
+      .replace(/-+/g, '-')
+    const dialogResult = await dialog.showSaveDialog({
+      title: 'Экспорт персонажа (JSON)',
+      defaultPath: `${safeName || 'character'}.json`,
+      filters: [{ name: 'Beholder Character JSON', extensions: ['json'] }]
+    })
+    if (dialogResult.canceled || !dialogResult.filePath) {
+      return { ok: false, canceled: true as const }
+    }
+    writeFileSync(dialogResult.filePath, JSON.stringify(payload, null, 2), 'utf-8')
+    return { ok: true as const }
+  })
+
   ipcMain.handle('combats:list', (_event, campaignId: number) => {
     const dbRef = getDb()
     return dbRef
@@ -924,51 +1392,77 @@ const registerIpc = (): void => {
     if (!row) return null
     return { ...row, data: row.data_json ? JSON.parse(row.data_json) : null }
   })
-  ipcMain.handle('combats:export', async (_event, id: number) => {
+
+  ipcMain.handle('combats:delete', (_event, id: number) => {
     const dbRef = getDb()
-    const row = dbRef
-      .prepare('select id, name, data as data_json from combats where id = ?')
-      .get(id) as any
-    if (!row) throw new Error('Combat not found')
-    const dialogResult = await dialog.showSaveDialog({
-      title: 'Export Combat',
-                  defaultPath: (row.name || 'combat') + '.json',
-     
-      filters: [{ name: 'JSON', extensions: ['json'] }]
-    })
-    if (dialogResult.canceled || !dialogResult.filePath) {
-      return { ok: false, canceled: true }
-    }
-    const payload = {
-      name: row.name,
-      data: row.data_json ? JSON.parse(row.data_json) : null
-    }
-    writeFileSync(dialogResult.filePath, JSON.stringify(payload, null, 2), 'utf-8')
+    dbRef.prepare('delete from combats where id = ?').run(id)
     return { ok: true }
   })
 
-  ipcMain.handle('combats:import', async (_event, campaignId: number) => {
-    const dialogResult = await dialog.showOpenDialog({
-      title: 'Import Combat',
-      filters: [{ name: 'JSON', extensions: ['json'] }],
-      properties: ['openFile']
-    })
-    if (dialogResult.canceled || dialogResult.filePaths.length === 0) {
-      return { ok: false, canceled: true }
+  ipcMain.handle('combats:export', async (_event, id: number) => {
+    try {
+      const dbRef = getDb()
+      const row = dbRef
+        .prepare('select id, name, data as data_json from combats where id = ?')
+        .get(id) as any
+      if (!row) {
+        return { ok: false as const, canceled: false as const, error: 'Бой не найден' }
+      }
+      const dialogResult = await dialog.showSaveDialog({
+        title: 'Export Combat',
+        defaultPath: (row.name || 'combat') + '.json',
+        filters: [{ name: 'JSON', extensions: ['json'] }]
+      })
+      if (dialogResult.canceled || !dialogResult.filePath) {
+        return { ok: false as const, canceled: true as const }
+      }
+      const payload = {
+        version: 'beholder.combat.v1',
+        exportedAt: new Date().toISOString(),
+        name: row.name,
+        data: row.data_json ? JSON.parse(row.data_json) : null
+      }
+      writeFileSync(dialogResult.filePath, JSON.stringify(payload, null, 2), 'utf-8')
+      return { ok: true as const }
+    } catch (error: any) {
+      return {
+        ok: false as const,
+        canceled: false as const,
+        error: error?.message ?? 'Не удалось экспортировать бой'
+      }
     }
-    const filePath = dialogResult.filePaths[0]
-    const text = readFileSync(filePath, 'utf-8')
-    const parsed = JSON.parse(text)
-    const name = typeof parsed?.name === 'string' ? parsed.name : 'Imported Combat'
-    const data = parsed?.data ?? parsed
-    const dbRef = getDb()
-    const now = new Date().toISOString()
-    const result = dbRef
-      .prepare(
-        'insert into combats (campaign_id, name, data, created_at, updated_at) values (?, ?, ?, ?, ?)'
-      )
-      .run(campaignId, name, JSON.stringify(data ?? {}), now, now)
-    return { ok: true, id: Number(result.lastInsertRowid) }
+  })
+
+  ipcMain.handle('combats:import', async (_event, campaignId: number) => {
+    try {
+      const dialogResult = await dialog.showOpenDialog({
+        title: 'Import Combat',
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+        properties: ['openFile']
+      })
+      if (dialogResult.canceled || dialogResult.filePaths.length === 0) {
+        return { ok: false as const, canceled: true as const }
+      }
+      const filePath = dialogResult.filePaths[0]
+      const text = readFileSync(filePath, 'utf-8')
+      const parsed = JSON.parse(text)
+      const name = typeof parsed?.name === 'string' ? parsed.name : 'Imported Combat'
+      const data = parsed?.data ?? parsed
+      const dbRef = getDb()
+      const now = new Date().toISOString()
+      const result = dbRef
+        .prepare(
+          'insert into combats (campaign_id, name, data, created_at, updated_at) values (?, ?, ?, ?, ?)'
+        )
+        .run(campaignId, name, JSON.stringify(data ?? {}), now, now)
+      return { ok: true as const, id: Number(result.lastInsertRowid) }
+    } catch (error: any) {
+      return {
+        ok: false as const,
+        canceled: false as const,
+        error: error?.message ?? 'Не удалось импортировать бой'
+      }
+    }
   })
 
   ipcMain.handle('combatBoard:open', () => {

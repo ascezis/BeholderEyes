@@ -18,6 +18,8 @@ declare global {
       campaign: {
         get: () => Promise<{ id: number; name: string } | null>
         create: (name: string) => Promise<{ id: number }>
+        update: (payload: { id: number; name: string }) => Promise<{ ok: true }>
+        delete: (id: number) => Promise<{ ok: true }>
       }
       characters: {
         list: (campaignId: number) => Promise<
@@ -57,6 +59,8 @@ declare global {
           | { canceled: true }
           | { canceled: false; id?: number; name?: string; error?: string }
         >
+        export: (id: number) => Promise<{ ok: boolean; canceled?: boolean }>
+        delete: (id: number) => Promise<{ ok: true }>
       }
       combats: {
         list: (campaignId: number) => Promise<Array<{ id: number; name: string; updated_at: string }>>
@@ -67,8 +71,9 @@ declare global {
           combatId?: number
         }) => Promise<{ id: number }>
         get: (id: number) => Promise<{ id: number; name: string; data: unknown } | null>
-        export: (id: number) => Promise<{ ok: boolean; canceled?: boolean }>
-        import: (campaignId: number) => Promise<{ ok: boolean; canceled?: boolean; id?: number }>
+        delete: (id: number) => Promise<{ ok: true }>
+        export: (id: number) => Promise<{ ok: boolean; canceled?: boolean; error?: string }>
+        import: (campaignId: number) => Promise<{ ok: boolean; canceled?: boolean; id?: number; error?: string }>
       }
       monsters: {
         list: (params?: ListParams) => Promise<ListResponse<{
@@ -160,6 +165,25 @@ declare global {
           data: unknown
         } | null>
       }
+      weapons: {
+        list: (params?: ListParams) => Promise<ListResponse<{
+          id: number
+          name: string
+          name_ru: string | null
+          type: string | null
+          rarity: number | null
+          source: string | null
+        }>>
+        get: (id: number) => Promise<{
+          id: number
+          name: string
+          name_ru: string | null
+          type: string | null
+          rarity: number | null
+          source: string | null
+          data: unknown
+        } | null>
+      }
       artifacts: {
         list: (params?: ListParams) => Promise<ListResponse<{
           id: number
@@ -176,6 +200,56 @@ declare global {
           source: string | null
           data: unknown
         } | null>
+      }
+      customWeapons: {
+        list: (payload: {
+          campaignId: number
+          query?: string
+          limit?: number
+          offset?: number
+        }) => Promise<ListResponse<{
+          id: number
+          name: string
+          kind: string | null
+          damage: string | null
+          attack_bonus: number | null
+          updated_at: string
+        }>>
+        get: (id: number) => Promise<{
+          id: number
+          campaignId: number
+          name: string
+          kind: string | null
+          attackBonus: number | null
+          damage: string | null
+          damageType: string | null
+          rangeText: string | null
+          notes: string | null
+          data: unknown
+        } | null>
+        create: (payload: {
+          campaignId: number
+          name: string
+          kind?: string | null
+          attackBonus?: number | null
+          damage?: string | null
+          damageType?: string | null
+          rangeText?: string | null
+          notes?: string | null
+          data?: unknown
+        }) => Promise<{ id: number }>
+        update: (payload: {
+          id: number
+          name: string
+          kind?: string | null
+          attackBonus?: number | null
+          damage?: string | null
+          damageType?: string | null
+          rangeText?: string | null
+          notes?: string | null
+          data?: unknown
+        }) => Promise<{ ok: true }>
+        delete: (id: number) => Promise<{ ok: true }>
       }
       ttg: {
         getAll: () => Promise<{

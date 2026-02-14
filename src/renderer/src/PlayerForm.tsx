@@ -585,12 +585,13 @@ const PlayerForm = ({ onSaveCharacter, embedded = false }: PlayerFormProps = {})
         next.saves[ability].proficient = effectiveSaves.includes(ability)
       })
 
+      const effectiveSpellAbility = (spellAbility || 'wis') as AbilityKey
       next.spellcasting.ability = usesMagicByClass ? spellAbility ?? '' : ''
       next.spellcasting.spellSaveDc = usesMagicByClass
-        ? 8 + next.core.proficiencyBonus + getAbilityMod(next.abilities[(spellAbility ?? 'wis')].score)
+        ? 8 + next.core.proficiencyBonus + getAbilityMod(next.abilities[effectiveSpellAbility].score)
         : 0
       next.spellcasting.spellAttackBonus = usesMagicByClass
-        ? next.core.proficiencyBonus + getAbilityMod(next.abilities[(spellAbility ?? 'wis')].score)
+        ? next.core.proficiencyBonus + getAbilityMod(next.abilities[effectiveSpellAbility].score)
         : 0
 
       if (!usesMagicByClass) {

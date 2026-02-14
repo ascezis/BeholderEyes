@@ -8,7 +8,7 @@ import './styles.css'
 type ViewKey = 'home' | 'campaign' | 'combat' | 'reference'
 type ReferenceSection = 'ttg_classes' | 'ttg_races' | 'ttg_rules' | EntityKey
 
-type EntityKey = 'monsters' | 'spells' | 'items' | 'artifacts'
+type EntityKey = 'monsters' | 'spells' | 'items' | 'weapons' | 'artifacts'
 
 type MonsterRow = {
   id: number
@@ -37,6 +37,15 @@ type ItemRow = {
   source: string | null
 }
 
+type WeaponRow = {
+  id: number
+  name: string
+  name_ru: string | null
+  type: string | null
+  rarity: number | null
+  source: string | null
+}
+
 type ArtifactRow = {
   id: number
   name: string
@@ -45,7 +54,7 @@ type ArtifactRow = {
   source: string | null
 }
 
-type ListRow = MonsterRow | SpellRow | ItemRow | ArtifactRow
+type ListRow = MonsterRow | SpellRow | ItemRow | WeaponRow | ArtifactRow
 
 type ListResponse<T> = {
   total: number
@@ -73,6 +82,7 @@ type TtgClass = {
   slug?: string | null
   name_ru?: string | null
   name_en?: string | null
+  type?: string | null
   source_short?: string | null
   source_name?: string | null
   hit_die?: string | null
@@ -100,6 +110,7 @@ type TtgRace = {
   slug?: string | null
   name_ru?: string | null
   name_en?: string | null
+  type?: string | null
   source_short?: string | null
   source_name?: string | null
   size?: string | null
@@ -184,6 +195,13 @@ type CombatLogEntry = {
   tone: CombatLogTone
 }
 
+type CombatWeaponOption = {
+  key: string
+  name: string
+  attackBonus: number | null
+  damageExpr: string | null
+}
+
 type CombatParticipant = {
   id: string
   kind: 'character' | 'monster'
@@ -202,6 +220,8 @@ type CombatParticipant = {
   conditions: CombatCondition[]
   concentration: { name: string; rounds: number | null } | null
   saves: SaveMods
+  weaponOptions?: CombatWeaponOption[]
+  selectedWeaponKey?: string | null
   actions?: Array<{
     name: string
     text: string
@@ -217,6 +237,15 @@ type CustomMonsterRow = {
   id: number
   name: string
   cr: string | null
+  updated_at: string
+}
+
+type CustomWeaponRow = {
+  id: number
+  name: string
+  kind: string | null
+  damage: string | null
+  attack_bonus: number | null
   updated_at: string
 }
 
@@ -270,7 +299,7 @@ type InventoryEntry = {
   name: string
   qty: number
   notes?: string
-  category?: 'manual' | 'item' | 'artifact'
+  category?: 'manual' | 'item' | 'weapon' | 'custom_weapon' | 'artifact'
 }
 
 type CharacterData = {
@@ -278,7 +307,19 @@ type CharacterData = {
   currency: { cp: number; sp: number; ep: number; gp: number; pp: number }
   spells: Array<{ id?: number; name: string; summary?: string }>
   items: Array<{ id?: number; name: string; summary?: string }>
+  weapons: Array<{
+    id?: number
+    customId?: number
+    name: string
+    summary?: string
+    attackBonus?: number | null
+    damageExpr?: string | null
+  }>
   artifacts: Array<{ id?: number; name: string; summary?: string }>
+  equipment: {
+    primaryWeaponKey: string | null
+    secondaryWeaponKey: string | null
+  }
   ammo: Array<{ name: string; qty: number }>
   notes: string
   combat: {
@@ -380,6 +421,7 @@ const entityLabels: Record<EntityKey, string> = {
   monsters: 'Монстры',
   spells: 'Заклинания',
   items: 'Предметы',
+  weapons: 'Оружие',
   artifacts: 'Артефакты'
 }
 
@@ -411,6 +453,10 @@ const getListMeta = (entity: EntityKey, row: ListRow): string[] => {
   if (entity === 'items') {
     const item = row as ItemRow
     return [item.type ?? 'тип не указан', `редкость: ${rarityLabel(item.rarity)}`]
+  }
+  if (entity === 'weapons') {
+    const weapon = row as WeaponRow
+    return [weapon.type ?? 'тип не указан', `редкость: ${rarityLabel(weapon.rarity)}`]
   }
   const art = row as ArtifactRow
   return [`редкость: ${rarityLabel(art.rarity)}`]
@@ -505,11 +551,58 @@ const buildItemSummary = (data: any): string => {
   return `${type} · ${rarity}${extras ? ` · ${extras}` : ''}`
 }
 
+const buildWeaponSummary = (data: any): string => {
+  const type = getLocaleValue(data, 'type') ?? getLocaleValue(data, 'weaponType') ?? 'Оружие'
+  const damageVal = data?.en?.damageVal ?? data?.ru?.damageVal ?? data?.damage ?? null
+  const damageType = data?.en?.damageType ?? data?.ru?.damageType ?? data?.damageType ?? null
+  const range = getLocaleValue(data, 'range') ?? data?.rangeText ?? null
+  const attackBonus =
+    typeof data?.attackBonus === 'number' && Number.isFinite(data.attackBonus)
+      ? formatMod(data.attackBonus)
+      : null
+  const parts = [
+    type,
+    damageVal ? `${damageVal}${damageType ? ` ${damageType}` : ''}` : null,
+    range ? `дистанция: ${range}` : null,
+    attackBonus ? `атака: ${attackBonus}` : null
+  ].filter(Boolean)
+  return parts.join(' · ')
+}
+
 const buildArtifactSummary = (data: any): string => {
   const type = getLocaleValue(data, 'type') ?? '—'
   const rarity = rarityLabel(data?.en?.rarity ?? data?.ru?.rarity)
   const attune = data?.en?.attunement ?? data?.ru?.attunement
   return `${type} · ${rarity}${attune ? ` · ${attune}` : ''}`
+}
+
+const getWeaponKey = (weapon: {
+  id?: number
+  customId?: number
+  name: string
+}) => {
+  if (typeof weapon.customId === 'number') return `custom:${weapon.customId}`
+  if (typeof weapon.id === 'number') return `lib:${weapon.id}`
+  return `name:${weapon.name.trim().toLowerCase()}`
+}
+
+const parseWeaponAttackBonus = (value?: string | null): number | null => {
+  if (!value) return null
+  const fromTag = value.match(/атака:\s*([+-]?\d+)/i)
+  if (fromTag) {
+    const parsed = Number(fromTag[1])
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  const generic = value.match(/(^|[^0-9])([+-]\d{1,2})(?=\D|$)/)
+  if (!generic) return null
+  const parsed = Number(generic[2])
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+const parseWeaponDamageExpr = (value?: string | null): string | null => {
+  if (!value) return null
+  const match = value.match(/(\d+d\d+(?:[+-]\d+)?)/i)
+  return match ? normalizeDamageExpr(match[1]) : null
 }
 
 const parseDice = (expression: string) => {
@@ -1109,7 +1202,16 @@ const parseSignedBonus = (value: string): number | null => {
   return parsed
 }
 
-const buildCharacterActions = (data: any) => {
+const buildCharacterActions = (
+  data: any
+): Array<{
+  name: string
+  text: string
+  attackBonus: number | null
+  damageExpr: string | null
+  saveDc: number | null
+  saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
+}> | undefined => {
   const attacks = data?.sheet?.attacks
   if (!Array.isArray(attacks)) return undefined
   const mapped = attacks
@@ -1119,7 +1221,7 @@ const buildCharacterActions = (data: any) => {
       attackBonus: typeof attack?.attackBonus === 'string' ? parseSignedBonus(attack.attackBonus) : null,
       damageExpr: typeof attack?.damage === 'string' ? attack.damage.trim() : null,
       saveDc: null,
-      saveAbility: ''
+      saveAbility: '' as const
     }))
     .filter((entry) => entry.name || entry.text || entry.damageExpr || entry.attackBonus !== null)
   return mapped.length > 0 ? mapped : undefined
@@ -1522,7 +1624,11 @@ const ensureCharacterData = (data: any): CharacterData => ({
           qty: typeof entry?.qty === 'number' && Number.isFinite(entry.qty) ? entry.qty : 1,
           notes: typeof entry?.notes === 'string' ? entry.notes : '',
           category:
-            entry?.category === 'item' || entry?.category === 'artifact' || entry?.category === 'manual'
+            entry?.category === 'item' ||
+            entry?.category === 'artifact' ||
+            entry?.category === 'weapon' ||
+            entry?.category === 'custom_weapon' ||
+            entry?.category === 'manual'
               ? entry.category
               : 'manual'
         }))
@@ -1544,11 +1650,40 @@ const ensureCharacterData = (data: any): CharacterData => ({
         typeof entry === 'string' ? { name: entry } : entry
       )
     : [],
+  weapons: Array.isArray(data?.weapons)
+    ? data.weapons.map((entry: any) =>
+        typeof entry === 'string'
+          ? { name: entry, attackBonus: null, damageExpr: null }
+          : {
+              ...entry,
+              attackBonus:
+                typeof entry?.attackBonus === 'number' && Number.isFinite(entry.attackBonus)
+                  ? entry.attackBonus
+                  : null,
+              damageExpr:
+                typeof entry?.damageExpr === 'string'
+                  ? normalizeDamageExpr(entry.damageExpr)
+                  : null
+            }
+      )
+    : [],
   artifacts: Array.isArray(data?.artifacts)
     ? data.artifacts.map((entry: any) =>
         typeof entry === 'string' ? { name: entry } : entry
       )
     : [],
+  equipment: {
+    primaryWeaponKey:
+      typeof data?.equipment?.primaryWeaponKey === 'string' &&
+      data.equipment.primaryWeaponKey.trim()
+        ? data.equipment.primaryWeaponKey
+        : null,
+    secondaryWeaponKey:
+      typeof data?.equipment?.secondaryWeaponKey === 'string' &&
+      data.equipment.secondaryWeaponKey.trim()
+        ? data.equipment.secondaryWeaponKey
+        : null
+  },
   ammo: Array.isArray(data?.ammo) ? data.ammo : [],
   notes: typeof data?.notes === 'string' ? data.notes : '',
   combat: {
@@ -1880,6 +2015,8 @@ export default function App(): JSX.Element {
   const [characterCreateAc, setCharacterCreateAc] = useState('')
   const [characterCreateInit, setCharacterCreateInit] = useState('')
   const [characters, setCharacters] = useState<Character[]>([])
+  const [charactersLoading, setCharactersLoading] = useState(false)
+  const [charactersError, setCharactersError] = useState<string | null>(null)
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [editCharacter, setEditCharacter] = useState({
@@ -1947,6 +2084,8 @@ export default function App(): JSX.Element {
   const [spellResults, setSpellResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
   const [itemQuery, setItemQuery] = useState('')
   const [itemResults, setItemResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
+  const [weaponQuery, setWeaponQuery] = useState('')
+  const [weaponResults, setWeaponResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
   const [artifactQuery, setArtifactQuery] = useState('')
   const [artifactResults, setArtifactResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
   const [newAmmo, setNewAmmo] = useState({ name: '', qty: '1' })
@@ -1980,6 +2119,7 @@ export default function App(): JSX.Element {
   const [combatQuery, setCombatQuery] = useState('')
   const [combatResults, setCombatResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
   const [combatError, setCombatError] = useState<string | null>(null)
+  const [combatStatus, setCombatStatus] = useState<string | null>(null)
   const [customMonsterDraft, setCustomMonsterDraft] = useState<CustomMonsterDraft>(emptyCustomMonsterDraft)
   const [customMonsterActions, setCustomMonsterActions] = useState<CustomMonsterActionDraft[]>([
     createEmptyCustomMonsterAction()
@@ -1990,6 +2130,21 @@ export default function App(): JSX.Element {
   const [editingCustomMonsterId, setEditingCustomMonsterId] = useState<number | null>(null)
   const [savingCustomMonster, setSavingCustomMonster] = useState(false)
   const [customMonsterModalOpen, setCustomMonsterModalOpen] = useState(false)
+  const [customWeaponRows, setCustomWeaponRows] = useState<CustomWeaponRow[]>([])
+  const [customWeaponQuery, setCustomWeaponQuery] = useState('')
+  const [customWeaponError, setCustomWeaponError] = useState<string | null>(null)
+  const [customWeaponModalOpen, setCustomWeaponModalOpen] = useState(false)
+  const [savingCustomWeapon, setSavingCustomWeapon] = useState(false)
+  const [editingCustomWeaponId, setEditingCustomWeaponId] = useState<number | null>(null)
+  const [customWeaponDraft, setCustomWeaponDraft] = useState({
+    name: '',
+    kind: '',
+    attackBonus: '',
+    damage: '',
+    damageType: '',
+    rangeText: '',
+    notes: ''
+  })
   const [combatLog, setCombatLog] = useState<CombatLogEntry[]>([])
   const [combatLogExpanded, setCombatLogExpanded] = useState(false)
   const [effectName, setEffectName] = useState('')
@@ -2002,11 +2157,13 @@ export default function App(): JSX.Element {
   const [massValue, setMassValue] = useState('')
   const [combatName, setCombatName] = useState('Сессия боя')
   const [combatSessions, setCombatSessions] = useState<Array<{ id: number; name: string }>>([])
+  const [combatSessionsLoading, setCombatSessionsLoading] = useState(false)
+  const [combatSessionsError, setCombatSessionsError] = useState<string | null>(null)
   const [selectedCombatId, setSelectedCombatId] = useState<number | null>(null)
   const [currentTurn, setCurrentTurn] = useState(0)
   const [combatDetailId, setCombatDetailId] = useState<string | null>(null)
   const [modal, setModal] = useState<{
-    type: 'spells' | 'items' | 'artifacts'
+    type: 'spells' | 'items' | 'weapons' | 'artifacts'
     id: number
   } | null>(null)
   const [modalDetail, setModalDetail] = useState<DetailResponse>(null)
@@ -2028,6 +2185,7 @@ export default function App(): JSX.Element {
     tone: 'hit' | 'miss'
     value?: number | null
   } | null>(null)
+  const referenceSectionForTabs = referenceSection as ReferenceSection
 
   const trimmedQuery = useMemo(() => query.trim(), [query])
   const { data, isLoading, error } = useList(entity, trimmedQuery)
@@ -2036,6 +2194,7 @@ export default function App(): JSX.Element {
     referenceSection === 'monsters' ||
     referenceSection === 'spells' ||
     referenceSection === 'items' ||
+    referenceSection === 'weapons' ||
     referenceSection === 'artifacts'
   const isEntityLibraryView = activeView === 'reference' && isReferenceEntitySection
   const ttgSearch = ttgQuery.trim().toLowerCase()
@@ -2211,6 +2370,14 @@ export default function App(): JSX.Element {
         { label: 'КД', value: toText(data?.en?.ac ?? data?.ru?.ac) }
       )
     }
+    if (targetEntity === 'weapons') {
+      const data = detail.data as any
+      columns.push(
+        { label: 'Тип', value: getLocaleValue(data, 'type') ?? getLocaleValue(data, 'weaponType') ?? '—' },
+        { label: 'Урон', value: toText(data?.en?.damageVal ?? data?.ru?.damageVal ?? data?.damage) },
+        { label: 'Тип урона', value: toText(data?.en?.damageType ?? data?.ru?.damageType ?? data?.damageType) }
+      )
+    }
     if (targetEntity === 'artifacts') {
       const data = detail.data as any
       columns.push(
@@ -2307,10 +2474,12 @@ export default function App(): JSX.Element {
 
   const spellData = entity === 'spells' ? detail?.data : null
   const itemData = entity === 'items' ? detail?.data : null
+  const weaponData = entity === 'weapons' ? detail?.data : null
   const artifactData = entity === 'artifacts' ? detail?.data : null
   const selectedCharacterData = selectedCharacter ? ensureCharacterData(selectedCharacter.data) : null
   const detectInventoryGroup = (entry: InventoryEntry): 'consumables' | 'weapons' | 'armor' | 'artifacts' | 'other' => {
     if (entry.category === 'artifact') return 'artifacts'
+    if (entry.category === 'weapon' || entry.category === 'custom_weapon') return 'weapons'
     const text = `${entry.name} ${entry.notes ?? ''}`.toLowerCase()
     if (/(зель|эликсир|potion|scroll|свиток|ration|припас|патрон|болт|стрел)/.test(text)) return 'consumables'
     if (/(меч|sword|лук|bow|арбалет|crossbow|кинжал|dagger|топор|axe|копь|spear|молот|hammer|булав|рапир|алебард|пика|дротик|пращ|whip|weapon)/.test(text)) return 'weapons'
@@ -2337,10 +2506,51 @@ export default function App(): JSX.Element {
     })
   }, [selectedCharacterData, inventoryFilter, inventorySort, inventorySortDirection])
 
+  const characterWeapons = useMemo(() => {
+    if (!selectedCharacterData) return []
+    return selectedCharacterData.weapons.map((weapon) => {
+      const attackBonus =
+        typeof weapon.attackBonus === 'number' && Number.isFinite(weapon.attackBonus)
+          ? weapon.attackBonus
+          : parseWeaponAttackBonus(weapon.summary)
+      const damageExpr = weapon.damageExpr ?? parseWeaponDamageExpr(weapon.summary)
+      return {
+        ...weapon,
+        key: getWeaponKey(weapon),
+        attackBonus,
+        damageExpr
+      }
+    })
+  }, [selectedCharacterData])
+
   const loadCharacters = async () => {
     if (!campaign) return
-    const rows = await window.beholder.characters.list(campaign.id)
-    setCharacters(rows as Character[])
+    setCharactersLoading(true)
+    setCharactersError(null)
+    try {
+      const rows = await window.beholder.characters.list(campaign.id)
+      setCharacters(rows as Character[])
+    } catch (error: any) {
+      setCharactersError(error?.message ?? 'Не удалось загрузить персонажей')
+      setCharacters([])
+    } finally {
+      setCharactersLoading(false)
+    }
+  }
+
+  const loadCombatSessions = async () => {
+    if (!campaign) return
+    setCombatSessionsLoading(true)
+    setCombatSessionsError(null)
+    try {
+      const rows = await window.beholder.combats.list(campaign.id)
+      setCombatSessions(rows.map((row) => ({ id: row.id, name: row.name })))
+    } catch (error: any) {
+      setCombatSessionsError(error?.message ?? 'Не удалось загрузить список боёв')
+      setCombatSessions([])
+    } finally {
+      setCombatSessionsLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -2359,13 +2569,14 @@ export default function App(): JSX.Element {
 
   useEffect(() => {
     setCampaignImportStatus(null)
+    setCombatStatus(null)
+    setCharactersError(null)
+    setCombatSessionsError(null)
   }, [campaign?.id])
 
   useEffect(() => {
     if (!campaign) return
-    window.beholder.combats.list(campaign.id).then((rows) => {
-      setCombatSessions(rows.map((row) => ({ id: row.id, name: row.name })))
-    })
+    void loadCombatSessions()
   }, [campaign])
 
   useEffect(() => {
@@ -2420,6 +2631,21 @@ export default function App(): JSX.Element {
   }, [artifactQuery])
 
   useEffect(() => {
+    if (!weaponQuery.trim()) {
+      setWeaponResults([])
+      return
+    }
+    const handle = setTimeout(() => {
+      window.beholder.weapons
+        .list({ query: weaponQuery.trim(), limit: 6, offset: 0 })
+        .then((res) => {
+          setWeaponResults(res.items as any)
+        })
+    }, 200)
+    return () => clearTimeout(handle)
+  }, [weaponQuery])
+
+  useEffect(() => {
     if (!combatQuery.trim()) {
       setCombatResults([])
       setCombatError(null)
@@ -2465,6 +2691,32 @@ export default function App(): JSX.Element {
     }, 200)
     return () => clearTimeout(handle)
   }, [campaign, customMonsterQuery])
+
+  useEffect(() => {
+    if (!campaign) {
+      setCustomWeaponRows([])
+      setCustomWeaponError(null)
+      return
+    }
+    const handle = setTimeout(() => {
+      window.beholder.customWeapons
+        .list({
+          campaignId: campaign.id,
+          query: customWeaponQuery.trim() || undefined,
+          limit: 20,
+          offset: 0
+        })
+        .then((res) => {
+          setCustomWeaponRows(res.items as CustomWeaponRow[])
+          setCustomWeaponError(null)
+        })
+        .catch((err) => {
+          setCustomWeaponRows([])
+          setCustomWeaponError(err?.message ?? 'Ошибка списка кастомного оружия')
+        })
+    }, 200)
+    return () => clearTimeout(handle)
+  }, [campaign, customWeaponQuery])
 
   useEffect(() => {
     if (characters.length === 0) {
@@ -2686,6 +2938,32 @@ export default function App(): JSX.Element {
     setCampaign({ id: result.id, name })
   }
 
+  const handleRenameCampaign = async () => {
+    if (!campaign) return
+    const name = campaignName.trim()
+    if (!name) return
+    await window.beholder.campaign.update({ id: campaign.id, name })
+    setCampaign({ ...campaign, name })
+    setCampaignImportStatus(`Название кампании обновлено: ${name}`)
+  }
+
+  const handleDeleteCampaign = async () => {
+    if (!campaign) return
+    const confirmed = window.confirm(
+      `Удалить кампанию "${campaign.name}"? Это удалит всех персонажей, бои и кастомных монстров.`
+    )
+    if (!confirmed) return
+    await window.beholder.campaign.delete(campaign.id)
+    setCampaign(null)
+    setCampaignName('')
+    setCampaignImportStatus('Кампания удалена.')
+    setCharacters([])
+    setSelectedCharacterId(null)
+    setSelectedCharacter(null)
+    setCombatSessions([])
+    resetCombat()
+  }
+
   const handleCreateCharacter = async () => {
     if (!campaign) return
     const name = newCharacter.name.trim()
@@ -2697,8 +2975,7 @@ export default function App(): JSX.Element {
       class: newCharacter.class.trim() || undefined,
       level: newCharacter.level ? Number(newCharacter.level) : undefined
     })
-    const rows = await window.beholder.characters.list(campaign.id)
-    setCharacters(rows as Character[])
+    await loadCharacters()
     setNewCharacter({ name: '', race: '', class: '', level: '1' })
   }
 
@@ -2710,8 +2987,7 @@ export default function App(): JSX.Element {
       setCampaignImportStatus(`Ошибка импорта: ${result.error}`)
       return
     }
-    const rows = await window.beholder.characters.list(campaign.id)
-    setCharacters(rows as Character[])
+    await loadCharacters()
     setCampaignImportStatus(
       result.name ? `Импортирован персонаж: ${result.name}` : 'Персонаж импортирован'
     )
@@ -2907,8 +3183,7 @@ export default function App(): JSX.Element {
     await window.beholder.characters.updateData({ id: selectedCharacterId, data })
     await refreshSelectedCharacter()
     if (campaign) {
-      const rows = await window.beholder.characters.list(campaign.id)
-      setCharacters(rows as Character[])
+      await loadCharacters()
     }
   }
 
@@ -2925,9 +3200,25 @@ export default function App(): JSX.Element {
     })
     await refreshSelectedCharacter()
     if (campaign) {
-      const rows = await window.beholder.characters.list(campaign.id)
-      setCharacters(rows as Character[])
+      await loadCharacters()
     }
+  }
+
+  const handleDeleteCharacter = async () => {
+    if (!selectedCharacterId || !selectedCharacter) return
+    const confirmed = window.confirm(`Удалить персонажа "${selectedCharacter.name}"?`)
+    if (!confirmed) return
+    await window.beholder.characters.delete(selectedCharacterId)
+    await loadCharacters()
+    setSelectedCharacter(null)
+    setCampaignImportStatus(`Персонаж "${selectedCharacter.name}" удалён.`)
+  }
+
+  const handleExportCharacter = async () => {
+    if (!selectedCharacterId || !selectedCharacter) return
+    const result = await window.beholder.characters.export(selectedCharacterId)
+    if (result?.canceled) return
+    setCampaignImportStatus(`Экспортирован персонаж: ${selectedCharacter.name}`)
   }
 
   const handleSaveCombatAndStats = async () => {
@@ -3115,7 +3406,7 @@ export default function App(): JSX.Element {
     const nextQtyRaw = patch.qty === undefined ? current.qty : Math.floor(patch.qty)
     const nextQty = Number.isFinite(nextQtyRaw) ? Math.max(1, nextQtyRaw) : current.qty
     const nextNotes = patch.notes === undefined ? current.notes ?? '' : patch.notes
-    data.inventory[index] = { name: nextName, qty: nextQty, notes: nextNotes }
+    data.inventory[index] = { ...current, name: nextName, qty: nextQty, notes: nextNotes }
     await updateCharacterData(data)
   }
 
@@ -3150,24 +3441,46 @@ export default function App(): JSX.Element {
     )
   }
 
-  const handleAddInventoryFromLibrary = async (kind: 'items' | 'artifacts', id: number) => {
+  const handleAddInventoryFromLibrary = async (kind: 'items' | 'weapons' | 'artifacts', id: number) => {
     if (!selectedCharacter) return
     const detail = (await window.beholder[kind].get(id)) as any
     if (!detail) return
     const name = (detail.name_ru ?? detail.name ?? '').trim()
     if (!name) return
     const data = ensureCharacterData(selectedCharacter.data)
-    const notes = kind === 'items' ? buildItemSummary(detail.data) : buildArtifactSummary(detail.data)
+    const notes =
+      kind === 'items'
+        ? buildItemSummary(detail.data)
+        : kind === 'weapons'
+          ? buildWeaponSummary(detail.data)
+          : buildArtifactSummary(detail.data)
     data.inventory = addInventoryEntry(data.inventory, {
       name,
       qty: 1,
       notes,
-      category: kind === 'items' ? 'item' : 'artifact'
+      category: kind === 'items' ? 'item' : kind === 'weapons' ? 'weapon' : 'artifact'
     })
     if (kind === 'items') {
       data.items = [...data.items, { id, name, summary: buildItemSummary(detail.data) }]
       setItemQuery('')
       setItemResults([])
+    } else if (kind === 'weapons') {
+      const rawDamage = detail?.data?.en?.damageVal ?? detail?.data?.ru?.damageVal ?? detail?.data?.damage
+      data.weapons = [
+        ...data.weapons,
+        {
+          id,
+          name,
+          summary: buildWeaponSummary(detail.data),
+          attackBonus:
+            typeof detail?.data?.attackBonus === 'number' && Number.isFinite(detail.data.attackBonus)
+              ? detail.data.attackBonus
+              : null,
+          damageExpr: typeof rawDamage === 'string' ? normalizeDamageExpr(rawDamage) : null
+        }
+      ]
+      setWeaponQuery('')
+      setWeaponResults([])
     } else {
       data.artifacts = [...data.artifacts, { id, name, summary: buildArtifactSummary(detail.data) }]
       setArtifactQuery('')
@@ -3260,7 +3573,7 @@ export default function App(): JSX.Element {
     await updateCharacterData(data)
   }
 
-  const openModal = (type: 'spells' | 'items' | 'artifacts', id?: number) => {
+  const openModal = (type: 'spells' | 'items' | 'weapons' | 'artifacts', id?: number) => {
     if (!id) return
     setModal({ type, id })
   }
@@ -3268,12 +3581,52 @@ export default function App(): JSX.Element {
   const closeModal = () => setModal(null)
   const closeCombatDetail = () => setCombatDetailId(null)
 
-  const addCharacterToCombat = () => {
+  const handleSetEquippedWeapon = async (
+    slot: 'primaryWeaponKey' | 'secondaryWeaponKey',
+    weaponKey: string
+  ) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.equipment = {
+      ...data.equipment,
+      [slot]: weaponKey || null
+    }
+    await updateCharacterData(data)
+  }
+
+  const handleRemoveWeapon = async (weaponKey: string) => {
+    if (!selectedCharacter) return
+    const data = ensureCharacterData(selectedCharacter.data)
+    data.weapons = data.weapons.filter((weapon) => getWeaponKey(weapon) !== weaponKey)
+    if (data.equipment.primaryWeaponKey === weaponKey) data.equipment.primaryWeaponKey = null
+    if (data.equipment.secondaryWeaponKey === weaponKey) data.equipment.secondaryWeaponKey = null
+    await updateCharacterData(data)
+  }
+
+  const addCharacterToCombat = (weaponKey?: string) => {
     if (!selectedCharacter) return
     const data = ensureCharacterData(selectedCharacter.data)
     const saves = buildSaveModsFromCharacter(data, selectedCharacter.level ?? null)
     const actions = buildCharacterActions(data)
     const baseAttack = deriveBaseAttack(actions)
+    const resolvedWeapons = data.weapons.map((weapon) => {
+      const attackBonus =
+        typeof weapon.attackBonus === 'number' && Number.isFinite(weapon.attackBonus)
+          ? weapon.attackBonus
+          : parseWeaponAttackBonus(weapon.summary)
+      const damageExpr = weapon.damageExpr ?? parseWeaponDamageExpr(weapon.summary)
+      return {
+        ...weapon,
+        key: getWeaponKey(weapon),
+        attackBonus,
+        damageExpr
+      }
+    })
+    const selectedWeaponKey = weaponKey || data.equipment.primaryWeaponKey
+    const selectedWeapon =
+      resolvedWeapons.find((weapon) => weapon.key === selectedWeaponKey) ?? null
+    const attackBonus = selectedWeapon?.attackBonus ?? baseAttack.attackBonus
+    const damageExpr = selectedWeapon?.damageExpr ?? baseAttack.damageExpr ?? '1d6'
     const participant: CombatParticipant = {
       id: `c-${selectedCharacter.id}-${Date.now()}`,
       kind: 'character',
@@ -3285,14 +3638,24 @@ export default function App(): JSX.Element {
       hpCurrent: data.combat.hpCurrent ?? data.combat.hpMax,
       ac: data.combat.ac,
       initiative: data.combat.initiativeOverride,
-      attackBonus: baseAttack.attackBonus,
-      damageExpr: baseAttack.damageExpr ?? '1d6',
+      attackBonus,
+      damageExpr,
       effects: [],
       conditions: [],
       concentration: null,
       saves,
+      weaponOptions:
+        resolvedWeapons.length > 0
+          ? resolvedWeapons.map((weapon) => ({
+              key: weapon.key,
+              name: weapon.name,
+              attackBonus: weapon.attackBonus,
+              damageExpr: weapon.damageExpr
+            }))
+          : undefined,
+      selectedWeaponKey: selectedWeapon?.key ?? null,
       actions,
-      notes: ''
+      notes: selectedWeapon ? `Оружие: ${selectedWeapon.name}` : ''
     }
     setCombatParticipants((prev) => [...prev, participant])
   }
@@ -3459,6 +3822,177 @@ export default function App(): JSX.Element {
     }
   }
 
+  const resetCustomWeaponForm = () => {
+    setCustomWeaponDraft({
+      name: '',
+      kind: '',
+      attackBonus: '',
+      damage: '',
+      damageType: '',
+      rangeText: '',
+      notes: ''
+    })
+    setEditingCustomWeaponId(null)
+  }
+
+  const openCreateCustomWeaponModal = () => {
+    resetCustomWeaponForm()
+    setCustomWeaponError(null)
+    setCustomWeaponModalOpen(true)
+  }
+
+  const buildCustomWeaponPayload = () => {
+    const attackBonus = customWeaponDraft.attackBonus.trim()
+    return {
+      kind: customWeaponDraft.kind.trim() || null,
+      attackBonus: attackBonus ? Number(attackBonus) : null,
+      damage: customWeaponDraft.damage.trim() || null,
+      damageType: customWeaponDraft.damageType.trim() || null,
+      rangeText: customWeaponDraft.rangeText.trim() || null,
+      notes: customWeaponDraft.notes.trim() || null,
+      data: {
+        attackBonus: attackBonus ? Number(attackBonus) : null,
+        damage: customWeaponDraft.damage.trim() || null,
+        damageType: customWeaponDraft.damageType.trim() || null,
+        rangeText: customWeaponDraft.rangeText.trim() || null,
+        kind: customWeaponDraft.kind.trim() || null,
+        notes: customWeaponDraft.notes.trim() || null
+      }
+    }
+  }
+
+  const saveCustomWeapon = async () => {
+    if (!campaign) return
+    const name = customWeaponDraft.name.trim()
+    if (!name) {
+      setCustomWeaponError('Укажите название оружия')
+      return
+    }
+    const payload = buildCustomWeaponPayload()
+    if (
+      payload.attackBonus !== null &&
+      (Number.isNaN(payload.attackBonus) || !Number.isFinite(payload.attackBonus))
+    ) {
+      setCustomWeaponError('Бонус атаки должен быть числом')
+      return
+    }
+    setSavingCustomWeapon(true)
+    try {
+      if (editingCustomWeaponId) {
+        await window.beholder.customWeapons.update({
+          id: editingCustomWeaponId,
+          name,
+          ...payload
+        })
+      } else {
+        await window.beholder.customWeapons.create({
+          campaignId: campaign.id,
+          name,
+          ...payload
+        })
+      }
+      const refreshed = await window.beholder.customWeapons.list({
+        campaignId: campaign.id,
+        query: customWeaponQuery.trim() || undefined,
+        limit: 20,
+        offset: 0
+      })
+      setCustomWeaponRows(refreshed.items as CustomWeaponRow[])
+      setCustomWeaponError(null)
+      resetCustomWeaponForm()
+      setCustomWeaponModalOpen(false)
+    } catch (err: any) {
+      setCustomWeaponError(err?.message ?? 'Не удалось сохранить кастомное оружие')
+    } finally {
+      setSavingCustomWeapon(false)
+    }
+  }
+
+  const editCustomWeapon = async (id: number) => {
+    try {
+      const row = (await window.beholder.customWeapons.get(id)) as any
+      if (!row) return
+      setCustomWeaponDraft({
+        name: row.name ?? '',
+        kind: row.kind ?? '',
+        attackBonus:
+          typeof row.attackBonus === 'number' && Number.isFinite(row.attackBonus)
+            ? String(row.attackBonus)
+            : '',
+        damage: row.damage ?? '',
+        damageType: row.damageType ?? '',
+        rangeText: row.rangeText ?? '',
+        notes: row.notes ?? ''
+      })
+      setEditingCustomWeaponId(id)
+      setCustomWeaponError(null)
+      setCustomWeaponModalOpen(true)
+    } catch (err: any) {
+      setCustomWeaponError(err?.message ?? 'Не удалось загрузить кастомное оружие')
+    }
+  }
+
+  const deleteCustomWeapon = async (id: number) => {
+    if (!campaign) return
+    try {
+      await window.beholder.customWeapons.delete(id)
+      const refreshed = await window.beholder.customWeapons.list({
+        campaignId: campaign.id,
+        query: customWeaponQuery.trim() || undefined,
+        limit: 20,
+        offset: 0
+      })
+      setCustomWeaponRows(refreshed.items as CustomWeaponRow[])
+      if (editingCustomWeaponId === id) {
+        resetCustomWeaponForm()
+      }
+      setCustomWeaponError(null)
+    } catch (err: any) {
+      setCustomWeaponError(err?.message ?? 'Не удалось удалить кастомное оружие')
+    }
+  }
+
+  const addCustomWeaponToInventory = async (id: number) => {
+    if (!selectedCharacter) return
+    try {
+      const row = (await window.beholder.customWeapons.get(id)) as any
+      if (!row) return
+      const data = ensureCharacterData(selectedCharacter.data)
+      const summary = buildWeaponSummary({
+        attackBonus: row.attackBonus,
+        damage: row.damage,
+        damageType: row.damageType,
+        rangeText: row.rangeText,
+        kind: row.kind,
+        notes: row.notes
+      })
+      data.inventory = addInventoryEntry(data.inventory, {
+        name: row.name,
+        qty: 1,
+        notes: summary,
+        category: 'custom_weapon'
+      })
+      data.weapons = [
+        ...data.weapons,
+        {
+          customId: row.id,
+          name: row.name,
+          summary,
+          attackBonus:
+            typeof row.attackBonus === 'number' && Number.isFinite(row.attackBonus)
+              ? row.attackBonus
+              : null,
+          damageExpr:
+            typeof row.damage === 'string' ? normalizeDamageExpr(row.damage) : null
+        }
+      ]
+      await updateCharacterData(data)
+      setCustomWeaponQuery('')
+    } catch (err: any) {
+      setCustomWeaponError(err?.message ?? 'Не удалось добавить кастомное оружие в инвентарь')
+    }
+  }
+
   const addCustomActionRow = () => {
     setCustomMonsterActions((prev) => [...prev, createEmptyCustomMonsterAction()])
   }
@@ -3484,6 +4018,18 @@ export default function App(): JSX.Element {
     setCombatParticipants((prev) =>
       prev.map((p) => (p.id === id ? { ...p, ...patch } : p))
     )
+  }
+
+  const updateParticipantWeaponSelection = (participant: CombatParticipant, weaponKey: string) => {
+    const nextKey = weaponKey || null
+    const option =
+      participant.weaponOptions?.find((entry) => entry.key === nextKey) ?? null
+    updateParticipant(participant.id, {
+      selectedWeaponKey: nextKey,
+      attackBonus: option?.attackBonus ?? participant.attackBonus,
+      damageExpr: option?.damageExpr ?? participant.damageExpr,
+      notes: option ? `Оружие: ${option.name}` : participant.notes
+    })
   }
 
   const getParticipantById = (id: string | null | undefined) =>
@@ -3812,8 +4358,9 @@ export default function App(): JSX.Element {
       ? rollCriticalDamageExpr(action.damageExpr)
       : rollDiceExpr(action.damageExpr)
     if (!result) return
+    const damageExprLabel = 'expr' in result ? result.expr : action.damageExpr
     const detail = isCritical
-      ? `КРИТ: ${result.expr}${formatModifierDetail(result.modifier)} = ${result.rolls.join(' + ')}${formatModifierDetail(result.modifier)}`
+      ? `КРИТ: ${damageExprLabel}${formatModifierDetail(result.modifier)} = ${result.rolls.join(' + ')}${formatModifierDetail(result.modifier)}`
       : `${action.damageExpr} = ${result.rolls.join(' + ')}${formatModifierDetail(result.modifier)}`
     const targetLabel = targetName ? ` → ${targetName}` : ''
     pushCombatLog(
@@ -4005,20 +4552,24 @@ export default function App(): JSX.Element {
 
   const saveCombatSession = async () => {
     if (!campaign) return
-    const payload = {
-      campaignId: campaign.id,
-      name: combatName.trim() || 'Сессия боя',
-      data: {
-        participants: combatParticipants,
-        currentTurn,
-        log: combatLog
-      },
-      combatId: selectedCombatId ?? undefined
+    try {
+      const payload = {
+        campaignId: campaign.id,
+        name: combatName.trim() || 'Сессия боя',
+        data: {
+          participants: combatParticipants,
+          currentTurn,
+          log: combatLog
+        },
+        combatId: selectedCombatId ?? undefined
+      }
+      const result = await window.beholder.combats.save(payload)
+      setSelectedCombatId(result.id)
+      await loadCombatSessions()
+      setCombatStatus(`Сохранено: ${payload.name}`)
+    } catch (error: any) {
+      setCombatStatus(error?.message ?? 'Не удалось сохранить бой')
     }
-    const result = await window.beholder.combats.save(payload)
-    setSelectedCombatId(result.id)
-    const rows = await window.beholder.combats.list(campaign.id)
-    setCombatSessions(rows.map((row) => ({ id: row.id, name: row.name })))
   }
 
   const normalizeSaves = (value: any): SaveMods => {
@@ -4060,27 +4611,32 @@ export default function App(): JSX.Element {
   })
 
   const loadCombatSession = async (id: number) => {
-    const result = await window.beholder.combats.get(id)
-    if (!result || !result.data) return
-    const data = result.data as any
-    const participants = Array.isArray(data.participants)
-      ? data.participants.map(normalizeParticipant)
-      : []
-    setCombatParticipants(participants)
-    setCurrentTurn(typeof data.currentTurn === 'number' ? data.currentTurn : 0)
-    const log = Array.isArray(data.log)
-      ? data.log
-          .map((entry: any) => ({
-            label: typeof entry?.label === 'string' ? entry.label : 'Событие',
-            total: typeof entry?.total === 'number' ? entry.total : null,
-            detail: typeof entry?.detail === 'string' ? entry.detail : '—',
-            tone: entry?.tone === 'crit' || entry?.tone === 'fail' ? entry.tone : 'normal'
-          }))
-          .slice(0, 20)
-      : []
-    setCombatLog(log)
-    setCombatName(result.name)
-    setSelectedCombatId(result.id)
+    try {
+      const result = await window.beholder.combats.get(id)
+      if (!result || !result.data) return
+      const data = result.data as any
+      const participants = Array.isArray(data.participants)
+        ? data.participants.map(normalizeParticipant)
+        : []
+      setCombatParticipants(participants)
+      setCurrentTurn(typeof data.currentTurn === 'number' ? data.currentTurn : 0)
+      const log = Array.isArray(data.log)
+        ? data.log
+            .map((entry: any) => ({
+              label: typeof entry?.label === 'string' ? entry.label : 'Событие',
+              total: typeof entry?.total === 'number' ? entry.total : null,
+              detail: typeof entry?.detail === 'string' ? entry.detail : '—',
+              tone: entry?.tone === 'crit' || entry?.tone === 'fail' ? entry.tone : 'normal'
+            }))
+            .slice(0, 20)
+        : []
+      setCombatLog(log)
+      setCombatName(result.name)
+      setSelectedCombatId(result.id)
+      setCombatStatus(`Загружено: ${result.name}`)
+    } catch (error: any) {
+      setCombatStatus(error?.message ?? 'Не удалось загрузить бой')
+    }
   }
 
   const resetCombat = () => {
@@ -4093,18 +4649,41 @@ export default function App(): JSX.Element {
 
   const exportCombatSession = async () => {
     if (!selectedCombatId) return
-    await window.beholder.combats.export(selectedCombatId)
+    const result = await window.beholder.combats.export(selectedCombatId)
+    if (result?.canceled) return
+    if (!result?.ok) {
+      setCombatStatus(result?.error ?? 'Не удалось экспортировать бой')
+      return
+    }
+    setCombatStatus('Бой экспортирован')
   }
 
   const importCombatSession = async () => {
     if (!campaign) return
     const result = await window.beholder.combats.import(campaign.id)
     if (!result || result.canceled) return
-    const rows = await window.beholder.combats.list(campaign.id)
-    setCombatSessions(rows.map((row) => ({ id: row.id, name: row.name })))
+    if (!result.ok) {
+      setCombatStatus(result.error ?? 'Не удалось импортировать бой')
+      return
+    }
+    await loadCombatSessions()
     if (result.id) {
       await loadCombatSession(result.id)
+    } else {
+      setCombatStatus('Бой импортирован')
     }
+  }
+
+  const deleteCombatSession = async (id: number, name: string) => {
+    const confirmed = window.confirm(`Удалить бой "${name}"?`)
+    if (!confirmed) return
+    await window.beholder.combats.delete(id)
+    if (!campaign) return
+    await loadCombatSessions()
+    if (selectedCombatId === id) {
+      resetCombat()
+    }
+    setCombatStatus(`Удалён бой: ${name}`)
   }
 
   const applyDamage = (participant: CombatParticipant, amount: number) => {
@@ -4424,17 +5003,15 @@ export default function App(): JSX.Element {
               Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
             </button>
             <SegmentedControl
-              value={activeView === 'reference' ? 'home' : activeView}
+              value={activeView}
               onChange={(value) => setView(value as ViewKey)}
               data={[
                 { label: 'Главная', value: 'home' },
                 { label: 'Кампания', value: 'campaign' },
-                { label: 'Бой', value: 'combat' }
+                { label: 'Бой', value: 'combat' },
+                { label: 'Справочник', value: 'reference' }
               ]}
             />
-            <button className="button button--ghost" onClick={() => setView('reference')}>
-              Справочник
-            </button>
             <button
               className="button button--ghost"
               onClick={() => window.beholder.referenceWindow.open()}
@@ -4456,12 +5033,21 @@ export default function App(): JSX.Element {
         {activeView === 'home' && (
           <section className="panel panel--hero home">
             <div>
-              <h2>Начни с боя</h2>
-              <p>Минималистичный центр управления. Всё остальное — по мере надобности.</p>
+              <h2>Главный экран мастера</h2>
+              <p>Базовый поток: кампания → участники → боевой стол.</p>
             </div>
             <div className="home__actions">
-              <button className="button" onClick={() => setView('combat')}>
-                Открыть бой
+              <button className="button" onClick={() => setView('campaign')}>
+                Кампания
+              </button>
+              <button className="button" onClick={() => window.beholder.combatBoard.open()}>
+                Боевой стол
+              </button>
+              <button className="button button--ghost" onClick={() => setView('combat')}>
+                Сессии боя
+              </button>
+              <button className="button button--ghost" onClick={() => setView('reference')}>
+                Справочник
               </button>
               <button
                 className="button button--ghost"
@@ -4474,39 +5060,38 @@ export default function App(): JSX.Element {
               >
                 Форма игрока (web)
               </button>
-              <button className="button button--ghost" onClick={() => setView('campaign')}>
-                Кампания
-              </button>
-              <button className="button button--ghost" onClick={() => setView('reference')}>
-                Справочник
-              </button>
             </div>
             {campaign && (
               <div className="home__status">
                 Активная кампания: <strong>{campaign.name}</strong>
               </div>
             )}
+            {!campaign && (
+              <div className="home__status">
+                Нет активной кампании — открой вкладку <strong>Кампания</strong> и создай её.
+              </div>
+            )}
           </section>
         )}
-        {view !== 'home' && (
+        {activeView !== 'home' && activeView !== 'combat' && (
           <section className="panel panel--hero">
             {isEntityLibraryView ? (
               <>
                 <div className="tabs">
                   <button
-                    className={referenceSection === 'ttg_classes' ? 'tab tab--active' : 'tab'}
+                    className={referenceSectionForTabs === 'ttg_classes' ? 'tab tab--active' : 'tab'}
                     onClick={() => setReferenceSection('ttg_classes')}
                   >
                     TTG Классы
                   </button>
                   <button
-                    className={referenceSection === 'ttg_races' ? 'tab tab--active' : 'tab'}
+                    className={referenceSectionForTabs === 'ttg_races' ? 'tab tab--active' : 'tab'}
                     onClick={() => setReferenceSection('ttg_races')}
                   >
                     TTG Расы
                   </button>
                   <button
-                    className={referenceSection === 'ttg_rules' ? 'tab tab--active' : 'tab'}
+                    className={referenceSectionForTabs === 'ttg_rules' ? 'tab tab--active' : 'tab'}
                     onClick={() => setReferenceSection('ttg_rules')}
                   >
                     TTG Правила
@@ -4538,19 +5123,19 @@ export default function App(): JSX.Element {
               <>
                 <div className="tabs">
                   <button
-                    className={referenceSection === 'ttg_classes' ? 'tab tab--active' : 'tab'}
+                    className={referenceSectionForTabs === 'ttg_classes' ? 'tab tab--active' : 'tab'}
                     onClick={() => setReferenceSection('ttg_classes')}
                   >
                     TTG Классы
                   </button>
                   <button
-                    className={referenceSection === 'ttg_races' ? 'tab tab--active' : 'tab'}
+                    className={referenceSectionForTabs === 'ttg_races' ? 'tab tab--active' : 'tab'}
                     onClick={() => setReferenceSection('ttg_races')}
                   >
                     TTG Расы
                   </button>
                   <button
-                    className={referenceSection === 'ttg_rules' ? 'tab tab--active' : 'tab'}
+                    className={referenceSectionForTabs === 'ttg_rules' ? 'tab tab--active' : 'tab'}
                     onClick={() => setReferenceSection('ttg_rules')}
                   >
                     TTG Правила
@@ -4666,6 +5251,10 @@ export default function App(): JSX.Element {
                     <input
                       value={campaignName}
                       onChange={(event) => setCampaignName(event.target.value)}
+                      onInput={(event) =>
+                        setCampaignName((event.currentTarget as HTMLInputElement).value)
+                      }
+                      autoComplete="off"
                       placeholder="Название кампании"
                     />
                     <button className="button" onClick={handleCreateCampaign}>
@@ -4678,6 +5267,20 @@ export default function App(): JSX.Element {
                     <div className="campaign-card">
                       <div className="campaign-card__title">{campaign.name}</div>
                       <div className="campaign-card__meta">ID: {campaign.id}</div>
+                    </div>
+                    <div className="form">
+                      <input
+                        value={campaignName}
+                        onChange={(event) => setCampaignName(event.target.value)}
+                        onInput={(event) =>
+                          setCampaignName((event.currentTarget as HTMLInputElement).value)
+                        }
+                        autoComplete="off"
+                        placeholder="Новое название кампании"
+                      />
+                      <button className="button button--ghost" onClick={() => void handleRenameCampaign()}>
+                        Переименовать
+                      </button>
                     </div>
                     <div className="form">
                       <button className="button button--ghost" onClick={handleImportCharacterFromFile}>
@@ -4694,6 +5297,9 @@ export default function App(): JSX.Element {
                         onClick={() => setFullCharacterFormOpen(true)}
                       >
                         Полная форма персонажа
+                      </button>
+                      <button className="button button--ghost" onClick={() => void handleDeleteCampaign()}>
+                        Удалить кампанию
                       </button>
                     </div>
                   <details className="library-list">
@@ -4747,8 +5353,12 @@ export default function App(): JSX.Element {
                   {campaignImportStatus && <div className="detail__text">{campaignImportStatus}</div>}
                   <section className="detail__section campaign-character-manager">
                     <h3>Учёт персонажа</h3>
-                    {characters.length === 0 && <div className="empty">Сначала добавь персонажа в кампанию</div>}
-                    {characters.length > 0 && (
+                    {charactersLoading && <div className="empty">Загрузка персонажей…</div>}
+                    {charactersError && <div className="error">{charactersError}</div>}
+                    {!charactersLoading && !charactersError && characters.length === 0 && (
+                      <div className="empty">Сначала добавь персонажа в кампанию</div>
+                    )}
+                    {!charactersLoading && !charactersError && characters.length > 0 && (
                       <>
                         <div className="form">
                           <select
@@ -4802,6 +5412,12 @@ export default function App(): JSX.Element {
                                 />
                                 <button className="button" onClick={() => void handleUpdateCharacterBase()}>
                                   Сохранить базу
+                                </button>
+                                <button className="button button--ghost" onClick={() => void handleExportCharacter()}>
+                                  Экспорт JSON
+                                </button>
+                                <button className="button button--ghost" onClick={() => void handleDeleteCharacter()}>
+                                  Удалить персонажа
                                 </button>
                               </div>
                             </div>
@@ -4897,6 +5513,31 @@ export default function App(): JSX.Element {
                                 )}
                                 <div className="search">
                                   <input
+                                    value={weaponQuery}
+                                    onChange={(event) => setWeaponQuery(event.target.value)}
+                                    placeholder="Поиск оружия из справочника"
+                                  />
+                                  <span>
+                                    {weaponQuery.trim()
+                                      ? `${weaponResults.length} найдено`
+                                      : 'Введи название оружия'}
+                                  </span>
+                                </div>
+                                {weaponResults.length > 0 && (
+                                  <div className="search-results">
+                                    {weaponResults.map((weapon) => (
+                                      <button
+                                        key={`inv-weapon-${weapon.id}`}
+                                        className="search-result"
+                                        onClick={() => void handleAddInventoryFromLibrary('weapons', weapon.id)}
+                                      >
+                                        {weapon.name_ru ?? weapon.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="search">
+                                  <input
                                     value={artifactQuery}
                                     onChange={(event) => setArtifactQuery(event.target.value)}
                                     placeholder="Поиск артефакта из справочника"
@@ -4919,6 +5560,110 @@ export default function App(): JSX.Element {
                                       </button>
                                     ))}
                                   </div>
+                                )}
+                                <div className="form">
+                                  <button className="button button--ghost" onClick={openCreateCustomWeaponModal} disabled={!campaign}>
+                                    Создать кастомное оружие
+                                  </button>
+                                </div>
+                                <div className="search">
+                                  <input
+                                    value={customWeaponQuery}
+                                    onChange={(event) => setCustomWeaponQuery(event.target.value)}
+                                    placeholder="Поиск кастомного оружия"
+                                  />
+                                  <span>{customWeaponRows.length} в списке</span>
+                                </div>
+                                {customWeaponError && <div className="error">{customWeaponError}</div>}
+                                {customWeaponRows.length > 0 && (
+                                  <div className="search-results">
+                                    {customWeaponRows.map((weapon) => (
+                                      <div key={weapon.id} className="search-result search-result--split">
+                                        <div>
+                                          <strong>{weapon.name}</strong>
+                                          <div className="list__subtitle">
+                                            {[weapon.kind, weapon.damage].filter(Boolean).join(' · ') || 'Оружие'}
+                                          </div>
+                                        </div>
+                                        <div className="search-result__actions">
+                                          <button className="chip" onClick={() => void addCustomWeaponToInventory(weapon.id)}>
+                                            В инвентарь
+                                          </button>
+                                          <button className="chip" onClick={() => void editCustomWeapon(weapon.id)}>
+                                            Править
+                                          </button>
+                                          <button className="chip chip--warn" onClick={() => void deleteCustomWeapon(weapon.id)}>
+                                            Удалить
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="library-list">
+                                <div className="library-list__summary">Оружие персонажа</div>
+                                {characterWeapons.length === 0 && (
+                                  <div className="empty">Оружие ещё не добавлено</div>
+                                )}
+                                {characterWeapons.length > 0 && (
+                                  <>
+                                    <div className="form">
+                                      <select
+                                        value={selectedCharacterData.equipment.primaryWeaponKey ?? ''}
+                                        onChange={(event) =>
+                                          void handleSetEquippedWeapon('primaryWeaponKey', event.target.value)
+                                        }
+                                      >
+                                        <option value="">Основное оружие: не выбрано</option>
+                                        {characterWeapons.map((weapon) => (
+                                          <option key={`primary-${weapon.key}`} value={weapon.key}>
+                                            {weapon.name}
+                                          </option>
+                                        ))}
+                                      </select>
+                                      <select
+                                        value={selectedCharacterData.equipment.secondaryWeaponKey ?? ''}
+                                        onChange={(event) =>
+                                          void handleSetEquippedWeapon('secondaryWeaponKey', event.target.value)
+                                        }
+                                      >
+                                        <option value="">Вторичное оружие: не выбрано</option>
+                                        {characterWeapons.map((weapon) => (
+                                          <option key={`secondary-${weapon.key}`} value={weapon.key}>
+                                            {weapon.name}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="search-results">
+                                      {characterWeapons.map((weapon) => (
+                                        <div key={`weapon-row-${weapon.key}`} className="search-result search-result--split">
+                                          <div>
+                                            <strong>{weapon.name}</strong>
+                                            <div className="list__subtitle">
+                                              {[
+                                                weapon.attackBonus !== null && weapon.attackBonus !== undefined
+                                                  ? `Атака ${formatMod(weapon.attackBonus)}`
+                                                  : null,
+                                                weapon.damageExpr ?? null
+                                              ]
+                                                .filter(Boolean)
+                                                .join(' · ') || weapon.summary || 'Параметры не указаны'}
+                                            </div>
+                                          </div>
+                                          <div className="search-result__actions">
+                                            <button className="chip chip--accent" onClick={() => addCharacterToCombat(weapon.key)}>
+                                              В бой
+                                            </button>
+                                            <button className="chip chip--warn" onClick={() => void handleRemoveWeapon(weapon.key)}>
+                                              Удалить
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </>
                                 )}
                               </div>
                               {selectedCharacterData.inventory.length === 0 && (
@@ -5232,6 +5977,26 @@ export default function App(): JSX.Element {
                       </div>
                     </div>
                   )}
+                  {entity === 'weapons' && weaponData && (
+                    <div className="detail__grid">
+                      <div>
+                        <div className="detail__label">Тип</div>
+                        <div>{getLocaleValue(weaponData, 'type') ?? getLocaleValue(weaponData, 'weaponType') ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Урон</div>
+                        <div>{weaponData?.en?.damageVal ?? weaponData?.ru?.damageVal ?? weaponData?.damage ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Тип урона</div>
+                        <div>{weaponData?.en?.damageType ?? weaponData?.ru?.damageType ?? weaponData?.damageType ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="detail__label">Дистанция</div>
+                        <div>{getLocaleValue(weaponData, 'range') ?? weaponData?.rangeText ?? '—'}</div>
+                      </div>
+                    </div>
+                  )}
                   {entity === 'artifacts' && artifactData && (
                     <div className="detail__grid">
                       <div>
@@ -5361,130 +6126,44 @@ export default function App(): JSX.Element {
                   >
                     Экспорт
                   </button>
-                  {!isCombatBoardMode && (
-                    <button
-                      className="button"
-                      onClick={() => window.beholder.combatBoard.open()}
-                    >
-                      Боевой стол
-                    </button>
-                  )}
+                  <button className="button" onClick={() => window.beholder.combatBoard.open()}>
+                    Открыть боевой стол
+                  </button>
                 </div>
               </div>
-              {combatSessions.length > 0 && (
+              {combatStatus && <div className="detail__text">{combatStatus}</div>}
+              {combatSessionsLoading && <div className="empty">Загрузка сессий…</div>}
+              {combatSessionsError && <div className="error">{combatSessionsError}</div>}
+              {!combatSessionsLoading && !combatSessionsError && combatSessions.length === 0 && (
+                <div className="empty">Сессий боя пока нет</div>
+              )}
+              {!combatSessionsLoading && !combatSessionsError && combatSessions.length > 0 && (
                 <div className="detail__section">
                   <div className="detail__label">Сохранённые сессии</div>
                   <div className="search-results">
                     {combatSessions.map((session) => (
-                      <button
-                        key={session.id}
-                        className={
-                          session.id === selectedCombatId
-                            ? 'search-result combat-session combat-session--active'
-                            : 'search-result combat-session'
-                        }
-                        onClick={() => loadCombatSession(session.id)}
-                      >
-                        {session.name}
-                      </button>
+                      <div key={session.id} className="search-result search-result--split">
+                        <button
+                          className={
+                            session.id === selectedCombatId
+                              ? 'chip chip--accent'
+                              : 'chip'
+                          }
+                          onClick={() => loadCombatSession(session.id)}
+                        >
+                          {session.name}
+                        </button>
+                        <button
+                          className="chip chip--warn"
+                          onClick={() => void deleteCombatSession(session.id, session.name)}
+                        >
+                          Удалить
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
               )}
-              <details className="library-list">
-                <summary className="library-list__summary">Добавить персонажа</summary>
-                {characters.length === 0 && <div className="empty">Персонажей пока нет</div>}
-                {characters.length > 0 && (
-                  <div className="form">
-                    <select
-                      value={selectedCharacterId ?? ''}
-                      onChange={(event) =>
-                        setSelectedCharacterId(event.target.value ? Number(event.target.value) : null)
-                      }
-                    >
-                      {characters.map((char) => (
-                        <option key={char.id} value={char.id}>
-                          {char.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button className="button" onClick={addCharacterToCombat}>
-                      Добавить
-                    </button>
-                  </div>
-                )}
-              </details>
-              <details className="library-list">
-                <summary className="library-list__summary">Добавить монстра</summary>
-                <div className="search">
-                  <input
-                    value={combatQuery}
-                    onChange={(event) => setCombatQuery(event.target.value)}
-                    placeholder="Поиск монстра..."
-                  />
-                  <span>
-                    {combatError
-                      ? 'Ошибка поиска'
-                      : combatQuery.trim()
-                        ? `${combatResults.length} результатов`
-                        : 'Введите имя'}
-                  </span>
-                </div>
-                {combatError && <div className="error">{combatError}</div>}
-                {combatResults.length > 0 && (
-                  <div className="search-results">
-                    {combatResults.map((monster) => (
-                      <button
-                        key={monster.id}
-                        className="search-result"
-                        onClick={() => addMonsterToCombat(monster)}
-                      >
-                        {monster.name_ru ?? monster.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </details>
-              <details className="library-list">
-                <summary className="library-list__summary">Кастомный монстр (D&D 5e)</summary>
-                <div className="form">
-                  <button className="button" onClick={openCreateCustomMonsterModal} disabled={!campaign}>
-                    Открыть конструктор
-                  </button>
-                </div>
-                <div className="search">
-                  <input
-                    value={customMonsterQuery}
-                    onChange={(event) => setCustomMonsterQuery(event.target.value)}
-                    placeholder="Поиск кастомного монстра"
-                  />
-                  <span>{customMonsterRows.length} в списке</span>
-                </div>
-                {customMonsterError && <div className="error">{customMonsterError}</div>}
-                {customMonsterRows.length > 0 && (
-                  <div className="search-results">
-                    {customMonsterRows.map((monster) => (
-                      <div key={monster.id} className="search-result search-result--split">
-                        <div>
-                          <strong>{monster.name}</strong>
-                          <div className="list__subtitle">CR: {monster.cr ?? '—'}</div>
-                        </div>
-                        <div className="search-result__actions">
-                          <button className="chip" onClick={() => addCustomMonsterToCombat(monster.id)}>
-                            В бой
-                          </button>
-                          <button className="chip" onClick={() => editCustomMonster(monster.id)}>
-                            Править
-                          </button>
-                          <button className="chip chip--warn" onClick={() => deleteCustomMonster(monster.id)}>
-                            Удалить
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </details>
               <div className="detail__section combat-participants-section">
                 <div className="detail__label">Участники</div>
                 <div className="combat-filters">
@@ -5891,6 +6570,27 @@ export default function App(): JSX.Element {
                                   </div>
                                 </div>
                                 <div className="combat-card__basic">
+                                  {participant.kind === 'character' &&
+                                    participant.weaponOptions &&
+                                    participant.weaponOptions.length > 0 && (
+                                      <select
+                                        value={participant.selectedWeaponKey ?? ''}
+                                        onClick={(event) => event.stopPropagation()}
+                                        onChange={(event) =>
+                                          updateParticipantWeaponSelection(
+                                            participant,
+                                            event.target.value
+                                          )
+                                        }
+                                      >
+                                        <option value="">Оружие: без выбора</option>
+                                        {participant.weaponOptions.map((weapon) => (
+                                          <option key={`${participant.id}-${weapon.key}`} value={weapon.key}>
+                                            {weapon.name}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    )}
                                   <input
                                     value={participant.attackBonus ?? ''}
                                     onClick={(event) => event.stopPropagation()}
@@ -6118,6 +6818,23 @@ export default function App(): JSX.Element {
                               }
                               placeholder="Иниц"
                             />
+                            {participant.kind === 'character' &&
+                              participant.weaponOptions &&
+                              participant.weaponOptions.length > 0 && (
+                                <select
+                                  value={participant.selectedWeaponKey ?? ''}
+                                  onChange={(event) =>
+                                    updateParticipantWeaponSelection(participant, event.target.value)
+                                  }
+                                >
+                                  <option value="">Оружие: без выбора</option>
+                                  {participant.weaponOptions.map((weapon) => (
+                                    <option key={`${participant.id}-row-${weapon.key}`} value={weapon.key}>
+                                      {weapon.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
                             <input
                               value={participant.attackBonus ?? ''}
                               onChange={(event) =>
@@ -6266,22 +6983,35 @@ export default function App(): JSX.Element {
                         </button>
                       </div>
                     </div>
-                    {combatSessions.length > 0 && (
+                    {combatStatus && <div className="detail__text">{combatStatus}</div>}
+                    {combatSessionsLoading && <div className="empty">Загрузка сессий…</div>}
+                    {combatSessionsError && <div className="error">{combatSessionsError}</div>}
+                    {!combatSessionsLoading && !combatSessionsError && combatSessions.length === 0 && (
+                      <div className="empty">Сессий боя пока нет</div>
+                    )}
+                    {!combatSessionsLoading && !combatSessionsError && combatSessions.length > 0 && (
                       <div className="detail__section">
                         <div className="detail__label">Сохранённые сессии</div>
                         <div className="search-results">
                           {combatSessions.map((session) => (
-                            <button
-                              key={session.id}
-                              className={
-                                session.id === selectedCombatId
-                                  ? 'search-result combat-session combat-session--active'
-                                  : 'search-result combat-session'
-                              }
-                              onClick={() => loadCombatSession(session.id)}
-                            >
-                              {session.name}
-                            </button>
+                            <div key={session.id} className="search-result search-result--split">
+                              <button
+                                className={
+                                  session.id === selectedCombatId
+                                    ? 'chip chip--accent'
+                                    : 'chip'
+                                }
+                                onClick={() => loadCombatSession(session.id)}
+                              >
+                                {session.name}
+                              </button>
+                              <button
+                                className="chip chip--warn"
+                                onClick={() => void deleteCombatSession(session.id, session.name)}
+                              >
+                                Удалить
+                              </button>
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -6289,8 +7019,12 @@ export default function App(): JSX.Element {
                   </div>
                   <details className="library-list">
                     <summary className="library-list__summary">Добавить персонажа</summary>
-                    {characters.length === 0 && <div className="empty">Персонажей пока нет</div>}
-                    {characters.length > 0 && (
+                    {charactersLoading && <div className="empty">Загрузка персонажей…</div>}
+                    {charactersError && <div className="error">{charactersError}</div>}
+                    {!charactersLoading && !charactersError && characters.length === 0 && (
+                      <div className="empty">Персонажей пока нет</div>
+                    )}
+                    {!charactersLoading && !charactersError && characters.length > 0 && (
                       <div className="form">
                         <select
                           value={selectedCharacterId ?? ''}
@@ -6304,7 +7038,7 @@ export default function App(): JSX.Element {
                             </option>
                           ))}
                         </select>
-                        <button className="button" onClick={addCharacterToCombat}>
+                        <button className="button" onClick={() => addCharacterToCombat()}>
                           Добавить
                         </button>
                       </div>
@@ -6316,6 +7050,10 @@ export default function App(): JSX.Element {
                       <input
                         value={combatQuery}
                         onChange={(event) => setCombatQuery(event.target.value)}
+                        onInput={(event) =>
+                          setCombatQuery((event.currentTarget as HTMLInputElement).value)
+                        }
+                        autoComplete="off"
                         placeholder="Поиск монстра..."
                       />
                       <span>
@@ -6891,6 +7629,45 @@ export default function App(): JSX.Element {
                 </div>
               </div>
             )}
+            {modal.type === 'weapons' && modalDetail && (
+              <div className="modal__content">
+                <div className="detail__grid">
+                  <div>
+                    <div className="detail__label">Тип</div>
+                    <div>{getLocaleValue(modalDetail.data, 'type') ?? getLocaleValue(modalDetail.data, 'weaponType') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Дополнения</div>
+                    <div>{getLocaleValue(modalDetail.data, 'typeAdditions') ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Урон</div>
+                    <div>{modalDetail.data?.en?.damageVal ?? modalDetail.data?.ru?.damageVal ?? modalDetail.data?.damage ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Тип урона</div>
+                    <div>{modalDetail.data?.en?.damageType ?? modalDetail.data?.ru?.damageType ?? modalDetail.data?.damageType ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Дистанция</div>
+                    <div>{getLocaleValue(modalDetail.data, 'range') ?? modalDetail.data?.rangeText ?? '—'}</div>
+                  </div>
+                  <div>
+                    <div className="detail__label">Стоимость</div>
+                    <div>{modalDetail.data?.en?.coast ?? modalDetail.data?.ru?.coast ?? '—'}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="detail__label">Описание</div>
+                  <div
+                    className="detail__text"
+                    dangerouslySetInnerHTML={{
+                      __html: getDescriptionHtml(modalDetail.data) || 'Описание отсутствует'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             {modal.type === 'artifacts' && modalDetail && (
               <div className="modal__content">
                 <div className="detail__grid">
@@ -7233,6 +8010,67 @@ export default function App(): JSX.Element {
                   {editingCustomMonsterId ? 'Сохранить изменения' : 'Создать монстра'}
                 </button>
                 <button className="button button--ghost" onClick={resetCustomMonsterForm} disabled={savingCustomMonster}>
+                  Очистить форму
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {customWeaponModalOpen && (
+        <div className="modal" onClick={() => setCustomWeaponModalOpen(false)}>
+          <div className="modal__card" onClick={(event) => event.stopPropagation()}>
+            <div className="modal__header">
+              <h3>{editingCustomWeaponId ? 'Редактирование кастомного оружия' : 'Создание кастомного оружия'}</h3>
+              <button className="modal__close" onClick={() => setCustomWeaponModalOpen(false)}>
+                X
+              </button>
+            </div>
+            <div className="modal__content">
+              <div className="form custom-monster-grid">
+                <input
+                  value={customWeaponDraft.name}
+                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, name: event.target.value }))}
+                  placeholder="Название оружия"
+                />
+                <input
+                  value={customWeaponDraft.kind}
+                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, kind: event.target.value }))}
+                  placeholder="Тип (меч, лук, посох...)"
+                />
+                <input
+                  value={customWeaponDraft.attackBonus}
+                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, attackBonus: event.target.value }))}
+                  placeholder="Бонус атаки (например, 7)"
+                />
+                <input
+                  value={customWeaponDraft.damage}
+                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, damage: event.target.value }))}
+                  placeholder="Кость урона (например, 1d8+4)"
+                />
+                <input
+                  value={customWeaponDraft.damageType}
+                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, damageType: event.target.value }))}
+                  placeholder="Тип урона"
+                />
+                <input
+                  value={customWeaponDraft.rangeText}
+                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, rangeText: event.target.value }))}
+                  placeholder="Дальность/досягаемость"
+                />
+                <textarea
+                  value={customWeaponDraft.notes}
+                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, notes: event.target.value }))}
+                  placeholder="Заметки"
+                  rows={3}
+                />
+              </div>
+              {customWeaponError && <div className="error">{customWeaponError}</div>}
+              <div className="form">
+                <button className="button" onClick={saveCustomWeapon} disabled={savingCustomWeapon || !campaign}>
+                  {editingCustomWeaponId ? 'Сохранить изменения' : 'Создать оружие'}
+                </button>
+                <button className="button button--ghost" onClick={resetCustomWeaponForm} disabled={savingCustomWeapon}>
                   Очистить форму
                 </button>
               </div>

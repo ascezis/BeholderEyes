@@ -21,6 +21,7 @@
   --accent: #59b2ff;
   --accent-strong: #3d8fe0;
   --accent-contrast: #eef6ff;
+  --focus-ring: rgba(89, 178, 255, 0.28);
   --app-bg: radial-gradient(1200px 800px at 10% 10%, #1a1f2b 0%, #141926 40%, #101521 75%, #0c111b 100%);
   --scrollbar-track: rgba(13, 19, 30, 0.9);
   --scrollbar-thumb: rgba(95, 124, 169, 0.7);
@@ -46,6 +47,7 @@
   --accent: #6a3a25;
   --accent-strong: #4d2b1d;
   --accent-contrast: #f7e4c9;
+  --focus-ring: rgba(106, 58, 37, 0.24);
   --app-bg: radial-gradient(1200px 800px at 10% 10%, #f4efe7 0%, #f2e6d2 35%, #eadac5 70%, #e1cfb8 100%);
   --scrollbar-track: rgba(232, 219, 198, 0.9);
   --scrollbar-thumb: rgba(121, 91, 67, 0.55);
@@ -787,8 +789,9 @@ body,
 .dice input {
   padding: 12px 16px;
   border-radius: 16px;
-  border: 1px solid rgba(80, 60, 40, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-control);
+  color: var(--text-main);
   font-size: 14px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -796,8 +799,9 @@ body,
 .form select {
   padding: 12px 16px;
   border-radius: 16px;
-  border: 1px solid rgba(80, 60, 40, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-control);
+  color: var(--text-main);
   font-size: 14px;
 }
 
@@ -805,8 +809,9 @@ body,
   width: 100%;
   padding: 12px 14px;
   border-radius: 16px;
-  border: 1px solid rgba(80, 60, 40, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-control);
+  color: var(--text-main);
   font-size: 14px;
   line-height: 1.45;
   resize: vertical;
@@ -818,16 +823,17 @@ body,
 .form select:focus,
 .form textarea:focus {
   outline: none;
-  border-color: rgba(77, 43, 29, 0.45);
-  box-shadow: 0 0 0 4px rgba(77, 43, 29, 0.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(89, 178, 255, 0.18);
 }
 
 .detail__grid input {
   width: 100%;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(80, 60, 40, 0.18);
-  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-control);
+  color: var(--text-main);
   font-size: 14px;
 }
 
@@ -861,19 +867,19 @@ body,
 
 .button--ghost {
   background: transparent;
-  border: 1px solid rgba(80, 60, 40, 0.2);
-  color: #4d2b1d;
+  border: 1px solid var(--border-soft);
+  color: var(--text-main);
 }
 
 .button--ghost:hover {
-  background: rgba(77, 43, 29, 0.08);
+  background: var(--bg-hover);
 }
 
 .campaign-card {
   padding: 16px;
   border-radius: 16px;
-  background: rgba(77, 43, 29, 0.08);
-  border: 1px solid rgba(80, 60, 40, 0.16);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
 }
 
 .campaign-card__title {
@@ -883,7 +889,7 @@ body,
 
 .campaign-card__meta {
   font-size: 12px;
-  color: #6b5442;
+  color: var(--text-muted);
   margin-top: 6px;
 }
 
@@ -2216,13 +2222,22 @@ body,
 }
 
 .empty {
-  color: #6b5442;
+  color: var(--text-dim);
   font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-soft);
+  background: color-mix(in srgb, var(--bg-control-soft) 72%, transparent);
 }
 
 .error {
-  color: #8a2f2f;
+  color: #ffb8b8;
   font-weight: 600;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(244, 102, 102, 0.35);
+  background: rgba(106, 30, 30, 0.35);
 }
 
 @media (max-width: 1200px) {
@@ -2338,7 +2353,10 @@ body,
 .combat-actions__row input,
 .dice-quick__mod,
 .combat-row input,
+.combat-row select,
 .combat-grid input,
+.combat-grid select,
+.combat-card__basic select,
 .combat-filters__search,
 .campaign-currency-controls input,
 .campaign-inventory-row input,
@@ -2346,6 +2364,22 @@ body,
   background: var(--bg-control) !important;
   border-color: var(--border-soft) !important;
   color: var(--text-main) !important;
+}
+
+.search input,
+.form input,
+.form textarea,
+.form select,
+.combat-row input,
+.combat-row select,
+.combat-grid input,
+.combat-grid select,
+.combat-card__basic input,
+.combat-card__basic select,
+.campaign-inventory-row input,
+.campaign-inventory-toolbar select {
+  line-height: 1.25;
+  caret-color: var(--accent);
 }
 
 .search input::placeholder,
@@ -2358,6 +2392,89 @@ body,
 .combat-row input::placeholder,
 .campaign-inventory-row input::placeholder {
   color: var(--text-muted);
+}
+
+.button,
+.tab,
+.chip,
+.dice-chip {
+  min-height: 36px;
+}
+
+.list > .list__item,
+.search-results > .search-result,
+.combat-log > .combat-log__item,
+.combat-actions__list > .combat-action-card {
+  animation: fadeUp 0.28s var(--ease-smooth);
+}
+
+.search-results > .search-result:nth-child(1),
+.list > .list__item:nth-child(1),
+.combat-log > .combat-log__item:nth-child(1) {
+  animation-delay: 0.02s;
+}
+
+.search-results > .search-result:nth-child(2),
+.list > .list__item:nth-child(2),
+.combat-log > .combat-log__item:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.search-results > .search-result:nth-child(3),
+.list > .list__item:nth-child(3),
+.combat-log > .combat-log__item:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.search-results > .search-result,
+.list > .list__item,
+.combat-log > .combat-log__item {
+  animation-fill-mode: both;
+}
+
+.detail__text {
+  text-wrap: pretty;
+}
+
+.button:focus-visible,
+.tab:focus-visible,
+.chip:focus-visible,
+.dice-chip:focus-visible,
+.search-result:focus-visible,
+.list__item:focus-visible,
+.modal__close:focus-visible,
+.chip__close:focus-visible,
+.chip__label:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+  border-color: var(--border-strong) !important;
+}
+
+.search input:focus-visible,
+.form input:focus-visible,
+.form textarea:focus-visible,
+.form select:focus-visible,
+.combat-row input:focus-visible,
+.combat-row select:focus-visible,
+.combat-grid input:focus-visible,
+.combat-grid select:focus-visible,
+.combat-card__basic input:focus-visible,
+.combat-card__basic select:focus-visible,
+.campaign-inventory-row input:focus-visible,
+.campaign-inventory-toolbar select:focus-visible {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-main) !important;
+  box-shadow: 0 0 0 1000px var(--bg-control) inset !important;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .button,
