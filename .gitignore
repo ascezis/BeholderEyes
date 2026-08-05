@@ -33,3 +33,6 @@ Thumbs.db
 # TypeScript/Vite caches
 *.tsbuildinfo
 .vite/
+
+# Local handoff files from external design iterations
+redesign/
