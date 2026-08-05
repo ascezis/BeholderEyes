@@ -1495,8 +1495,8 @@ const createWindow = (): void => {
     }
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    win.loadURL(process.env.VITE_DEV_SERVER_URL)
+  if (process.env.ELECTRON_RENDERER_URL) {
+    win.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
     win.loadFile(join(__dirname, '../renderer/index.html'))
   }
@@ -1538,9 +1538,9 @@ const createCombatBoardWindow = (): void => {
     combatBoardWindow = null
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) {
+  if (process.env.ELECTRON_RENDERER_URL) {
     combatBoardWindow.loadURL(
-      `${process.env.VITE_DEV_SERVER_URL}?mode=combat-board`
+      `${process.env.ELECTRON_RENDERER_URL}?mode=combat-board`
     )
   } else {
     combatBoardWindow.loadFile(join(__dirname, '../renderer/index.html'), {
@@ -1585,8 +1585,8 @@ const createReferenceWindow = (): void => {
     referenceWindow = null
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    referenceWindow.loadURL(`${process.env.VITE_DEV_SERVER_URL}?mode=reference-window`)
+  if (process.env.ELECTRON_RENDERER_URL) {
+    referenceWindow.loadURL(`${process.env.ELECTRON_RENDERER_URL}?mode=reference-window`)
   } else {
     referenceWindow.loadFile(join(__dirname, '../renderer/index.html'), {
       query: { mode: 'reference-window' }
@@ -1631,8 +1631,8 @@ const createCombatPanelWindow = (): void => {
     combatPanelWindow = null
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    combatPanelWindow.loadURL(`${process.env.VITE_DEV_SERVER_URL}?mode=combat-panel`)
+  if (process.env.ELECTRON_RENDERER_URL) {
+    combatPanelWindow.loadURL(`${process.env.ELECTRON_RENDERER_URL}?mode=combat-panel`)
   } else {
     combatPanelWindow.loadFile(join(__dirname, '../renderer/index.html'), {
       query: { mode: 'combat-panel' }

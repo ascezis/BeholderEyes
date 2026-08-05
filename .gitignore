@@ -1,20 +1,35 @@
-﻿# Node
+# Dependencies
 node_modules/
 
-# Build
-/dist/
+# Build output
+dist/
 
-# SQLite runtime files
-*.sqlite-shm
-*.sqlite-wal
+# Runtime database sidecars
+data/*.sqlite-shm
+data/*.sqlite-wal
 
-# Large generated TTG artifact (compressed variant is tracked)
-data/ttg/ttg-classes.compact.json
+# Redundant/generated TTG archives and backups
+data/ttg/*.gz
+data/ttg/*.bak
 
-# Logs
+# Logs and local runtime files
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# OS
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system files
+.idea/
+.vscode/
+*.swp
 .DS_Store
+Thumbs.db
+
+# TypeScript/Vite caches
+*.tsbuildinfo
+.vite/

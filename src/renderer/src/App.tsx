@@ -1,1955 +1,13 @@
 ﻿
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { SegmentedControl } from '@mantine/core'
 import PlayerForm from './PlayerForm'
 import type { PlayerCharacterTemplateV1 } from './characterTemplate'
+import AppHeader from './components/AppHeader'
+import HomeView from './components/HomeView'
+import ReferenceModalDialog from './components/ReferenceModalDialog'
+import { useTtgOptions } from './hooks/useTtgOptions'
 import './styles.css'
-
-type ViewKey = 'home' | 'campaign' | 'combat' | 'reference'
-type ReferenceSection = 'ttg_classes' | 'ttg_races' | 'ttg_rules' | EntityKey
-
-type EntityKey = 'monsters' | 'spells' | 'items' | 'weapons' | 'artifacts'
-
-type MonsterRow = {
-  id: number
-  name: string
-  name_ru: string | null
-  type: string | null
-  cr: string | null
-  source: string | null
-}
-
-type SpellRow = {
-  id: number
-  name: string
-  name_ru: string | null
-  school: string | null
-  level: number | null
-  source: string | null
-}
-
-type ItemRow = {
-  id: number
-  name: string
-  name_ru: string | null
-  type: string | null
-  rarity: number | null
-  source: string | null
-}
-
-type WeaponRow = {
-  id: number
-  name: string
-  name_ru: string | null
-  type: string | null
-  rarity: number | null
-  source: string | null
-}
-
-type ArtifactRow = {
-  id: number
-  name: string
-  name_ru: string | null
-  rarity: number | null
-  source: string | null
-}
-
-type ListRow = MonsterRow | SpellRow | ItemRow | WeaponRow | ArtifactRow
-
-type ListResponse<T> = {
-  total: number
-  items: T[]
-}
-
-type DetailResponse = {
-  id: number
-  name: string
-  name_ru: string | null
-  source: string | null
-  data: any
-} | null
-
-type TtgArchetype = {
-  slug?: string | null
-  name_ru?: string | null
-  name_en?: string | null
-  source_short?: string | null
-  source_name?: string | null
-  description_text?: string | null
-}
-
-type TtgClass = {
-  slug?: string | null
-  name_ru?: string | null
-  name_en?: string | null
-  type?: string | null
-  source_short?: string | null
-  source_name?: string | null
-  hit_die?: string | null
-  archetype_label?: string | null
-  description_text?: string | null
-  sections?: Array<{ title?: string | null; content?: string | null }>
-  archetypes?: TtgArchetype[]
-}
-
-type TtgSubrace = {
-  name_ru?: string | null
-  name_en?: string | null
-  source_short?: string | null
-  source_name?: string | null
-  description_text?: string | null
-}
-
-type ReferenceRelated = {
-  title: string
-  subtitle?: string | null
-  text?: string | null
-}
-
-type TtgRace = {
-  slug?: string | null
-  name_ru?: string | null
-  name_en?: string | null
-  type?: string | null
-  source_short?: string | null
-  source_name?: string | null
-  size?: string | null
-  speed?: string | null
-  darkvision?: string | null
-  description_text?: string | null
-  sections?: Array<{ title?: string | null; content?: string | null }>
-  subraces?: TtgSubrace[]
-}
-
-type TtgRule = {
-  slug?: string | null
-  name_ru?: string | null
-  name_en?: string | null
-  type?: string | null
-  source_short?: string | null
-  source_name?: string | null
-  description_text?: string | null
-  sections?: Array<{ title?: string | null; content?: string | null }>
-}
-
-type TtgEntry = TtgClass | TtgRace | TtgRule
-
-type ReferenceModal = {
-  kind?: 'ttg_class' | 'ttg_race' | 'ttg_rule' | 'entity'
-  slug?: string | null
-  title: string
-  subtitle?: string | null
-  columns?: Array<{ label: string; value: string }>
-  sections?: Array<{ title: string; content: string }>
-  related?: ReferenceRelated[]
-  text?: string | null
-}
-
-type MonsterEntry = { name?: string; text?: string }
-
-type MonsterLegendary = {
-  text?: string
-  list?: MonsterEntry[]
-}
-
-type MonsterLair = {
-  text?: string
-  list?: MonsterEntry[]
-}
-
-type Campaign = {
-  id: number
-  name: string
-}
-
-type Character = {
-  id: number
-  name: string
-  race: string | null
-  class: string | null
-  level: number | null
-  data: any
-}
-
-type SaveMods = {
-  str: number | null
-  dex: number | null
-  con: number | null
-  int: number | null
-  wis: number | null
-  cha: number | null
-}
-
-type CombatCondition = {
-  name: string
-  rounds: number | null
-}
-
-type CombatLogTone = 'normal' | 'crit' | 'fail'
-type ThemeMode = 'dark' | 'light'
-
-type CombatLogEntry = {
-  label: string
-  total: number | null
-  detail: string
-  tone: CombatLogTone
-}
-
-type CombatWeaponOption = {
-  key: string
-  name: string
-  attackBonus: number | null
-  damageExpr: string | null
-}
-
-type CombatParticipant = {
-  id: string
-  kind: 'character' | 'monster'
-  sourceId?: number
-  name: string
-  targetId?: string | null
-  position?: { x: number; y: number } | null
-  size?: { width: number; height: number } | null
-  hpMax: number | null
-  hpCurrent: number | null
-  ac: number | null
-  initiative: number | null
-  attackBonus: number | null
-  damageExpr: string
-  effects: Array<{ name: string; rounds: number | null }>
-  conditions: CombatCondition[]
-  concentration: { name: string; rounds: number | null } | null
-  saves: SaveMods
-  weaponOptions?: CombatWeaponOption[]
-  selectedWeaponKey?: string | null
-  actions?: Array<{
-    name: string
-    text: string
-    attackBonus: number | null
-    damageExpr: string | null
-    saveDc: number | null
-    saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
-  }>
-  notes: string
-}
-
-type CustomMonsterRow = {
-  id: number
-  name: string
-  cr: string | null
-  updated_at: string
-}
-
-type CustomWeaponRow = {
-  id: number
-  name: string
-  kind: string | null
-  damage: string | null
-  attack_bonus: number | null
-  updated_at: string
-}
-
-type CustomMonsterDraft = {
-  name: string
-  size: string
-  type: string
-  alignment: string
-  ac: string
-  hp: string
-  speed: string
-  cr: string
-  str: string
-  dex: string
-  con: string
-  int: string
-  wis: string
-  cha: string
-  senses: string
-  languages: string
-  savesText: string
-  skillsText: string
-  vulnerabilities: string
-  resistances: string
-  immunities: string
-  conditionImmunities: string
-  traitsText: string
-  actionsText: string
-  reactionsText: string
-  legendaryText: string
-  lairText: string
-}
-
-type CustomMonsterActionDraft = {
-  id: string
-  name: string
-  attackKind: 'melee' | 'ranged' | 'spell' | 'melee_or_ranged'
-  attackBonus: string
-  rangeText: string
-  targetText: string
-  damageExpr: string
-  damageType: string
-  saveDc: string
-  saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
-  saveFailText: string
-  saveSuccessText: string
-  extraText: string
-}
-
-type InventoryEntry = {
-  name: string
-  qty: number
-  notes?: string
-  category?: 'manual' | 'item' | 'weapon' | 'custom_weapon' | 'artifact'
-}
-
-type CharacterData = {
-  inventory: InventoryEntry[]
-  currency: { cp: number; sp: number; ep: number; gp: number; pp: number }
-  spells: Array<{ id?: number; name: string; summary?: string }>
-  items: Array<{ id?: number; name: string; summary?: string }>
-  weapons: Array<{
-    id?: number
-    customId?: number
-    name: string
-    summary?: string
-    attackBonus?: number | null
-    damageExpr?: string | null
-  }>
-  artifacts: Array<{ id?: number; name: string; summary?: string }>
-  equipment: {
-    primaryWeaponKey: string | null
-    secondaryWeaponKey: string | null
-  }
-  ammo: Array<{ name: string; qty: number }>
-  notes: string
-  combat: {
-    hpMax: number | null
-    hpCurrent: number | null
-    ac: number | null
-    speed: number | null
-    initiativeOverride: number | null
-  }
-  stats: {
-    str: { score: number | null; modOverride: number | null }
-    dex: { score: number | null; modOverride: number | null }
-    con: { score: number | null; modOverride: number | null }
-    int: { score: number | null; modOverride: number | null }
-    wis: { score: number | null; modOverride: number | null }
-    cha: { score: number | null; modOverride: number | null }
-  }
-  saves: {
-    str: { prof: boolean; override: number | null }
-    dex: { prof: boolean; override: number | null }
-    con: { prof: boolean; override: number | null }
-    int: { prof: boolean; override: number | null }
-    wis: { prof: boolean; override: number | null }
-    cha: { prof: boolean; override: number | null }
-  }
-  skills: {
-    acrobatics: { prof: boolean; override: number | null }
-    animalHandling: { prof: boolean; override: number | null }
-    arcana: { prof: boolean; override: number | null }
-    athletics: { prof: boolean; override: number | null }
-    deception: { prof: boolean; override: number | null }
-    history: { prof: boolean; override: number | null }
-    insight: { prof: boolean; override: number | null }
-    intimidation: { prof: boolean; override: number | null }
-    investigation: { prof: boolean; override: number | null }
-    medicine: { prof: boolean; override: number | null }
-    nature: { prof: boolean; override: number | null }
-    perception: { prof: boolean; override: number | null }
-    performance: { prof: boolean; override: number | null }
-    persuasion: { prof: boolean; override: number | null }
-    religion: { prof: boolean; override: number | null }
-    sleightOfHand: { prof: boolean; override: number | null }
-    stealth: { prof: boolean; override: number | null }
-    survival: { prof: boolean; override: number | null }
-  }
-}
-
-const defaultResponse: ListResponse<ListRow> = { total: 0, items: [] }
-
-const emptyCustomMonsterDraft: CustomMonsterDraft = {
-  name: '',
-  size: 'Medium',
-  type: '',
-  alignment: '',
-  ac: '',
-  hp: '',
-  speed: '',
-  cr: '',
-  str: '',
-  dex: '',
-  con: '',
-  int: '',
-  wis: '',
-  cha: '',
-  senses: '',
-  languages: '',
-  savesText: '',
-  skillsText: '',
-  vulnerabilities: '',
-  resistances: '',
-  immunities: '',
-  conditionImmunities: '',
-  traitsText: '',
-  actionsText: '',
-  reactionsText: '',
-  legendaryText: '',
-  lairText: ''
-}
-
-const customMonsterSizeOptions = ['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan'] as const
-
-const createEmptyCustomMonsterAction = (): CustomMonsterActionDraft => ({
-  id: `cma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-  name: '',
-  attackKind: 'melee',
-  attackBonus: '',
-  rangeText: '',
-  targetText: '',
-  damageExpr: '',
-  damageType: '',
-  saveDc: '',
-  saveAbility: '',
-  saveFailText: '',
-  saveSuccessText: '',
-  extraText: ''
-})
-
-const entityLabels: Record<EntityKey, string> = {
-  monsters: 'Монстры',
-  spells: 'Заклинания',
-  items: 'Предметы',
-  weapons: 'Оружие',
-  artifacts: 'Артефакты'
-}
-
-const rarityLabel = (value: number | null | undefined): string => {
-  if (value === null || value === undefined) return '—'
-  if (value === 0) return 'обычный'
-  if (value === 1) return 'необычный'
-  if (value === 2) return 'редкий'
-  if (value === 3) return 'очень редкий'
-  if (value === 4) return 'легендарный'
-  return 'особый'
-}
-
-const getDisplayName = (row: ListRow): string => row.name_ru ?? row.name
-
-const getSubtitle = (row: ListRow): string | null =>
-  row.name_ru && row.name ? row.name : null
-
-const getListMeta = (entity: EntityKey, row: ListRow): string[] => {
-  if (entity === 'monsters') {
-    const monster = row as MonsterRow
-    return [monster.type ?? 'Тип не указан', `КС: ${monster.cr ?? '—'}`]
-  }
-  if (entity === 'spells') {
-    const spell = row as SpellRow
-    const level = spell.level === 0 ? 'заговор' : `ур. ${spell.level ?? '—'}`
-    return [spell.school ?? 'школа неизвестна', level]
-  }
-  if (entity === 'items') {
-    const item = row as ItemRow
-    return [item.type ?? 'тип не указан', `редкость: ${rarityLabel(item.rarity)}`]
-  }
-  if (entity === 'weapons') {
-    const weapon = row as WeaponRow
-    return [weapon.type ?? 'тип не указан', `редкость: ${rarityLabel(weapon.rarity)}`]
-  }
-  const art = row as ArtifactRow
-  return [`редкость: ${rarityLabel(art.rarity)}`]
-}
-
-const getDetailTitle = (detail: DetailResponse): string => {
-  if (!detail) return 'Выберите запись'
-  return detail.name_ru ?? detail.name
-}
-
-const normalizeEntries = (value: unknown): MonsterEntry[] => {
-  if (!value) return []
-  if (Array.isArray(value)) return value as MonsterEntry[]
-  if (typeof value === 'string') return [{ text: value }]
-  return [value as MonsterEntry]
-}
-
-const toText = (value: unknown): string => {
-  if (value === null || value === undefined) return '—'
-  if (typeof value === 'string') return value
-  if (typeof value === 'number') return String(value)
-  return '—'
-}
-
-const getLocaleValue = (data: any, key: string): string | null => {
-  const ruValue = data?.ru?.[key]
-  if (ruValue) return String(ruValue)
-  const enValue = data?.en?.[key]
-  if (enValue) return String(enValue)
-  return null
-}
-
-const getLocaleHtml = (data: any, key: string): string => {
-  const value = getLocaleValue(data, key)
-  return value ?? ''
-}
-
-const getDescriptionHtml = (data: any): string => {
-  const text =
-    getLocaleValue(data, 'text') ??
-    getLocaleValue(data, 'desc') ??
-    getLocaleValue(data, 'description') ??
-    getLocaleValue(data, 'fiction') ??
-    data?.fiction
-  if (text) return text
-  const entries = data?.entries ?? data?.ru?.entries ?? data?.en?.entries
-  if (Array.isArray(entries)) {
-    const parts = entries
-      .map((entry) => extractActionText(entry))
-      .map((entry) => entry.trim())
-      .filter(Boolean)
-    if (parts.length > 0) {
-      return parts.map((part) => `<p>${part}</p>`).join('')
-    }
-  }
-  return ''
-}
-
-const formatMonsterSaves = (data: any): string | null => {
-  const source = data?.saves ?? data?.savingThrows ?? data?.saveThrows ?? null
-  if (!source || typeof source !== 'object' || Array.isArray(source)) return null
-  const parts = abilityKeys
-    .map((key) => (typeof source[key] === 'number' ? `${abilityLabels[key]} ${formatMod(source[key])}` : null))
-    .filter(Boolean)
-  return parts.length > 0 ? parts.join(' · ') : null
-}
-
-const boolLabel = (value: unknown): string => {
-  if (value === true || value === 'true') return 'да'
-  if (value === false || value === 'false') return 'нет'
-  return '—'
-}
-
-const buildSpellSummary = (data: any): string => {
-  const level = getLocaleValue(data, 'level') ?? '—'
-  const school = getLocaleValue(data, 'school') ?? '—'
-  const casting = getLocaleValue(data, 'castingTime') ?? '—'
-  const range = getLocaleValue(data, 'range') ?? '—'
-  return `${level} · ${school} · ${casting} · ${range}`
-}
-
-const buildItemSummary = (data: any): string => {
-  const type = getLocaleValue(data, 'type') ?? '—'
-  const rarity = rarityLabel(data?.en?.rarity ?? data?.ru?.rarity)
-  const ac = data?.en?.ac ?? data?.ru?.ac
-  const damageVal = data?.en?.damageVal ?? data?.ru?.damageVal
-  const damageType = data?.en?.damageType ?? data?.ru?.damageType
-  const damage = damageVal ? `${damageVal} ${damageType ?? ''}`.trim() : null
-  const extras = [ac ? `КД ${ac}` : null, damage ? `урон ${damage}` : null]
-    .filter(Boolean)
-    .join(' · ')
-  return `${type} · ${rarity}${extras ? ` · ${extras}` : ''}`
-}
-
-const buildWeaponSummary = (data: any): string => {
-  const type = getLocaleValue(data, 'type') ?? getLocaleValue(data, 'weaponType') ?? 'Оружие'
-  const damageVal = data?.en?.damageVal ?? data?.ru?.damageVal ?? data?.damage ?? null
-  const damageType = data?.en?.damageType ?? data?.ru?.damageType ?? data?.damageType ?? null
-  const range = getLocaleValue(data, 'range') ?? data?.rangeText ?? null
-  const attackBonus =
-    typeof data?.attackBonus === 'number' && Number.isFinite(data.attackBonus)
-      ? formatMod(data.attackBonus)
-      : null
-  const parts = [
-    type,
-    damageVal ? `${damageVal}${damageType ? ` ${damageType}` : ''}` : null,
-    range ? `дистанция: ${range}` : null,
-    attackBonus ? `атака: ${attackBonus}` : null
-  ].filter(Boolean)
-  return parts.join(' · ')
-}
-
-const buildArtifactSummary = (data: any): string => {
-  const type = getLocaleValue(data, 'type') ?? '—'
-  const rarity = rarityLabel(data?.en?.rarity ?? data?.ru?.rarity)
-  const attune = data?.en?.attunement ?? data?.ru?.attunement
-  return `${type} · ${rarity}${attune ? ` · ${attune}` : ''}`
-}
-
-const getWeaponKey = (weapon: {
-  id?: number
-  customId?: number
-  name: string
-}) => {
-  if (typeof weapon.customId === 'number') return `custom:${weapon.customId}`
-  if (typeof weapon.id === 'number') return `lib:${weapon.id}`
-  return `name:${weapon.name.trim().toLowerCase()}`
-}
-
-const parseWeaponAttackBonus = (value?: string | null): number | null => {
-  if (!value) return null
-  const fromTag = value.match(/атака:\s*([+-]?\d+)/i)
-  if (fromTag) {
-    const parsed = Number(fromTag[1])
-    return Number.isFinite(parsed) ? parsed : null
-  }
-  const generic = value.match(/(^|[^0-9])([+-]\d{1,2})(?=\D|$)/)
-  if (!generic) return null
-  const parsed = Number(generic[2])
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-const parseWeaponDamageExpr = (value?: string | null): string | null => {
-  if (!value) return null
-  const match = value.match(/(\d+d\d+(?:[+-]\d+)?)/i)
-  return match ? normalizeDamageExpr(match[1]) : null
-}
-
-const parseDice = (expression: string) => {
-  const normalized = expression.replace(/\s+/g, '')
-  const match = normalized.match(/^(\d*)d(\d+)([+-]\d+)?$/i)
-  if (!match) return null
-  const count = match[1] ? Number(match[1]) : 1
-  const sides = Number(match[2])
-  const modifier = match[3] ? Number(match[3]) : 0
-  if (!count || !sides) return null
-  return { count, sides, modifier }
-}
-
-const scoreToMod = (score: number | null): number | null => {
-  if (score === null || Number.isNaN(score)) return null
-  return Math.floor((score - 10) / 2)
-}
-
-const formatMod = (value: number | null): string => {
-  if (value === null || Number.isNaN(value)) return '—'
-  return value >= 0 ? `+${value}` : String(value)
-}
-
-const abilityKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
-const abilityLabels: Record<(typeof abilityKeys)[number], string> = {
-  str: 'СИЛ',
-  dex: 'ЛВК',
-  con: 'ТЕЛ',
-  int: 'ИНТ',
-  wis: 'МДР',
-  cha: 'ХАР'
-}
-const saveLabelToKey: Record<string, (typeof abilityKeys)[number]> = {
-  СИЛ: 'str',
-  ЛВК: 'dex',
-  ТЕЛ: 'con',
-  ИНТ: 'int',
-  МДР: 'wis',
-  ХАР: 'cha'
-}
-const emptySaves: SaveMods = { str: null, dex: null, con: null, int: null, wis: null, cha: null }
-
-const getProfBonus = (level: number | null): number | null => {
-  if (!level || level < 1) return null
-  return 2 + Math.floor((level - 1) / 4)
-}
-
-const getStatMod = (data: CharacterData, key: (typeof abilityKeys)[number]): number | null => {
-  const stat = data.stats[key]
-  if (stat.modOverride !== null && stat.modOverride !== undefined) return stat.modOverride
-  return scoreToMod(stat.score)
-}
-
-const buildSaveModsFromCharacter = (data: CharacterData, level: number | null): SaveMods => {
-  const profBonus = getProfBonus(level)
-  return abilityKeys.reduce((acc, key) => {
-    const save = data.saves[key]
-    if (save.override !== null && save.override !== undefined) {
-      acc[key] = save.override
-      return acc
-    }
-    const base = getStatMod(data, key)
-    if (base === null) {
-      acc[key] = null
-      return acc
-    }
-    acc[key] = save.prof && profBonus !== null ? base + profBonus : base
-    return acc
-  }, {} as SaveMods)
-}
-
-const parseMonsterSaves = (data: any): SaveMods => {
-  const source = data?.saves ?? data?.savingThrows ?? data?.saveThrows ?? null
-  if (!source) return emptySaves
-  if (typeof source === 'object' && !Array.isArray(source)) {
-    return {
-      str: typeof source.str === 'number' ? source.str : emptySaves.str,
-      dex: typeof source.dex === 'number' ? source.dex : emptySaves.dex,
-      con: typeof source.con === 'number' ? source.con : emptySaves.con,
-      int: typeof source.int === 'number' ? source.int : emptySaves.int,
-      wis: typeof source.wis === 'number' ? source.wis : emptySaves.wis,
-      cha: typeof source.cha === 'number' ? source.cha : emptySaves.cha
-    }
-  }
-  return emptySaves
-}
-
-const parseMonsterHp = (value: unknown): number | null => {
-  if (typeof value === 'number') return value
-  if (typeof value !== 'string') return null
-  const match = value.match(/^\s*(\d+)/)
-  if (!match) return null
-  return Number(match[1])
-}
-
-const parseMonsterAc = (value: unknown): number | null => {
-  if (typeof value === 'number') return value
-  if (typeof value !== 'string') return null
-  const match = value.match(/^\s*(\d+)/)
-  if (!match) return null
-  return Number(match[1])
-}
-
-const extractActionText = (entry: any): string => {
-  if (!entry) return ''
-  if (typeof entry === 'string') return entry
-  if (typeof entry.text === 'string') return entry.text
-  if (Array.isArray(entry.entries)) return entry.entries.map(extractActionText).join(' ')
-  return ''
-}
-
-const normalizeActionText = (text: string) =>
-  stripHtml(text)
-    .replace(/[\u00A0\u202F]/g, ' ')
-    .replace(/[＋﹢]/g, '+')
-    .replace(/−/g, '-')
-    .replace(/(\d)\s*[кд]\s*(\d)/gi, '$1d$2')
-    .replace(/\s+/g, ' ')
-    .trim()
-
-const parseActionAttackBonus = (text: string): number | null => {
-  const cleaned = normalizeActionText(text)
-  const beforeHit = cleaned.split(/Попадание:|Hit:/i)[0] ?? cleaned
-  const match =
-    beforeHit.match(/([+-]?\s*\d+)\s*(?:to hit|к\s*попаданию|к\s*попад|к\s*атаке|к\s*атак)/i) ??
-    beforeHit.match(/([+-]\s*\d+)/)
-  if (!match) return null
-  return Number(match[1].replace(/\s+/g, ''))
-}
-
-const parseActionDamageExpr = (text: string): string | null => {
-  const cleaned = normalizeActionText(text)
-  const afterHit = cleaned.split(/Попадание:|Hit:/i)[1] ?? ''
-  const paren = afterHit.match(/\(([^)]+)\)/)
-  if (paren) {
-    const diceInParen = paren[1].match(/(\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?)/i)
-    if (diceInParen) return diceInParen[1].replace(/\s+/g, '')
-  }
-  const hitMatch = afterHit.match(/(\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?)/i)
-  if (hitMatch) return hitMatch[1].replace(/\s+/g, '')
-  const diceMatch = cleaned.match(/(\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?)/i)
-  if (!diceMatch) return null
-  return diceMatch[1].replace(/\s+/g, '')
-}
-
-const htmlToPlainText = (value: string) =>
-  value
-    .replace(/<\s*br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
-    .replace(/<li>/gi, '- ')
-    .replace(/<\/li>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/\r/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
-
-const stripHtml = (value: string) => value.replace(/<[^>]+>/g, '')
-
-const renderInlineTokens = (text: string, keyPrefix: string): ReactNode[] => {
-  const tokens = text.split(
-    /(\b\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?\b|\b[кk]\s*\d+\b|\bСл\s*\d+\b|(?:\+|-)\s*\d+\s*к\s*атаке)/gi
-  )
-  return tokens.map((token, index) => {
-    if (!token) return null
-    if (/^\b\d+\s*d\s*\d+(?:\s*[+-]\s*\d+)?\b$/i.test(token)) {
-      return (
-        <span key={`${keyPrefix}-dice-${index}`} className="detail__dice">
-          {token.replace(/\s+/g, '')}
-        </span>
-      )
-    }
-    if (/^\b[кk]\s*\d+\b$/i.test(token)) {
-      return (
-        <span key={`${keyPrefix}-die-${index}`} className="detail__dice">
-          {token.replace(/\s+/g, '')}
-        </span>
-      )
-    }
-    if (/^\bСл\s*\d+\b$/i.test(token)) {
-      return (
-        <span key={`${keyPrefix}-dc-${index}`} className="detail__dice detail__dice--dc">
-          {token.replace(/\s+/g, ' ')}
-        </span>
-      )
-    }
-    if (/^(?:\+|-)\s*\d+\s*к\s*атаке$/i.test(token)) {
-      return (
-        <span key={`${keyPrefix}-atk-${index}`} className="detail__dice detail__dice--atk">
-          {token.replace(/\s+/g, ' ')}
-        </span>
-      )
-    }
-    return <span key={`${keyPrefix}-text-${index}`}>{token}</span>
-  })
-}
-
-const renderInlineMarkdown = (text: string): ReactNode[] => {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g)
-  return parts.map((part, index) => {
-    if (!part) return null
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={`inline-${index}`}>{renderInlineTokens(part.slice(2, -2), `strong-${index}`)}</strong>
-    }
-    if (part.startsWith('`') && part.endsWith('`')) {
-      return <code key={`inline-${index}`}>{part.slice(1, -1)}</code>
-    }
-    if (part.startsWith('*') && part.endsWith('*')) {
-      return <em key={`inline-${index}`}>{renderInlineTokens(part.slice(1, -1), `em-${index}`)}</em>
-    }
-    return <span key={`inline-${index}`}>{renderInlineTokens(part, `plain-${index}`)}</span>
-  })
-}
-
-type SpellcastingTable = {
-  headers: string[]
-  rows: Array<{
-    level: string
-    prof: string
-    features: string
-    slots: string[]
-  }>
-}
-
-const normalizeDashToken = (value: string) => {
-  const token = value.trim()
-  if (/^[—–-]+$/.test(token)) return '—'
-  return token
-}
-
-const parseSpellcastingTable = (rawText: string): SpellcastingTable | null => {
-  const text = htmlToPlainText(rawText)
-    .replace(/вЂ./g, '—')
-    .replace(/[＋﹢]/g, '+')
-    .replace(/\s+/g, ' ')
-    .trim()
-  if (!text) return null
-
-  const rowAnchor = /\b(?:1\d|20|[1-9])\s*\+\d\b/g
-  const starts: number[] = []
-  for (const match of text.matchAll(rowAnchor)) {
-    starts.push(match.index ?? -1)
-  }
-  if (starts.length < 3) return null
-
-  const slices = starts.map((start, index) => {
-    const end = index + 1 < starts.length ? starts[index + 1] : text.length
-    return text.slice(start, end).trim()
-  })
-
-  const rows: SpellcastingTable['rows'] = []
-  for (const slice of slices) {
-    const open = slice.match(/^((?:1\d|20|[1-9]))\s*(\+\d)\s+(.+)$/)
-    if (!open) continue
-    const level = open[1]
-    const prof = open[2]
-    const tail = open[3]
-    const tokens = tail.split(/\s+/).filter(Boolean)
-    const slotTokens: string[] = []
-    let idx = tokens.length - 1
-    while (idx >= 0 && slotTokens.length < 14) {
-      const token = tokens[idx]
-      if (!/^(\d+|[—–-]+)$/.test(token)) break
-      slotTokens.unshift(normalizeDashToken(token))
-      idx -= 1
-    }
-    if (slotTokens.length < 8) continue
-    const features = tokens.slice(0, idx + 1).join(' ').trim()
-    rows.push({
-      level,
-      prof,
-      features: features || '—',
-      slots: slotTokens
-    })
-  }
-
-  if (rows.length < 3) return null
-
-  const maxSlotColumns = rows.reduce(
-    (max, row) => (row.slots.length > max ? row.slots.length : max),
-    0
-  )
-  if (maxSlotColumns < 8) return null
-  const normalizedRows = rows.map((row) => ({
-    ...row,
-    slots: row.slots.length < maxSlotColumns
-      ? [...row.slots, ...Array.from({ length: maxSlotColumns - row.slots.length }, () => '—')]
-      : row.slots
-  }))
-
-  const columnHeaders =
-    maxSlotColumns === 11
-      ? ['Заг.', 'Изв.', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-      : maxSlotColumns === 10
-        ? ['Заг.', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-        : maxSlotColumns === 9
-          ? ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-          : Array.from({ length: maxSlotColumns }, (_, index) => `Кол.${index + 1}`)
-
-  return {
-    headers: ['Ур', 'БМ', 'Умения', ...columnHeaders],
-    rows: normalizedRows
-  }
-}
-
-const renderSpellcastingTable = (table: SpellcastingTable): ReactNode => (
-  <div className="detail-table-wrap">
-    <table className="detail-table">
-      <thead>
-        <tr>
-          {table.headers.map((header) => (
-            <th key={header}>{header}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {table.rows.map((row, index) => (
-          <tr key={`${row.level}-${index}`}>
-            <td>{row.level}</td>
-            <td>{row.prof}</td>
-            <td className="detail-table__features">{row.features}</td>
-            {row.slots.map((slot, slotIndex) => (
-              <td key={`${row.level}-${slotIndex}`}>{slot}</td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)
-
-const renderFormattedText = (rawText: string): ReactNode => {
-  const text = htmlToPlainText(rawText)
-    .replace(/\s((?:PHB|XGE|TCE|SCAG|DMG|MM|UA[0-9A-Za-z-]*))\s/g, '\n$1 ')
-    .replace(/(\d+\s*[-–]?\s*(?:й|ый|ой)\s+уровень[^.]{0,80})/gi, '\n$1')
-    .replace(/\s([а-яa-z]\))/gi, '\n$1')
-    .replace(/\s(\d+\))/g, '\n$1')
-    .replace(/\s-\s/g, '\n- ')
-    .replace(/([.!?])\s+(?=[A-ZА-ЯЁ])/g, '$1\n')
-    .replace(/([:;])\s+(?=[A-ZА-ЯЁ])/g, '$1\n')
-  if (!text) return null
-
-  const longLineSplit = (line: string): string[] => {
-    if (line.length <= 230) return [line]
-    const sentences = line.split(/(?<=[.!?])\s+/)
-    if (sentences.length <= 1) return [line]
-    const chunks: string[] = []
-    let current = ''
-    for (const sentence of sentences) {
-      const candidate = current ? `${current} ${sentence}` : sentence
-      if (candidate.length > 220 && current) {
-        chunks.push(current.trim())
-        current = sentence
-      } else {
-        current = candidate
-      }
-    }
-    if (current.trim()) chunks.push(current.trim())
-    return chunks.length > 0 ? chunks : [line]
-  }
-
-  const lines = text
-    .split('\n')
-    .flatMap((line) => longLineSplit(line.trim()))
-    .filter(Boolean)
-  const blocks: ReactNode[] = []
-  let paragraph: string[] = []
-  let list: string[] = []
-  let listKind: 'ul' | 'ol' = 'ul'
-
-  const flushParagraph = () => {
-    if (paragraph.length === 0) return
-    blocks.push(
-      <p key={`p-${blocks.length}`} className="detail__paragraph">
-        {renderInlineMarkdown(paragraph.join(' ').trim())}
-      </p>
-    )
-    paragraph = []
-  }
-
-  const flushList = () => {
-    if (list.length === 0) return
-    if (listKind === 'ol') {
-      blocks.push(
-        <ol key={`ol-${blocks.length}`} className="detail__list detail__list--ordered">
-          {list.map((item, index) => (
-            <li key={`li-${blocks.length}-${index}`}>{renderInlineMarkdown(item)}</li>
-          ))}
-        </ol>
-      )
-    } else {
-      blocks.push(
-        <ul key={`ul-${blocks.length}`} className="detail__list">
-          {list.map((item, index) => (
-            <li key={`li-${blocks.length}-${index}`}>{renderInlineMarkdown(item)}</li>
-          ))}
-        </ul>
-      )
-    }
-    list = []
-    listKind = 'ul'
-  }
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim()
-    if (!line) {
-      flushParagraph()
-      flushList()
-      continue
-    }
-    const heading = line.match(/^(#{1,4})\s+(.+)$/)
-    if (heading) {
-      flushParagraph()
-      flushList()
-      blocks.push(
-        <h4 key={`h-${blocks.length}`} className="detail__subheading">
-          {renderInlineMarkdown(heading[2])}
-        </h4>
-      )
-      continue
-    }
-    const bullet = line.match(/^[-*]\s+(.+)$/)
-    if (bullet) {
-      flushParagraph()
-      listKind = 'ul'
-      list.push(bullet[1])
-      continue
-    }
-    const ordered = line.match(/^(?:\d+|[а-яa-z])\)\s+(.+)$/i)
-    if (ordered) {
-      flushParagraph()
-      listKind = 'ol'
-      list.push(ordered[1])
-      continue
-    }
-    flushList()
-    paragraph.push(line)
-  }
-
-  flushParagraph()
-  flushList()
-  return blocks
-}
-
-const renderSectionContent = (title: string, content: string): ReactNode => {
-  const table = parseSpellcastingTable(content)
-  if (table && (/использование заклинаний/i.test(title) || table.rows.length >= 8)) {
-    return renderSpellcastingTable(table)
-  }
-  return renderFormattedText(content)
-}
-
-const getRuleSectionBucket = (title: string): 'base' | 'mechanic' | 'exception' => {
-  const lower = title.toLowerCase()
-  if (/исключ|особ|огранич|примеч|редк|штраф|запрет/.test(lower)) return 'exception'
-  if (/провер|брос|ата|урон|эффект|расч|формул|спас|иници|движ|дистан/.test(lower)) return 'mechanic'
-  return 'base'
-}
-
-const injectParagraphBreaks = (raw: string): string => {
-  const text = htmlToPlainText(raw).replace(/\s+/g, ' ').trim()
-  if (!text) return ''
-  const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean)
-  if (sentences.length <= 2) return text
-
-  const paragraphs: string[] = []
-  let current: string[] = []
-  let chars = 0
-
-  for (const sentence of sentences) {
-    current.push(sentence)
-    chars += sentence.length
-    if (current.length >= 3 || chars >= 420) {
-      paragraphs.push(current.join(' ').trim())
-      current = []
-      chars = 0
-    }
-  }
-
-  if (current.length > 0) {
-    paragraphs.push(current.join(' ').trim())
-  }
-
-  return paragraphs.join('\n\n')
-}
-
-const buildReferenceSections = (
-  rawText: string | null | undefined,
-  isClass: boolean
-): Array<{ title: string; content: string }> => {
-  const text = htmlToPlainText(rawText ?? '')
-  if (!text) return []
-
-  const classAnchors = [
-    { key: 'хиты', title: 'Хиты' },
-    { key: 'владение', title: 'Владения' },
-    { key: 'снаряжение', title: 'Снаряжение' },
-    { key: 'использование заклинаний', title: 'Использование заклинаний' },
-    { key: 'базовая характеристика заклинаний', title: 'Базовая характеристика заклинаний' },
-    { key: 'архетип', title: 'Архетипы' },
-    { key: 'особенности', title: 'Особенности' }
-  ]
-
-  const raceAnchors = [
-    { key: 'возраст', title: 'Возраст' },
-    { key: 'мировоззрение', title: 'Мировоззрение' },
-    { key: 'размер', title: 'Размер' },
-    { key: 'скорость', title: 'Скорость' },
-    { key: 'языки', title: 'Языки' },
-    { key: 'особенности', title: 'Особенности' }
-  ]
-
-  const anchors = isClass ? classAnchors : raceAnchors
-  const lower = text.toLowerCase()
-  const found = anchors
-    .map((anchor) => ({ ...anchor, index: lower.indexOf(anchor.key) }))
-    .filter((anchor) => anchor.index >= 0)
-    .sort((a, b) => a.index - b.index)
-    .filter((anchor, index, list) => index === 0 || anchor.index !== list[index - 1].index)
-
-  if (found.length === 0) {
-    return [{ title: 'Общее описание', content: injectParagraphBreaks(text) }]
-  }
-
-  const sections: Array<{ title: string; content: string }> = []
-  const firstIndex = found[0].index
-  if (firstIndex > 40) {
-    const intro = text.slice(0, firstIndex).trim()
-    if (intro) sections.push({ title: 'Общее описание', content: intro })
-  }
-
-  for (let i = 0; i < found.length; i += 1) {
-    const current = found[i]
-    const next = found[i + 1]
-    const start = current.index
-    const end = next ? next.index : text.length
-    const content = injectParagraphBreaks(text.slice(start, end).trim())
-    if (!content) continue
-    sections.push({ title: current.title, content })
-  }
-
-  const merged: Array<{ title: string; content: string }> = []
-  for (const section of sections) {
-    if (section.content.length < 36 && merged.length > 0) {
-      const prev = merged[merged.length - 1]
-      prev.content = `${prev.content}\n${section.content}`.trim()
-      continue
-    }
-    merged.push(section)
-  }
-
-  return merged.slice(0, 16)
-}
-
-const parseMonsterActions = (data: any): Array<{
-  name: string
-  text: string
-  attackBonus: number | null
-  damageExpr: string | null
-  saveDc: number | null
-  saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
-}> => {
-  const source = data?.action ?? data?.actions ?? []
-  if (!Array.isArray(source)) return []
-  return source
-    .map((action: any) => {
-      const name = action?.name ?? 'Действие'
-      const text = Array.isArray(action?.entries)
-        ? action.entries.map(extractActionText).join(' ')
-        : extractActionText(action)
-      const attackBonus = parseActionAttackBonus(text)
-      const damageExpr = parseActionDamageExpr(text)
-      const saveInfo = parseSaveFromText(text)
-      return {
-        name,
-        text,
-        attackBonus,
-        damageExpr,
-        saveDc: saveInfo.saveDc ? Number(saveInfo.saveDc) : null,
-        saveAbility: saveInfo.saveAbility
-      }
-    })
-    .filter((action) => action.text || action.name)
-}
-
-const parseSignedBonus = (value: string): number | null => {
-  const trimmed = value.trim()
-  if (!trimmed) return null
-  const normalized = trimmed.replace(',', '.').replace('+', '')
-  const parsed = Number(normalized)
-  if (Number.isNaN(parsed)) return null
-  return parsed
-}
-
-const buildCharacterActions = (
-  data: any
-): Array<{
-  name: string
-  text: string
-  attackBonus: number | null
-  damageExpr: string | null
-  saveDc: number | null
-  saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
-}> | undefined => {
-  const attacks = data?.sheet?.attacks
-  if (!Array.isArray(attacks)) return undefined
-  const mapped = attacks
-    .map((attack: any) => ({
-      name: String(attack?.name ?? '').trim() || 'Атака',
-      text: String(attack?.notes ?? '').trim(),
-      attackBonus: typeof attack?.attackBonus === 'string' ? parseSignedBonus(attack.attackBonus) : null,
-      damageExpr: typeof attack?.damage === 'string' ? attack.damage.trim() : null,
-      saveDc: null,
-      saveAbility: '' as const
-    }))
-    .filter((entry) => entry.name || entry.text || entry.damageExpr || entry.attackBonus !== null)
-  return mapped.length > 0 ? mapped : undefined
-}
-
-const parseOptionalInt = (value: string): number | null => {
-  const trimmed = value.trim()
-  if (!trimmed) return null
-  const parsed = Number(trimmed)
-  if (Number.isNaN(parsed)) return null
-  return Math.round(parsed)
-}
-
-const scoreToSaveMod = (score: string): number | null => {
-  const parsed = parseOptionalInt(score)
-  if (parsed === null) return null
-  return Math.floor((parsed - 10) / 2)
-}
-
-const parseNamedMonsterEntries = (raw: string) => {
-  return raw
-    .split(/\r?\n+/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const normalized = stripHtml(line)
-        .replace(/^\s*[-*]\s*/, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-      const match = normalized.match(/^([^:.;]{2,80})[:.]\s*(.+)$/)
-      if (match) {
-        return {
-          name: match[1].trim(),
-          entries: [match[2].trim()]
-        }
-      }
-      return {
-        name: 'Особенность',
-        entries: [normalized]
-      }
-    })
-}
-
-const toSignedBonus = (value: string): string | null => {
-  const trimmed = value.trim()
-  if (!trimmed) return null
-  const parsed = Number(trimmed.replace(',', '.'))
-  if (Number.isNaN(parsed)) return null
-  const rounded = Math.round(parsed)
-  return rounded >= 0 ? `+${rounded}` : `${rounded}`
-}
-
-const attackKindLabel: Record<CustomMonsterActionDraft['attackKind'], string> = {
-  melee: 'Рукопашная атака оружием',
-  ranged: 'Дальнобойная атака оружием',
-  spell: 'Атака заклинанием',
-  melee_or_ranged: 'Рукопашная или дальнобойная атака оружием'
-}
-
-const parseAttackKindFromText = (
-  text: string
-): CustomMonsterActionDraft['attackKind'] => {
-  const cleaned = stripHtml(text).toLowerCase()
-  if (cleaned.includes('или дальнобой')) return 'melee_or_ranged'
-  if (cleaned.includes('атака заклинанием')) return 'spell'
-  if (cleaned.includes('дальнобой')) return 'ranged'
-  return 'melee'
-}
-
-const parseDamageTypeFromText = (text: string): string => {
-  const cleaned = stripHtml(text).toLowerCase()
-  const match = cleaned.match(
-    /\)\s*([а-яёa-z][а-яёa-z\s-]{1,24})\s+урона/i
-  )
-  if (!match) return ''
-  return match[1].trim()
-}
-
-const parseRangeFromText = (text: string): string => {
-  const cleaned = stripHtml(text).replace(/\s+/g, ' ').trim()
-  const match =
-    cleaned.match(/(?:досягаемость|дистанция)\s*:?([^.,;]+)/i) ??
-    cleaned.match(/reach|range\s*:?([^.,;]+)/i)
-  if (!match) return ''
-  return match[1].trim()
-}
-
-const parseTargetFromText = (text: string): string => {
-  const cleaned = stripHtml(text).replace(/\s+/g, ' ').trim()
-  const match = cleaned.match(/(?:одна|до\s+\d+|каждая|любая)\s+цель[^.,;]*/i)
-  if (match) return match[0].trim()
-  const matchAlt = cleaned.match(/target[^.,;]*/i)
-  if (!matchAlt) return ''
-  return matchAlt[0].trim()
-}
-
-const parseSaveFromText = (text: string): {
-  saveDc: string
-  saveAbility: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'
-} => {
-  const cleaned = stripHtml(text).replace(/\s+/g, ' ').trim()
-  const dcMatch = cleaned.match(/(?:сл|dc)\s*(\d{1,2})/i)
-  const abilities: Array<{ key: '' | 'СИЛ' | 'ЛВК' | 'ТЕЛ' | 'ИНТ' | 'МДР' | 'ХАР'; regex: RegExp }> = [
-    { key: 'СИЛ', regex: /сил|strength/i },
-    { key: 'ЛВК', regex: /ловк|dexterity/i },
-    { key: 'ТЕЛ', regex: /тел|constitution/i },
-    { key: 'ИНТ', regex: /инт|intelligence/i },
-    { key: 'МДР', regex: /мдр|мудр|wisdom/i },
-    { key: 'ХАР', regex: /хар|charisma/i }
-  ]
-  const ability = abilities.find((item) => item.regex.test(cleaned))?.key ?? ''
-  return { saveDc: dcMatch?.[1] ?? '', saveAbility: ability }
-}
-
-const normalizeDamageExpr = (value: string): string | null => {
-  const trimmed = value.trim()
-  if (!trimmed) return null
-  const normalized = trimmed
-    .replace(/[xх×]/gi, 'd')
-    .replace(/[＋﹢]/g, '+')
-    .replace(/−/g, '-')
-    .replace(/\s+/g, '')
-  return parseDice(normalized) ? normalized : null
-}
-
-const buildStructuredMonsterActions = (actions: CustomMonsterActionDraft[]) => {
-  const filtered = actions
-    .map((action) => ({
-      ...action,
-      name: action.name.trim(),
-      rangeText: action.rangeText.trim(),
-      targetText: action.targetText.trim(),
-      damageType: action.damageType.trim(),
-      saveDc: action.saveDc.trim(),
-      saveAbility: action.saveAbility,
-      saveFailText: action.saveFailText.trim(),
-      saveSuccessText: action.saveSuccessText.trim(),
-      extraText: action.extraText.trim(),
-      attackBonus: toSignedBonus(action.attackBonus),
-      damageExpr: normalizeDamageExpr(action.damageExpr)
-    }))
-    .filter((action) => action.name || action.attackBonus || action.damageExpr || action.extraText)
-
-  const entries = filtered.map((action) => {
-    const attackText = action.attackBonus
-      ? `${attackKindLabel[action.attackKind]}: ${action.attackBonus} к попаданию${
-          action.rangeText ? `, досягаемость/дистанция ${action.rangeText}` : ''
-        }${action.targetText ? `, ${action.targetText}` : ''}.`
-      : ''
-    const damageText = action.damageExpr
-      ? `Попадание: (${action.damageExpr}) ${action.damageType || ''} урона.`
-      : ''
-    const saveText =
-      action.saveDc && action.saveAbility
-        ? `Цель совершает спасбросок ${action.saveAbility} СЛ ${action.saveDc}.${
-            action.saveFailText ? ` При провале: ${action.saveFailText}.` : ''
-          }${action.saveSuccessText ? ` При успехе: ${action.saveSuccessText}.` : ''}`
-        : ''
-    const text = [attackText, damageText, action.extraText].filter(Boolean).join(' ').trim()
-    const fullText = [text, saveText].filter(Boolean).join(' ').trim()
-    return {
-      name: action.name || 'Действие',
-      entries: [fullText || 'Описание отсутствует']
-    }
-  })
-
-  return {
-    entries,
-    raw: filtered.map((action) => ({
-      name: action.name || 'Действие',
-      attackKind: action.attackKind,
-      attackBonus: action.attackBonus,
-      rangeText: action.rangeText,
-      targetText: action.targetText,
-      damageExpr: action.damageExpr,
-      damageType: action.damageType,
-      saveDc: action.saveDc,
-      saveAbility: action.saveAbility,
-      saveFailText: action.saveFailText,
-      saveSuccessText: action.saveSuccessText,
-      extraText: action.extraText
-    }))
-  }
-}
-
-const customMonsterActionsFromData = (data: any): CustomMonsterActionDraft[] => {
-  if (Array.isArray(data?.custom_actions) && data.custom_actions.length > 0) {
-    return data.custom_actions.map((action: any) => ({
-      id: `cma-load-${Math.random().toString(36).slice(2, 8)}`,
-      name: typeof action?.name === 'string' ? action.name : '',
-      attackKind:
-        action?.attackKind === 'ranged' ||
-        action?.attackKind === 'spell' ||
-        action?.attackKind === 'melee_or_ranged'
-          ? action.attackKind
-          : 'melee',
-      attackBonus: typeof action?.attackBonus === 'string' ? action.attackBonus : '',
-      rangeText: typeof action?.rangeText === 'string' ? action.rangeText : '',
-      targetText: typeof action?.targetText === 'string' ? action.targetText : '',
-      damageExpr: typeof action?.damageExpr === 'string' ? action.damageExpr : '',
-      damageType: typeof action?.damageType === 'string' ? action.damageType : '',
-      saveDc: typeof action?.saveDc === 'string' ? action.saveDc : '',
-      saveAbility:
-        action?.saveAbility === 'СИЛ' ||
-        action?.saveAbility === 'ЛВК' ||
-        action?.saveAbility === 'ТЕЛ' ||
-        action?.saveAbility === 'ИНТ' ||
-        action?.saveAbility === 'МДР' ||
-        action?.saveAbility === 'ХАР'
-          ? action.saveAbility
-          : '',
-      saveFailText: typeof action?.saveFailText === 'string' ? action.saveFailText : '',
-      saveSuccessText: typeof action?.saveSuccessText === 'string' ? action.saveSuccessText : '',
-      extraText: typeof action?.extraText === 'string' ? action.extraText : ''
-    }))
-  }
-  const parsed = parseMonsterActions(data)
-  if (parsed.length > 0) {
-    return parsed.map((action) => ({
-      id: `cma-parse-${Math.random().toString(36).slice(2, 8)}`,
-      name: action.name || '',
-      attackKind: parseAttackKindFromText(action.text || ''),
-      attackBonus: action.attackBonus !== null ? String(action.attackBonus) : '',
-      rangeText: parseRangeFromText(action.text || ''),
-      targetText: parseTargetFromText(action.text || ''),
-      damageExpr: action.damageExpr ?? '',
-      damageType: parseDamageTypeFromText(action.text || ''),
-      saveDc: parseSaveFromText(action.text || '').saveDc,
-      saveAbility: parseSaveFromText(action.text || '').saveAbility,
-      saveFailText: '',
-      saveSuccessText: '',
-      extraText: action.text || ''
-    }))
-  }
-  return [createEmptyCustomMonsterAction()]
-}
-
-const buildCustomMonsterData = (draft: CustomMonsterDraft, actionDrafts: CustomMonsterActionDraft[]) => {
-  const parseCommaList = (value: string) =>
-    value
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .join(', ')
-  const manualActions = parseNamedMonsterEntries(draft.actionsText)
-  const structured = buildStructuredMonsterActions(actionDrafts)
-  return {
-    size: draft.size || 'Medium',
-    type: draft.type.trim(),
-    alignment: draft.alignment.trim(),
-    ac: draft.ac.trim(),
-    hp: draft.hp.trim(),
-    speed: draft.speed.trim(),
-    cr: draft.cr.trim(),
-    str: parseOptionalInt(draft.str),
-    dex: parseOptionalInt(draft.dex),
-    con: parseOptionalInt(draft.con),
-    int: parseOptionalInt(draft.int),
-    wis: parseOptionalInt(draft.wis),
-    cha: parseOptionalInt(draft.cha),
-    senses: draft.senses.trim(),
-    languages: draft.languages.trim(),
-    save: draft.savesText.trim(),
-    skill: draft.skillsText.trim(),
-    vulnerable: parseCommaList(draft.vulnerabilities),
-    resist: parseCommaList(draft.resistances),
-    immune: parseCommaList(draft.immunities),
-    conditionImmune: parseCommaList(draft.conditionImmunities),
-    saves: {
-      str: scoreToSaveMod(draft.str),
-      dex: scoreToSaveMod(draft.dex),
-      con: scoreToSaveMod(draft.con),
-      int: scoreToSaveMod(draft.int),
-      wis: scoreToSaveMod(draft.wis),
-      cha: scoreToSaveMod(draft.cha)
-    },
-    trait: parseNamedMonsterEntries(draft.traitsText),
-    action: [...structured.entries, ...manualActions],
-    custom_actions: structured.raw,
-    reaction: parseNamedMonsterEntries(draft.reactionsText),
-    legendary: {
-      list: parseNamedMonsterEntries(draft.legendaryText)
-    },
-    lair: {
-      list: parseNamedMonsterEntries(draft.lairText)
-    }
-  }
-}
-
-const customMonsterDataToDraft = (row: { name?: string | null; cr?: string | null; data?: any }): CustomMonsterDraft => {
-  const data = row?.data ?? {}
-  const toStat = (value: unknown) =>
-    typeof value === 'number' ? String(value) : typeof value === 'string' ? value : ''
-  const entriesToText = (value: any) => {
-    const list = Array.isArray(value) ? value : []
-    return list
-      .map((entry) => {
-        const name = typeof entry?.name === 'string' ? entry.name.trim() : ''
-        const text = Array.isArray(entry?.entries)
-          ? entry.entries.map((item: any) => extractActionText(item)).join(' ')
-          : extractActionText(entry)
-        if (name && text) return `${name}: ${text}`
-        return text || name
-      })
-      .filter(Boolean)
-      .join('\n')
-  }
-  return {
-    ...emptyCustomMonsterDraft,
-    name: row?.name ?? '',
-    size: typeof data.size === 'string' && data.size ? data.size : 'Medium',
-    type: typeof data.type === 'string' ? data.type : '',
-    alignment: typeof data.alignment === 'string' ? data.alignment : '',
-    ac: toText(data.ac) === '—' ? '' : toText(data.ac),
-    hp: toText(data.hp) === '—' ? '' : toText(data.hp),
-    speed: typeof data.speed === 'string' ? data.speed : '',
-    cr: row?.cr ?? (typeof data.cr === 'string' ? data.cr : ''),
-    str: toStat(data.str),
-    dex: toStat(data.dex),
-    con: toStat(data.con),
-    int: toStat(data.int),
-    wis: toStat(data.wis),
-    cha: toStat(data.cha),
-    senses: typeof data.senses === 'string' ? data.senses : '',
-    languages: typeof data.languages === 'string' ? data.languages : '',
-    savesText: typeof data.save === 'string' ? data.save : '',
-    skillsText: typeof data.skill === 'string' ? data.skill : '',
-    vulnerabilities: typeof data.vulnerable === 'string' ? data.vulnerable : '',
-    resistances: typeof data.resist === 'string' ? data.resist : '',
-    immunities: typeof data.immune === 'string' ? data.immune : '',
-    conditionImmunities: typeof data.conditionImmune === 'string' ? data.conditionImmune : '',
-    traitsText: entriesToText(data.trait),
-    actionsText: Array.isArray(data?.custom_actions) && data.custom_actions.length > 0 ? '' : entriesToText(data.action),
-    reactionsText: entriesToText(data.reaction),
-    legendaryText: entriesToText(data.legendary?.list),
-    lairText: entriesToText(data.lair?.list)
-  }
-}
-
-const rollD20 = (bonus: number | null) => {
-  const roll = Math.floor(Math.random() * 20) + 1
-  const total = roll + (bonus ?? 0)
-  return { roll, total, bonus: bonus ?? 0 }
-}
-
-const rollDiceExpr = (expr: string) => {
-  const parsed = parseDice(expr)
-  if (!parsed) return null
-  const rolls = Array.from({ length: parsed.count }, () =>
-    Math.floor(Math.random() * parsed.sides) + 1
-  )
-  const total = rolls.reduce((sum, value) => sum + value, 0) + parsed.modifier
-  return { total, rolls, modifier: parsed.modifier }
-}
-
-const rollCriticalDamageExpr = (expr: string) => {
-  const parsed = parseDice(expr)
-  if (!parsed) return null
-  const critCount = parsed.count * 2
-  const rolls = Array.from({ length: critCount }, () =>
-    Math.floor(Math.random() * parsed.sides) + 1
-  )
-  const total = rolls.reduce((sum, value) => sum + value, 0) + parsed.modifier
-  return { total, rolls, modifier: parsed.modifier, expr: `${critCount}d${parsed.sides}` }
-}
-
-const getD20Tone = (roll: number): CombatLogTone => {
-  if (roll === 20) return 'crit'
-  if (roll === 1) return 'fail'
-  return 'normal'
-}
-
-const formatModifierDetail = (modifier: number) => {
-  if (!modifier) return ''
-  return modifier > 0 ? ` + ${modifier}` : ` - ${Math.abs(modifier)}`
-}
-
-const dicePresets = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100', '2d20', '2d6'] as const
-const conditionPresets = [
-  'Оглушён',
-  'Ослеплён',
-  'Очарован',
-  'Отравлен',
-  'Парализован',
-  'Испуган',
-  'Сбит с ног',
-  'Обездвижен',
-  'Незаметен',
-  'Удерживаем',
-  'Мертв'
-] as const
-const effectPresets = ['Горение', 'Кровотечение', 'Благословение', 'Проклятие'] as const
-
-const ensureCharacterData = (data: any): CharacterData => ({
-  inventory: Array.isArray(data?.inventory)
-    ? data.inventory
-        .filter((entry: any) => typeof entry?.name === 'string' && entry.name.trim())
-        .map((entry: any) => ({
-          name: String(entry.name).trim(),
-          qty: typeof entry?.qty === 'number' && Number.isFinite(entry.qty) ? entry.qty : 1,
-          notes: typeof entry?.notes === 'string' ? entry.notes : '',
-          category:
-            entry?.category === 'item' ||
-            entry?.category === 'artifact' ||
-            entry?.category === 'weapon' ||
-            entry?.category === 'custom_weapon' ||
-            entry?.category === 'manual'
-              ? entry.category
-              : 'manual'
-        }))
-    : [],
-  currency: {
-    cp: typeof data?.currency?.cp === 'number' && Number.isFinite(data.currency.cp) ? data.currency.cp : 0,
-    sp: typeof data?.currency?.sp === 'number' && Number.isFinite(data.currency.sp) ? data.currency.sp : 0,
-    ep: typeof data?.currency?.ep === 'number' && Number.isFinite(data.currency.ep) ? data.currency.ep : 0,
-    gp: typeof data?.currency?.gp === 'number' && Number.isFinite(data.currency.gp) ? data.currency.gp : 0,
-    pp: typeof data?.currency?.pp === 'number' && Number.isFinite(data.currency.pp) ? data.currency.pp : 0
-  },
-  spells: Array.isArray(data?.spells)
-    ? data.spells.map((entry: any) =>
-        typeof entry === 'string' ? { name: entry } : entry
-      )
-    : [],
-  items: Array.isArray(data?.items)
-    ? data.items.map((entry: any) =>
-        typeof entry === 'string' ? { name: entry } : entry
-      )
-    : [],
-  weapons: Array.isArray(data?.weapons)
-    ? data.weapons.map((entry: any) =>
-        typeof entry === 'string'
-          ? { name: entry, attackBonus: null, damageExpr: null }
-          : {
-              ...entry,
-              attackBonus:
-                typeof entry?.attackBonus === 'number' && Number.isFinite(entry.attackBonus)
-                  ? entry.attackBonus
-                  : null,
-              damageExpr:
-                typeof entry?.damageExpr === 'string'
-                  ? normalizeDamageExpr(entry.damageExpr)
-                  : null
-            }
-      )
-    : [],
-  artifacts: Array.isArray(data?.artifacts)
-    ? data.artifacts.map((entry: any) =>
-        typeof entry === 'string' ? { name: entry } : entry
-      )
-    : [],
-  equipment: {
-    primaryWeaponKey:
-      typeof data?.equipment?.primaryWeaponKey === 'string' &&
-      data.equipment.primaryWeaponKey.trim()
-        ? data.equipment.primaryWeaponKey
-        : null,
-    secondaryWeaponKey:
-      typeof data?.equipment?.secondaryWeaponKey === 'string' &&
-      data.equipment.secondaryWeaponKey.trim()
-        ? data.equipment.secondaryWeaponKey
-        : null
-  },
-  ammo: Array.isArray(data?.ammo) ? data.ammo : [],
-  notes: typeof data?.notes === 'string' ? data.notes : '',
-  combat: {
-    hpMax: typeof data?.combat?.hpMax === 'number' ? data.combat.hpMax : null,
-    hpCurrent: typeof data?.combat?.hpCurrent === 'number' ? data.combat.hpCurrent : null,
-    ac: typeof data?.combat?.ac === 'number' ? data.combat.ac : null,
-    speed: typeof data?.combat?.speed === 'number' ? data.combat.speed : null,
-    initiativeOverride:
-      typeof data?.combat?.initiativeOverride === 'number' ? data.combat.initiativeOverride : null
-  },
-  stats: {
-    str: {
-      score: typeof data?.stats?.str?.score === 'number' ? data.stats.str.score : null,
-      modOverride:
-        typeof data?.stats?.str?.modOverride === 'number' ? data.stats.str.modOverride : null
-    },
-    dex: {
-      score: typeof data?.stats?.dex?.score === 'number' ? data.stats.dex.score : null,
-      modOverride:
-        typeof data?.stats?.dex?.modOverride === 'number' ? data.stats.dex.modOverride : null
-    },
-    con: {
-      score: typeof data?.stats?.con?.score === 'number' ? data.stats.con.score : null,
-      modOverride:
-        typeof data?.stats?.con?.modOverride === 'number' ? data.stats.con.modOverride : null
-    },
-    int: {
-      score: typeof data?.stats?.int?.score === 'number' ? data.stats.int.score : null,
-      modOverride:
-        typeof data?.stats?.int?.modOverride === 'number' ? data.stats.int.modOverride : null
-    },
-    wis: {
-      score: typeof data?.stats?.wis?.score === 'number' ? data.stats.wis.score : null,
-      modOverride:
-        typeof data?.stats?.wis?.modOverride === 'number' ? data.stats.wis.modOverride : null
-    },
-    cha: {
-      score: typeof data?.stats?.cha?.score === 'number' ? data.stats.cha.score : null,
-      modOverride:
-        typeof data?.stats?.cha?.modOverride === 'number' ? data.stats.cha.modOverride : null
-    }
-  },
-  saves: {
-    str: {
-      prof: Boolean(data?.saves?.str?.prof),
-      override: typeof data?.saves?.str?.override === 'number' ? data.saves.str.override : null
-    },
-    dex: {
-      prof: Boolean(data?.saves?.dex?.prof),
-      override: typeof data?.saves?.dex?.override === 'number' ? data.saves.dex.override : null
-    },
-    con: {
-      prof: Boolean(data?.saves?.con?.prof),
-      override: typeof data?.saves?.con?.override === 'number' ? data.saves.con.override : null
-    },
-    int: {
-      prof: Boolean(data?.saves?.int?.prof),
-      override: typeof data?.saves?.int?.override === 'number' ? data.saves.int.override : null
-    },
-    wis: {
-      prof: Boolean(data?.saves?.wis?.prof),
-      override: typeof data?.saves?.wis?.override === 'number' ? data.saves.wis.override : null
-    },
-    cha: {
-      prof: Boolean(data?.saves?.cha?.prof),
-      override: typeof data?.saves?.cha?.override === 'number' ? data.saves.cha.override : null
-    }
-  },
-  skills: {
-    acrobatics: {
-      prof: Boolean(data?.skills?.acrobatics?.prof),
-      override:
-        typeof data?.skills?.acrobatics?.override === 'number'
-          ? data.skills.acrobatics.override
-          : null
-    },
-    animalHandling: {
-      prof: Boolean(data?.skills?.animalHandling?.prof),
-      override:
-        typeof data?.skills?.animalHandling?.override === 'number'
-          ? data.skills.animalHandling.override
-          : null
-    },
-    arcana: {
-      prof: Boolean(data?.skills?.arcana?.prof),
-      override:
-        typeof data?.skills?.arcana?.override === 'number'
-          ? data.skills.arcana.override
-          : null
-    },
-    athletics: {
-      prof: Boolean(data?.skills?.athletics?.prof),
-      override:
-        typeof data?.skills?.athletics?.override === 'number'
-          ? data.skills.athletics.override
-          : null
-    },
-    deception: {
-      prof: Boolean(data?.skills?.deception?.prof),
-      override:
-        typeof data?.skills?.deception?.override === 'number'
-          ? data.skills.deception.override
-          : null
-    },
-    history: {
-      prof: Boolean(data?.skills?.history?.prof),
-      override:
-        typeof data?.skills?.history?.override === 'number'
-          ? data.skills.history.override
-          : null
-    },
-    insight: {
-      prof: Boolean(data?.skills?.insight?.prof),
-      override:
-        typeof data?.skills?.insight?.override === 'number'
-          ? data.skills.insight.override
-          : null
-    },
-    intimidation: {
-      prof: Boolean(data?.skills?.intimidation?.prof),
-      override:
-        typeof data?.skills?.intimidation?.override === 'number'
-          ? data.skills.intimidation.override
-          : null
-    },
-    investigation: {
-      prof: Boolean(data?.skills?.investigation?.prof),
-      override:
-        typeof data?.skills?.investigation?.override === 'number'
-          ? data.skills.investigation.override
-          : null
-    },
-    medicine: {
-      prof: Boolean(data?.skills?.medicine?.prof),
-      override:
-        typeof data?.skills?.medicine?.override === 'number'
-          ? data.skills.medicine.override
-          : null
-    },
-    nature: {
-      prof: Boolean(data?.skills?.nature?.prof),
-      override:
-        typeof data?.skills?.nature?.override === 'number'
-          ? data.skills.nature.override
-          : null
-    },
-    perception: {
-      prof: Boolean(data?.skills?.perception?.prof),
-      override:
-        typeof data?.skills?.perception?.override === 'number'
-          ? data.skills.perception.override
-          : null
-    },
-    performance: {
-      prof: Boolean(data?.skills?.performance?.prof),
-      override:
-        typeof data?.skills?.performance?.override === 'number'
-          ? data.skills.performance.override
-          : null
-    },
-    persuasion: {
-      prof: Boolean(data?.skills?.persuasion?.prof),
-      override:
-        typeof data?.skills?.persuasion?.override === 'number'
-          ? data.skills.persuasion.override
-          : null
-    },
-    religion: {
-      prof: Boolean(data?.skills?.religion?.prof),
-      override:
-        typeof data?.skills?.religion?.override === 'number'
-          ? data.skills.religion.override
-          : null
-    },
-    sleightOfHand: {
-      prof: Boolean(data?.skills?.sleightOfHand?.prof),
-      override:
-        typeof data?.skills?.sleightOfHand?.override === 'number'
-          ? data.skills.sleightOfHand.override
-          : null
-    },
-    stealth: {
-      prof: Boolean(data?.skills?.stealth?.prof),
-      override:
-        typeof data?.skills?.stealth?.override === 'number'
-          ? data.skills.stealth.override
-          : null
-    },
-    survival: {
-      prof: Boolean(data?.skills?.survival?.prof),
-      override:
-        typeof data?.skills?.survival?.override === 'number'
-          ? data.skills.survival.override
-          : null
-    }
-  }
-})
-
-const createDefaultCharacterData = (): CharacterData => ensureCharacterData(null)
-const useList = (entity: EntityKey, query: string) => {
-  const [data, setData] = useState<ListResponse<ListRow>>(defaultResponse)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    setError(null)
-
-    const handle = setTimeout(() => {
-      const api = window.beholder[entity]
-      api
-        .list({ query, limit: 80, offset: 0 })
-        .then((response) => {
-          if (ignore) return
-          setData(response as ListResponse<ListRow>)
-          setIsLoading(false)
-        })
-        .catch((err) => {
-          if (ignore) return
-          setError(err?.message || 'Ошибка загрузки')
-          setIsLoading(false)
-        })
-    }, 200)
-
-    return () => {
-      ignore = true
-      clearTimeout(handle)
-    }
-  }, [entity, query])
-
-  return { data, isLoading, error }
-}
-
-const useDetail = (entity: EntityKey, id: number | null) => {
-  const [detail, setDetail] = useState<DetailResponse>(null)
-  const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    let ignore = false
-    if (!id) {
-      setDetail(null)
-      return
-    }
-
-    setIsLoading(true)
-    window.beholder[entity]
-      .get(id)
-      .then((response) => {
-        if (ignore) return
-        setDetail(response as DetailResponse)
-        setIsLoading(false)
-      })
-      .catch(() => {
-        if (ignore) return
-        setDetail(null)
-        setIsLoading(false)
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [entity, id])
-
-  return { detail, isLoading }
-}
+import { ViewKey, ReferenceSection, EntityKey, MonsterRow, SpellRow, ItemRow, WeaponRow, ArtifactRow, ListRow, ListResponse, DetailResponse, TtgArchetype, TtgClass, TtgSubrace, ReferenceRelated, TtgRace, TtgRule, TtgEntry, ReferenceModal, MonsterEntry, MonsterLegendary, MonsterLair, Campaign, Character, SaveMods, CombatCondition, CombatLogTone, ThemeMode, CombatLogEntry, CombatWeaponOption, CombatParticipant, CustomMonsterRow, CustomWeaponRow, CustomMonsterDraft, CustomMonsterActionDraft, InventoryEntry, CharacterData, defaultResponse, emptyCustomMonsterDraft, customMonsterSizeOptions, createEmptyCustomMonsterAction, entityLabels, rarityLabel, getDisplayName, getSubtitle, getListMeta, getDetailTitle, normalizeEntries, toText, getLocaleValue, getLocaleHtml, getDescriptionHtml, formatMonsterSaves, boolLabel, buildSpellSummary, buildItemSummary, buildWeaponSummary, buildArtifactSummary, getWeaponKey, parseWeaponAttackBonus, parseWeaponDamageExpr, parseDice, scoreToMod, formatMod, abilityKeys, abilityLabels, saveLabelToKey, emptySaves, getProfBonus, getStatMod, buildSaveModsFromCharacter, parseMonsterSaves, parseMonsterHp, parseMonsterAc, extractActionText, normalizeActionText, parseActionAttackBonus, parseActionDamageExpr, htmlToPlainText, stripHtml, renderInlineTokens, renderInlineMarkdown, SpellcastingTable, normalizeDashToken, parseSpellcastingTable, renderSpellcastingTable, renderFormattedText, renderSectionContent, getRuleSectionBucket, injectParagraphBreaks, buildReferenceSections, parseMonsterActions, parseSignedBonus, buildCharacterActions, parseOptionalInt, scoreToSaveMod, parseNamedMonsterEntries, toSignedBonus, attackKindLabel, parseAttackKindFromText, parseDamageTypeFromText, parseRangeFromText, parseTargetFromText, parseSaveFromText, normalizeDamageExpr, buildStructuredMonsterActions, customMonsterActionsFromData, buildCustomMonsterData, customMonsterDataToDraft, rollD20, rollDiceExpr, rollCriticalDamageExpr, getD20Tone, formatModifierDetail, dicePresets, conditionPresets, effectPresets, ensureCharacterData, createDefaultCharacterData, useList, useDetail } from './appSupport'
 
 export default function App(): JSX.Element {
   const isCombatBoardMode =
@@ -1979,9 +37,6 @@ export default function App(): JSX.Element {
   const [referenceSection, setReferenceSection] = useState<ReferenceSection>('ttg_classes')
   const [ttgKind, setTtgKind] = useState<'classes' | 'races' | 'rules'>('classes')
   const [ttgQuery, setTtgQuery] = useState('')
-  const [ttgClasses, setTtgClasses] = useState<TtgClass[]>([])
-  const [ttgRaces, setTtgRaces] = useState<TtgRace[]>([])
-  const [ttgRules, setTtgRules] = useState<TtgRule[]>([])
   const [ttgRuleTypeFilter, setTtgRuleTypeFilter] = useState<string>('all')
   const [ttgRuleSourceFilter, setTtgRuleSourceFilter] = useState<string>('all')
   const [ttgPinnedRuleSlugs, setTtgPinnedRuleSlugs] = useState<string[]>(() => {
@@ -1995,9 +50,15 @@ export default function App(): JSX.Element {
     }
   })
   const [ttgSelectedSlug, setTtgSelectedSlug] = useState<string | null>(null)
-  const [ttgLoading, setTtgLoading] = useState(false)
-  const [ttgLoaded, setTtgLoaded] = useState(false)
-  const [ttgError, setTtgError] = useState<string | null>(null)
+  const {
+    classes: ttgClasses,
+    races: ttgRaces,
+    rules: ttgRules,
+    classOptions: ttgClassOptions,
+    raceOptions: ttgRaceOptions,
+    loading: ttgLoading,
+    error: ttgError
+  } = useTtgOptions(activeView === 'reference' || activeView === 'campaign')
   const [referenceModal, setReferenceModal] = useState<ReferenceModal | null>(null)
   const [entity, setEntity] = useState<EntityKey>('monsters')
   const [query, setQuery] = useState('')
@@ -2160,8 +221,16 @@ export default function App(): JSX.Element {
   const [combatSessionsLoading, setCombatSessionsLoading] = useState(false)
   const [combatSessionsError, setCombatSessionsError] = useState<string | null>(null)
   const [selectedCombatId, setSelectedCombatId] = useState<number | null>(null)
-  const [currentTurn, setCurrentTurn] = useState(0)
+  const [currentTurnId, setCurrentTurnId] = useState<string | null>(null)
+  const [roundNumber, setRoundNumber] = useState(1)
+  const [roundAnchorId, setRoundAnchorId] = useState<string | null>(null)
   const [combatDetailId, setCombatDetailId] = useState<string | null>(null)
+  const [detailConditionName, setDetailConditionName] = useState('')
+  const [detailConditionRounds, setDetailConditionRounds] = useState('')
+  const [detailEffectName, setDetailEffectName] = useState('')
+  const [detailEffectRounds, setDetailEffectRounds] = useState('')
+  const [detailConcentrationName, setDetailConcentrationName] = useState('')
+  const [detailConcentrationRounds, setDetailConcentrationRounds] = useState('')
   const [modal, setModal] = useState<{
     type: 'spells' | 'items' | 'weapons' | 'artifacts'
     id: number
@@ -2419,24 +488,6 @@ export default function App(): JSX.Element {
     }
     setEntity(referenceSection)
   }, [referenceSection])
-
-  useEffect(() => {
-    if (view !== 'reference' || ttgLoaded || ttgLoading) return
-    setTtgLoading(true)
-    setTtgError(null)
-    window.beholder.ttg
-      .getAll()
-      .then((payload) => {
-        setTtgClasses(Array.isArray(payload.classes) ? (payload.classes as TtgClass[]) : [])
-        setTtgRaces(Array.isArray(payload.races) ? (payload.races as TtgRace[]) : [])
-        setTtgRules(Array.isArray(payload.rules) ? (payload.rules as TtgRule[]) : [])
-        setTtgLoaded(true)
-      })
-      .catch((err: any) => {
-        setTtgError(err?.message ?? 'Ошибка загрузки справочника')
-      })
-      .finally(() => setTtgLoading(false))
-  }, [view, ttgLoaded, ttgLoading])
 
   useEffect(() => {
     setSelectedId(null)
@@ -3579,7 +1630,15 @@ export default function App(): JSX.Element {
   }
 
   const closeModal = () => setModal(null)
-  const closeCombatDetail = () => setCombatDetailId(null)
+  const closeCombatDetail = () => {
+    setCombatDetailId(null)
+    setDetailConditionName('')
+    setDetailConditionRounds('')
+    setDetailEffectName('')
+    setDetailEffectRounds('')
+    setDetailConcentrationName('')
+    setDetailConcentrationRounds('')
+  }
 
   const handleSetEquippedWeapon = async (
     slot: 'primaryWeaponKey' | 'secondaryWeaponKey',
@@ -4104,6 +2163,16 @@ export default function App(): JSX.Element {
     return bInit - aInit
   })
 
+  // The active turn is tracked by participant id (currentTurnId), not by array
+  // index, since orderedParticipants is re-sorted on every render and its order
+  // can change mid-combat (initiative edits, adds/removes).
+  const activeParticipant = currentTurnId
+    ? orderedParticipants.find((p) => p.id === currentTurnId) ?? null
+    : null
+  const activeTurnPosition = activeParticipant
+    ? orderedParticipants.findIndex((p) => p.id === activeParticipant.id) + 1
+    : 0
+
   const visibleParticipants = orderedParticipants.filter((participant) => {
     if (combatSearch.trim()) {
       const needle = combatSearch.trim().toLowerCase()
@@ -4120,7 +2189,7 @@ export default function App(): JSX.Element {
 
   useLayoutEffect(() => {
     updateCombatLinks()
-  }, [combatParticipants, combatFilter, combatSearch, currentTurn])
+  }, [combatParticipants, combatFilter, combatSearch, currentTurnId])
 
   useEffect(() => {
     const handleResize = () => updateCombatLinks()
@@ -4219,47 +2288,84 @@ export default function App(): JSX.Element {
   }, [resizingCard])
 
   useEffect(() => {
-    if (currentTurn >= orderedParticipants.length) {
-      setCurrentTurn(0)
+    // Keep currentTurnId/roundAnchorId valid: clear them when combat is empty,
+    // and (re)pick the top of the initiative order if either is unset or points
+    // at a participant that no longer exists (e.g. removed mid-combat).
+    // Reordering by itself does NOT reset either — id-based tracking survives
+    // initiative edits and participants being added/removed elsewhere in the list.
+    if (orderedParticipants.length === 0) {
+      if (currentTurnId !== null) setCurrentTurnId(null)
+      if (roundAnchorId !== null) setRoundAnchorId(null)
+      return
     }
-  }, [orderedParticipants.length, currentTurn])
+    const stillExists = currentTurnId !== null && orderedParticipants.some((p) => p.id === currentTurnId)
+    if (!stillExists) {
+      setCurrentTurnId(orderedParticipants[0].id)
+    }
+    const anchorStillExists = roundAnchorId !== null && orderedParticipants.some((p) => p.id === roundAnchorId)
+    if (!anchorStillExists) {
+      setRoundAnchorId(orderedParticipants[0].id)
+    }
+  }, [combatParticipants, currentTurnId, roundAnchorId])
 
   const nextTurn = () => {
     if (orderedParticipants.length === 0) return
-    setCombatParticipants((prev) =>
-      prev.map((p) => ({
-        ...p,
-        effects: p.effects
-          .map((effect) => ({
-            ...effect,
-            rounds: effect.rounds !== null ? effect.rounds - 1 : null
-          }))
-          .filter((effect) => effect.rounds === null || effect.rounds > 0),
-        conditions: p.conditions
-          .map((condition) => ({
-            ...condition,
-            rounds: condition.rounds !== null ? condition.rounds - 1 : null
-          }))
-          .filter((condition) => condition.rounds === null || condition.rounds > 0),
-        concentration:
-          p.concentration && p.concentration.rounds !== null
-            ? {
-                ...p.concentration,
-                rounds: p.concentration.rounds - 1
-              }
-            : p.concentration
-      }))
-    )
-    setCurrentTurn((prev) => {
-      if (orderedParticipants.length === 0) return 0
-      const start = (prev + 1) % orderedParticipants.length
-      for (let i = 0; i < orderedParticipants.length; i += 1) {
-        const idx = (start + i) % orderedParticipants.length
-        const candidate = orderedParticipants[idx]
-        if ((candidate.hpCurrent ?? 1) > 0) return idx
-      }
-      return start
-    })
+    const currentIndex = currentTurnId
+      ? orderedParticipants.findIndex((p) => p.id === currentTurnId)
+      : -1
+    // Every participant gets their turn in initiative order, including anyone
+    // at 0 HP — per 5e rules an unconscious/dying character still takes a
+    // turn to roll death saves, they're just not skipped over.
+    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % orderedParticipants.length
+    const nextParticipant = orderedParticipants[nextIndex]
+
+    // A new round begins when the turn comes back around to whoever opened
+    // the current round (roundAnchorId) — tracked by id, not by "did we reach
+    // the last array index", so adding/removing participants mid-round can't
+    // throw the count off (same principle as currentTurnId for bug 1). If the
+    // anchor itself left combat, the safest read is "the round already turned
+    // over without us noticing" — treat it as a boundary now rather than
+    // never firing the tick again.
+    const anchorStillPresent =
+      roundAnchorId !== null && orderedParticipants.some((p) => p.id === roundAnchorId)
+    const startsNewRound =
+      currentIndex !== -1 && (!anchorStillPresent || nextParticipant.id === roundAnchorId)
+
+    if (startsNewRound) {
+      setRoundNumber((prev) => prev + 1)
+      setCombatParticipants((prev) =>
+        prev.map((p) => ({
+          ...p,
+          effects: p.effects
+            .map((effect) => ({
+              ...effect,
+              rounds: effect.rounds !== null ? effect.rounds - 1 : null
+            }))
+            .filter((effect) => effect.rounds === null || effect.rounds > 0),
+          conditions: p.conditions
+            .map((condition) => ({
+              ...condition,
+              rounds: condition.rounds !== null ? condition.rounds - 1 : null
+            }))
+            .filter((condition) => condition.rounds === null || condition.rounds > 0),
+          concentration:
+            p.concentration && p.concentration.rounds !== null
+              ? {
+                  ...p.concentration,
+                  rounds: p.concentration.rounds - 1
+                }
+              : p.concentration
+        }))
+      )
+    }
+
+    // Re-anchor on combat start (currentIndex === -1) and on every round
+    // boundary, so the anchor always reflects "whoever opens the round".
+    if (currentIndex === -1 || startsNewRound) {
+      setRoundAnchorId(nextParticipant.id)
+    }
+
+    setCurrentTurnId(nextParticipant.id)
   }
 
   const pushCombatLog = (
@@ -4558,7 +2664,9 @@ export default function App(): JSX.Element {
         name: combatName.trim() || 'Сессия боя',
         data: {
           participants: combatParticipants,
-          currentTurn,
+          currentTurnId,
+          roundNumber,
+          roundAnchorId,
           log: combatLog
         },
         combatId: selectedCombatId ?? undefined
@@ -4619,7 +2727,33 @@ export default function App(): JSX.Element {
         ? data.participants.map(normalizeParticipant)
         : []
       setCombatParticipants(participants)
-      setCurrentTurn(typeof data.currentTurn === 'number' ? data.currentTurn : 0)
+
+      const orderedLoaded = [...participants].sort((a, b) => {
+        const aInit = a.initiative ?? -999
+        const bInit = b.initiative ?? -999
+        return bInit - aInit
+      })
+      let resolvedTurnId: string | null
+      if (typeof data.currentTurnId === 'string') {
+        // Current save format: an explicit participant id.
+        const stillExists = orderedLoaded.some((p) => p.id === data.currentTurnId)
+        resolvedTurnId = stillExists ? data.currentTurnId : orderedLoaded[0]?.id ?? null
+      } else if (typeof data.currentTurn === 'number') {
+        // Legacy save format: currentTurn was a numeric index into the
+        // initiative-sorted order. Migrate it to the equivalent participant id.
+        resolvedTurnId = orderedLoaded[data.currentTurn]?.id ?? orderedLoaded[0]?.id ?? null
+      } else {
+        resolvedTurnId = orderedLoaded[0]?.id ?? null
+      }
+      setCurrentTurnId(resolvedTurnId)
+      setRoundNumber(typeof data.roundNumber === 'number' && data.roundNumber > 0 ? data.roundNumber : 1)
+      // roundAnchorId is a newer field; older saves won't have it. Falling back
+      // to the resolved turn id is an approximation (it assumes the round just
+      // opened on whoever's turn it currently is), which is the best guess
+      // available without having recorded the real anchor.
+      const anchorStillExists =
+        typeof data.roundAnchorId === 'string' && orderedLoaded.some((p) => p.id === data.roundAnchorId)
+      setRoundAnchorId(anchorStillExists ? data.roundAnchorId : resolvedTurnId)
       const log = Array.isArray(data.log)
         ? data.log
             .map((entry: any) => ({
@@ -4642,7 +2776,9 @@ export default function App(): JSX.Element {
   const resetCombat = () => {
     setCombatParticipants([])
     setCombatLog([])
-    setCurrentTurn(0)
+    setCurrentTurnId(null)
+    setRoundNumber(1)
+    setRoundAnchorId(null)
     setCombatName('Сессия боя')
     setSelectedCombatId(null)
   }
@@ -4724,63 +2860,71 @@ export default function App(): JSX.Element {
     pushCombatLog('Массовое лечение', null, `${amount} всем участникам`)
   }
 
+  // Generic, participant-scoped helpers. These are the source of truth: conditions,
+  // effects and concentration can be applied to ANY participant, not just whoever's
+  // turn it currently is. The "...ToCurrent" wrappers below keep the old quick-actions
+  // panel (which always targets the active turn) working exactly as before.
+  const addConditionTo = (participantId: string, name: string, rounds: number | null) => {
+    const participant = combatParticipants.find((p) => p.id === participantId)
+    if (!participant) return
+    updateParticipant(participantId, {
+      conditions: [...participant.conditions, { name, rounds }]
+    })
+    pushCombatLog(`Состояние: ${participant.name}`, null, `+ ${name}`)
+  }
+
+  const addEffectTo = (participantId: string, name: string, rounds: number | null) => {
+    const participant = combatParticipants.find((p) => p.id === participantId)
+    if (!participant) return
+    updateParticipant(participantId, {
+      effects: [...participant.effects, { name, rounds }]
+    })
+    pushCombatLog(`Эффект: ${participant.name}`, null, `+ ${name}`)
+  }
+
+  const setConcentrationTo = (participantId: string, name: string, rounds: number | null) => {
+    const participant = combatParticipants.find((p) => p.id === participantId)
+    if (!participant) return
+    updateParticipant(participantId, { concentration: { name, rounds } })
+    pushCombatLog(`Концентрация: ${participant.name}`, null, `+ ${name}`)
+  }
+
   const addEffectToCurrent = () => {
-    if (!orderedParticipants[currentTurn]) return
+    if (!activeParticipant) return
     const name = effectName.trim()
     if (!name) return
     const rounds = effectRounds ? Number(effectRounds) : null
-    updateParticipant(orderedParticipants[currentTurn].id, {
-      effects: [
-        ...orderedParticipants[currentTurn].effects,
-        { name, rounds: Number.isNaN(rounds) ? null : rounds }
-      ]
-    })
-    pushCombatLog(`Эффект: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+    addEffectTo(activeParticipant.id, name, Number.isNaN(rounds) ? null : rounds)
     setEffectName('')
     setEffectRounds('')
   }
 
   const addConditionToCurrent = () => {
-    if (!orderedParticipants[currentTurn]) return
+    if (!activeParticipant) return
     const name = conditionName.trim()
     if (!name) return
     const rounds = conditionRounds ? Number(conditionRounds) : null
-    updateParticipant(orderedParticipants[currentTurn].id, {
-      conditions: [
-        ...orderedParticipants[currentTurn].conditions,
-        { name, rounds: Number.isNaN(rounds) ? null : rounds }
-      ]
-    })
-    pushCombatLog(`Состояние: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+    addConditionTo(activeParticipant.id, name, Number.isNaN(rounds) ? null : rounds)
     setConditionName('')
     setConditionRounds('')
   }
 
   const addPresetCondition = (name: string) => {
-    if (!orderedParticipants[currentTurn]) return
-    updateParticipant(orderedParticipants[currentTurn].id, {
-      conditions: [...orderedParticipants[currentTurn].conditions, { name, rounds: null }]
-    })
-    pushCombatLog(`Состояние: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+    if (!activeParticipant) return
+    addConditionTo(activeParticipant.id, name, null)
   }
 
   const addPresetEffect = (name: string) => {
-    if (!orderedParticipants[currentTurn]) return
-    updateParticipant(orderedParticipants[currentTurn].id, {
-      effects: [...orderedParticipants[currentTurn].effects, { name, rounds: null }]
-    })
-    pushCombatLog(`Эффект: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+    if (!activeParticipant) return
+    addEffectTo(activeParticipant.id, name, null)
   }
 
   const setConcentrationForCurrent = () => {
-    if (!orderedParticipants[currentTurn]) return
+    if (!activeParticipant) return
     const name = concentrationName.trim()
     if (!name) return
     const rounds = concentrationRounds ? Number(concentrationRounds) : null
-    updateParticipant(orderedParticipants[currentTurn].id, {
-      concentration: { name, rounds: Number.isNaN(rounds) ? null : rounds }
-    })
-    pushCombatLog(`Концентрация: ${orderedParticipants[currentTurn].name}`, null, `+ ${name}`)
+    setConcentrationTo(activeParticipant.id, name, Number.isNaN(rounds) ? null : rounds)
     setConcentrationName('')
     setConcentrationRounds('')
   }
@@ -4917,162 +3061,19 @@ export default function App(): JSX.Element {
 
   return (
     <div className={`app theme-${themeMode}${isCombatBoardMode ? ' app--combat-board' : ''}${isReferenceWindowMode ? ' app--reference-window' : ''}${isCombatPanelMode ? ' app--combat-panel' : ''}`}>
-      {isCombatBoardMode ? (
-        <header className="app__header app__header--board">
-          <div className="brand">
-            <div className="brand__mark">BE</div>
-            <div>
-              <div className="brand__title">Beholder Eye's</div>
-              <div className="brand__subtitle">Боевой стол</div>
-            </div>
-          </div>
-          <div className="nav">
-            <button
-              className="button button--ghost"
-              onClick={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-            >
-              Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
-            </button>
-            <button
-              className="button button--ghost"
-              onClick={() => window.beholder.combatPanel.open()}
-            >
-              Окно панели
-            </button>
-            <button className="button" onClick={() => window.close()}>
-              Закрыть окно
-            </button>
-          </div>
-        </header>
-      ) : isCombatPanelMode ? (
-        <header className="app__header app__header--combat-panel">
-          <div className="brand">
-            <div className="brand__mark">BE</div>
-            <div>
-              <div className="brand__title">Beholder Eye's</div>
-              <div className="brand__subtitle">Панель боя</div>
-            </div>
-          </div>
-          <div className="nav">
-            <button
-              className="button button--ghost"
-              onClick={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-            >
-              Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
-            </button>
-            <button className="button" onClick={() => window.close()}>
-              Закрыть окно
-            </button>
-          </div>
-        </header>
-      ) : isReferenceWindowMode ? (
-        <header className="app__header app__header--reference">
-          <div className="brand">
-            <div className="brand__mark">BE</div>
-            <div>
-              <div className="brand__title">Beholder Eye's</div>
-              <div className="brand__subtitle">Справочник</div>
-            </div>
-          </div>
-          <div className="nav">
-            <button
-              className="button button--ghost"
-              onClick={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-            >
-              Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
-            </button>
-            <button className="button" onClick={() => window.close()}>
-              Закрыть окно
-            </button>
-          </div>
-        </header>
-      ) : (
-        <header className="app__header">
-          <div className="brand">
-            <div className="brand__mark">BE</div>
-            <div>
-              <div className="brand__title">Beholder Eye's</div>
-              <div className="brand__subtitle">Мастерский трекер D&D 5e</div>
-            </div>
-          </div>
-          <div className="nav">
-            <button
-              className="button button--ghost"
-              onClick={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-            >
-              Тема: {themeMode === 'dark' ? 'Тёмная' : 'Светлая'}
-            </button>
-            <SegmentedControl
-              value={activeView}
-              onChange={(value) => setView(value as ViewKey)}
-              data={[
-                { label: 'Главная', value: 'home' },
-                { label: 'Кампания', value: 'campaign' },
-                { label: 'Бой', value: 'combat' },
-                { label: 'Справочник', value: 'reference' }
-              ]}
-            />
-            <button
-              className="button button--ghost"
-              onClick={() => window.beholder.referenceWindow.open()}
-            >
-              Окно справочника
-            </button>
-            <button
-              className="button button--ghost"
-              onClick={() => window.beholder.combatPanel.open()}
-            >
-              Панель боя
-            </button>
-          </div>
-        </header>
-      )}
+      <AppHeader
+        activeView={activeView}
+        themeMode={themeMode}
+        combatBoardMode={isCombatBoardMode}
+        combatPanelMode={isCombatPanelMode}
+        referenceWindowMode={isReferenceWindowMode}
+        onChangeView={setView}
+        onToggleTheme={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+      />
 
 
       <main className="app__main">
-        {activeView === 'home' && (
-          <section className="panel panel--hero home">
-            <div>
-              <h2>Главный экран мастера</h2>
-              <p>Базовый поток: кампания → участники → боевой стол.</p>
-            </div>
-            <div className="home__actions">
-              <button className="button" onClick={() => setView('campaign')}>
-                Кампания
-              </button>
-              <button className="button" onClick={() => window.beholder.combatBoard.open()}>
-                Боевой стол
-              </button>
-              <button className="button button--ghost" onClick={() => setView('combat')}>
-                Сессии боя
-              </button>
-              <button className="button button--ghost" onClick={() => setView('reference')}>
-                Справочник
-              </button>
-              <button
-                className="button button--ghost"
-                onClick={() =>
-                  window.open(
-                    `${window.location.origin}${window.location.pathname}?mode=player-form`,
-                    '_blank'
-                  )
-                }
-              >
-                Форма игрока (web)
-              </button>
-            </div>
-            {campaign && (
-              <div className="home__status">
-                Активная кампания: <strong>{campaign.name}</strong>
-              </div>
-            )}
-            {!campaign && (
-              <div className="home__status">
-                Нет активной кампании — открой вкладку <strong>Кампания</strong> и создай её.
-              </div>
-            )}
-          </section>
-        )}
+        {activeView === 'home' && <HomeView campaign={campaign} onChangeView={setView} />}
         {activeView !== 'home' && activeView !== 'combat' && (
           <section className="panel panel--hero">
             {isEntityLibraryView ? (
@@ -5305,46 +3306,14 @@ export default function App(): JSX.Element {
                   <details className="library-list">
                     <summary className="library-list__summary">Создать персонажа (быстро)</summary>
                     <div className="form form--grid">
-                      <input
-                        value={characterCreateName}
-                        onChange={(event) => setCharacterCreateName(event.target.value)}
-                        placeholder="Имя персонажа"
-                      />
-                      <input
-                        value={characterCreateRace}
-                        onChange={(event) => setCharacterCreateRace(event.target.value)}
-                        placeholder="Раса (опционально)"
-                      />
-                      <input
-                        value={characterCreateClass}
-                        onChange={(event) => setCharacterCreateClass(event.target.value)}
-                        placeholder="Класс (опционально)"
-                      />
-                      <input
-                        value={characterCreateLevel}
-                        onChange={(event) => setCharacterCreateLevel(event.target.value)}
-                        placeholder="Уровень"
-                      />
-                      <input
-                        value={characterCreateHpMax}
-                        onChange={(event) => setCharacterCreateHpMax(event.target.value)}
-                        placeholder="ХП макс"
-                      />
-                      <input
-                        value={characterCreateHpCurrent}
-                        onChange={(event) => setCharacterCreateHpCurrent(event.target.value)}
-                        placeholder="ХП тек (если пусто — = макс)"
-                      />
-                      <input
-                        value={characterCreateAc}
-                        onChange={(event) => setCharacterCreateAc(event.target.value)}
-                        placeholder="КД"
-                      />
-                      <input
-                        value={characterCreateInit}
-                        onChange={(event) => setCharacterCreateInit(event.target.value)}
-                        placeholder="Инициатива"
-                      />
+                      <label className="player-field"><span>Имя персонажа</span><input value={characterCreateName} onChange={(event) => setCharacterCreateName(event.target.value)} /></label>
+                      <label className="player-field"><span>Раса</span><select value={characterCreateRace} onChange={(event) => setCharacterCreateRace(event.target.value)}><option value="">Не выбрана</option>{ttgRaceOptions.map((option) => <option key={option.key} value={option.label}>{option.label}</option>)}</select></label>
+                      <label className="player-field"><span>Класс</span><select value={characterCreateClass} onChange={(event) => setCharacterCreateClass(event.target.value)}><option value="">Не выбран</option>{ttgClassOptions.map((option) => <option key={option.key} value={option.label}>{option.label}</option>)}</select></label>
+                      <label className="player-field"><span>Уровень</span><input type="number" min={1} value={characterCreateLevel} onChange={(event) => setCharacterCreateLevel(event.target.value)} /></label>
+                      <label className="player-field"><span>Максимальные ХП</span><input type="number" value={characterCreateHpMax} onChange={(event) => setCharacterCreateHpMax(event.target.value)} /></label>
+                      <label className="player-field"><span>Текущие ХП</span><input type="number" value={characterCreateHpCurrent} onChange={(event) => setCharacterCreateHpCurrent(event.target.value)} placeholder="Равны максимальным" /></label>
+                      <label className="player-field"><span>Класс доспеха</span><input type="number" value={characterCreateAc} onChange={(event) => setCharacterCreateAc(event.target.value)} /></label>
+                      <label className="player-field"><span>Инициатива</span><input type="number" value={characterCreateInit} onChange={(event) => setCharacterCreateInit(event.target.value)} /></label>
                       <button className="button" onClick={handleCreateQuickCharacter}>
                         Создать
                       </button>
@@ -5379,37 +3348,13 @@ export default function App(): JSX.Element {
                         </div>
                         {selectedCharacter && selectedCharacterData && (
                           <div className="campaign-character-grid">
-                            <div className="library-list campaign-character-card">
-                              <div className="library-list__summary">База персонажа</div>
+                            <details className="library-list campaign-character-card" open>
+                              <summary className="library-list__summary">База персонажа</summary>
                               <div className="form form--grid">
-                                <input
-                                  value={editCharacter.name}
-                                  onChange={(event) =>
-                                    setEditCharacter((prev) => ({ ...prev, name: event.target.value }))
-                                  }
-                                  placeholder="Имя"
-                                />
-                                <input
-                                  value={editCharacter.race}
-                                  onChange={(event) =>
-                                    setEditCharacter((prev) => ({ ...prev, race: event.target.value }))
-                                  }
-                                  placeholder="Раса"
-                                />
-                                <input
-                                  value={editCharacter.class}
-                                  onChange={(event) =>
-                                    setEditCharacter((prev) => ({ ...prev, class: event.target.value }))
-                                  }
-                                  placeholder="Класс"
-                                />
-                                <input
-                                  value={editCharacter.level}
-                                  onChange={(event) =>
-                                    setEditCharacter((prev) => ({ ...prev, level: event.target.value }))
-                                  }
-                                  placeholder="Уровень"
-                                />
+                                <label className="player-field"><span>Имя</span><input value={editCharacter.name} onChange={(event) => setEditCharacter((prev) => ({ ...prev, name: event.target.value }))} /></label>
+                                <label className="player-field"><span>Раса</span><input value={editCharacter.race} onChange={(event) => setEditCharacter((prev) => ({ ...prev, race: event.target.value }))} /></label>
+                                <label className="player-field"><span>Класс</span><input value={editCharacter.class} onChange={(event) => setEditCharacter((prev) => ({ ...prev, class: event.target.value }))} /></label>
+                                <label className="player-field"><span>Уровень</span><input type="number" min={1} value={editCharacter.level} onChange={(event) => setEditCharacter((prev) => ({ ...prev, level: event.target.value }))} /></label>
                                 <button className="button" onClick={() => void handleUpdateCharacterBase()}>
                                   Сохранить базу
                                 </button>
@@ -5420,9 +3365,9 @@ export default function App(): JSX.Element {
                                   Удалить персонажа
                                 </button>
                               </div>
-                            </div>
-                            <div className="library-list campaign-character-card">
-                              <div className="library-list__summary">Валюта</div>
+                            </details>
+                            <details className="library-list campaign-character-card">
+                              <summary className="library-list__summary">Валюта</summary>
                               <div className="campaign-currency-grid">
                                 {(
                                   [
@@ -5461,9 +3406,9 @@ export default function App(): JSX.Element {
                                   </div>
                                 ))}
                               </div>
-                            </div>
-                            <div className="library-list campaign-character-card">
-                              <div className="library-list__summary">Инвентарь</div>
+                            </details>
+                            <details className="library-list campaign-character-card">
+                              <summary className="library-list__summary">Инвентарь, оружие и заклинания</summary>
                               <div className="form">
                                 <input
                                   value={newInventoryItem.name}
@@ -5601,8 +3546,8 @@ export default function App(): JSX.Element {
                                   </div>
                                 )}
                               </div>
-                              <div className="library-list">
-                                <div className="library-list__summary">Оружие персонажа</div>
+                              <details className="library-list">
+                                <summary className="library-list__summary">Оружие персонажа</summary>
                                 {characterWeapons.length === 0 && (
                                   <div className="empty">Оружие ещё не добавлено</div>
                                 )}
@@ -5665,7 +3610,7 @@ export default function App(): JSX.Element {
                                     </div>
                                   </>
                                 )}
-                              </div>
+                              </details>
                               {selectedCharacterData.inventory.length === 0 && (
                                 <div className="empty">Инвентарь пуст</div>
                               )}
@@ -5768,7 +3713,7 @@ export default function App(): JSX.Element {
                                   ))}
                                 </div>
                               )}
-                            </div>
+                            </details>
                           </div>
                         )}
                       </>
@@ -6301,7 +4246,7 @@ export default function App(): JSX.Element {
                         <div className="combat-cards">
                           {visibleParticipants.map((participant, index) => {
                             const target = getParticipantById(participant.targetId)
-                            const isActive = participant.id === orderedParticipants[currentTurn]?.id
+                            const isActive = participant.id === currentTurnId
                             const isTargeting = targetingSourceId === participant.id
                             const isSelectable = Boolean(
                               targetingSourceId && targetingSourceId !== participant.id
@@ -6325,6 +4270,9 @@ export default function App(): JSX.Element {
                               isActive ? 'combat-card--active' : '',
                               isTargeting ? 'combat-card--source' : '',
                               isSelectable ? 'combat-card--selectable' : '',
+                              participant.hpCurrent !== null && participant.hpCurrent <= 0
+                                ? 'combat-card--down'
+                                : '',
                               impactFlash?.id === participant.id
                                 ? impactFlash.tone === 'hit'
                                   ? 'combat-card--hit'
@@ -6435,6 +4383,9 @@ export default function App(): JSX.Element {
                                     <span className="list__subtitle">
                                       {participant.kind === 'character' ? 'персонаж' : 'монстр'}
                                     </span>
+                                    {participant.hpCurrent !== null && participant.hpCurrent <= 0 && (
+                                      <span className="combat-down-badge">💀 Без сознания</span>
+                                    )}
                                   </div>
                               <div className="combat-card__quick">
                                 <button
@@ -6569,6 +4520,56 @@ export default function App(): JSX.Element {
                                     )}
                                   </div>
                                 </div>
+                                {(participant.conditions.length > 0 ||
+                                  participant.effects.length > 0 ||
+                                  participant.concentration) && (
+                                  <div className="combat-card__badges">
+                                    {participant.concentration && (
+                                      <span
+                                        className="chip chip--accent chip--small"
+                                        title="Концентрация"
+                                        onClick={(event) => {
+                                          event.stopPropagation()
+                                          clearConcentration(participant.id)
+                                        }}
+                                      >
+                                        🔮 {participant.concentration.name}
+                                        {participant.concentration.rounds !== null
+                                          ? ` · ${participant.concentration.rounds}р`
+                                          : ''}
+                                        {' ×'}
+                                      </span>
+                                    )}
+                                    {participant.conditions.map((condition, index) => (
+                                      <span
+                                        key={`${participant.id}-card-condition-${index}`}
+                                        className="chip chip--warn chip--small"
+                                        onClick={(event) => {
+                                          event.stopPropagation()
+                                          removeCondition(participant.id, index)
+                                        }}
+                                      >
+                                        {condition.name}
+                                        {condition.rounds !== null ? ` · ${condition.rounds}р` : ''}
+                                        {' ×'}
+                                      </span>
+                                    ))}
+                                    {participant.effects.map((effect, index) => (
+                                      <span
+                                        key={`${participant.id}-card-effect-${index}`}
+                                        className="chip chip--small"
+                                        onClick={(event) => {
+                                          event.stopPropagation()
+                                          removeEffect(participant.id, index)
+                                        }}
+                                      >
+                                        {effect.name}
+                                        {effect.rounds !== null ? ` · ${effect.rounds}р` : ''}
+                                        {' ×'}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                                 <div className="combat-card__basic">
                                   {participant.kind === 'character' &&
                                     participant.weaponOptions &&
@@ -6708,11 +4709,13 @@ export default function App(): JSX.Element {
                       {visibleParticipants.map((participant) => (
                         <details
                           key={participant.id}
-                          className={
-                            participant.id === orderedParticipants[currentTurn]?.id
-                              ? 'combat-row combat-row--active'
-                              : 'combat-row'
-                          }
+                          className={[
+                            'combat-row',
+                            participant.id === currentTurnId ? 'combat-row--active' : '',
+                            participant.hpCurrent !== null && participant.hpCurrent <= 0
+                              ? 'combat-row--down'
+                              : ''
+                          ].filter(Boolean).join(' ')}
                         >
                           <summary className="combat-row__summary">
                             <div className="combat-row__title">
@@ -6720,6 +4723,9 @@ export default function App(): JSX.Element {
                               <span className="list__subtitle">
                                 {participant.kind === 'character' ? 'персонаж' : 'монстр'}
                               </span>
+                              {participant.hpCurrent !== null && participant.hpCurrent <= 0 && (
+                                <span className="combat-down-badge">💀 Без сознания</span>
+                              )}
                             </div>
                             <div className="combat-row__stats">
                               <span>Иниц: {participant.initiative ?? '—'}</span>
@@ -6729,6 +4735,18 @@ export default function App(): JSX.Element {
                               <span>КД: {participant.ac ?? '—'}</span>
                             </div>
                             <div className="combat-row__quick">
+                              <button
+                                className="chip"
+                                title="Бросить инициативу"
+                                aria-label={`Бросить инициативу: ${participant.name}`}
+                                onClick={(event) => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  rollInitiative(participant)
+                                }}
+                              >
+                                🎲
+                              </button>
                               <button
                                 className="chip chip--warn"
                                 onClick={(event) => {
@@ -6948,7 +4966,7 @@ export default function App(): JSX.Element {
                 <h2>Ход боя</h2>
                 <span className="detail__tag">
                   {orderedParticipants.length > 0
-                    ? `Раунд: ${currentTurn + 1}/${orderedParticipants.length}`
+                    ? `Раунд ${roundNumber} · Ход ${activeTurnPosition}/${orderedParticipants.length}`
                     : 'Нет участников'}
                 </span>
               </div>
@@ -7126,19 +5144,23 @@ export default function App(): JSX.Element {
                   <div className="combat-turn">
                     <div className="combat-turn__label">Сейчас ход</div>
                     <div className="combat-turn__name">
-                      {orderedParticipants[currentTurn]?.name}
+                      {activeParticipant?.name}
                     </div>
                     <div className="combat-turn__meta">
-                      инициатива: {orderedParticipants[currentTurn]?.initiative ?? '—'} ·
-                      хп: {orderedParticipants[currentTurn]?.hpCurrent ?? '—'}/
-                      {orderedParticipants[currentTurn]?.hpMax ?? '—'} ·
-                      кд: {orderedParticipants[currentTurn]?.ac ?? '—'}
+                      инициатива: {activeParticipant?.initiative ?? '—'} ·
+                      хп: {activeParticipant?.hpCurrent ?? '—'}/
+                      {activeParticipant?.hpMax ?? '—'} ·
+                      кд: {activeParticipant?.ac ?? '—'}
                     </div>
                   </div>
                   <button className="button" onClick={nextTurn}>
                     Следующий ход
                   </button>
-                  {orderedParticipants[currentTurn] && (
+                  <div className="detail__text">
+                    Совет: чтобы навесить состояние/эффект не на того, чей сейчас ход, а на
+                    любого другого участника — дважды кликни по его карточке.
+                  </div>
+                  {activeParticipant && (
                     <div className="combat-actions">
                       <div className="detail__label">Быстрые действия</div>
                       <div className="combat-actions__row">
@@ -7150,8 +5172,9 @@ export default function App(): JSX.Element {
                         <button
                           className="button button--ghost"
                           onClick={() =>
+                            activeParticipant &&
                             applyDamage(
-                              orderedParticipants[currentTurn],
+                              activeParticipant,
                               Number(damageValue || 0)
                             )
                           }
@@ -7161,8 +5184,9 @@ export default function App(): JSX.Element {
                         <button
                           className="button button--ghost"
                           onClick={() =>
+                            activeParticipant &&
                             applyHeal(
-                              orderedParticipants[currentTurn],
+                              activeParticipant,
                               Number(damageValue || 0)
                             )
                           }
@@ -7261,24 +5285,24 @@ export default function App(): JSX.Element {
                         </button>
                       </div>
                       <div className="chips">
-                        {orderedParticipants[currentTurn].concentration && (
+                        {activeParticipant.concentration && (
                           <div className="chip chip--accent">
                             <span>
-                              Конц.: {orderedParticipants[currentTurn].concentration?.name}
-                              {orderedParticipants[currentTurn].concentration?.rounds !== null
-                                ? ` · ${orderedParticipants[currentTurn].concentration?.rounds}р`
+                              Конц.: {activeParticipant.concentration?.name}
+                              {activeParticipant.concentration?.rounds !== null
+                                ? ` · ${activeParticipant.concentration?.rounds}р`
                                 : ''}
                             </span>
                             <button
                               onClick={() =>
-                                clearConcentration(orderedParticipants[currentTurn].id)
+                                clearConcentration(activeParticipant.id)
                               }
                             >
                               ×
                             </button>
                           </div>
                         )}
-                        {orderedParticipants[currentTurn].conditions.map((condition, index) => (
+                        {activeParticipant.conditions.map((condition, index) => (
                           <div key={`${condition.name}-${index}`} className="chip chip--warn">
                             <span>
                               {condition.name}
@@ -7286,14 +5310,14 @@ export default function App(): JSX.Element {
                             </span>
                             <button
                               onClick={() =>
-                                removeCondition(orderedParticipants[currentTurn].id, index)
+                                removeCondition(activeParticipant.id, index)
                               }
                             >
                               ×
                             </button>
                           </div>
                         ))}
-                        {orderedParticipants[currentTurn].effects.map((effect, index) => (
+                        {activeParticipant.effects.map((effect, index) => (
                           <div key={`${effect.name}-${index}`} className="chip">
                             <span>
                               {effect.name}
@@ -7301,35 +5325,35 @@ export default function App(): JSX.Element {
                             </span>
                             <button
                               onClick={() =>
-                                removeEffect(orderedParticipants[currentTurn].id, index)
+                                removeEffect(activeParticipant.id, index)
                               }
                             >
                               ×
                             </button>
                           </div>
                         ))}
-                        {orderedParticipants[currentTurn].effects.length === 0 &&
-                          orderedParticipants[currentTurn].conditions.length === 0 &&
-                          !orderedParticipants[currentTurn].concentration && (
+                        {activeParticipant.effects.length === 0 &&
+                          activeParticipant.conditions.length === 0 &&
+                          !activeParticipant.concentration && (
                             <div className="empty">Нет эффектов</div>
                           )}
                       </div>
-                      {orderedParticipants[currentTurn].actions &&
-                        orderedParticipants[currentTurn].actions!.length > 0 && (
+                      {activeParticipant.actions &&
+                        activeParticipant.actions!.length > 0 && (
                           <>
                             <div className="detail__label">Быстрые действия</div>
                             <div className="combat-actions__quicklist">
-                              {orderedParticipants[currentTurn].actions!.map((action, index) => (
+                              {activeParticipant.actions!.map((action, index) => (
                                 <div key={`${action.name}-${index}`} className="combat-buttons">
                                   <button
                                     className="button button--ghost combat-action-button"
-                                    onClick={() => performAction(orderedParticipants[currentTurn], action)}
+                                    onClick={() => performAction(activeParticipant, action)}
                                   >
                                     {action.name}
                                   </button>
                                   <button
                                     className="button button--ghost combat-action-button"
-                                    onClick={() => rollActionSaveForTarget(orderedParticipants[currentTurn], action)}
+                                    onClick={() => rollActionSaveForTarget(activeParticipant, action)}
                                   >
                                     СЛ
                                   </button>
@@ -7493,6 +5517,142 @@ export default function App(): JSX.Element {
                       <div>
                         <div className="detail__label">Цель</div>
                         <div>{getParticipantById(participant.targetId)?.name ?? '—'}</div>
+                      </div>
+                    </div>
+                    <div className="detail__section">
+                      <div className="detail__label">Состояния и эффекты</div>
+                      <div className="chips">
+                        {participant.concentration && (
+                          <div className="chip chip--accent">
+                            <span>
+                              Конц.: {participant.concentration.name}
+                              {participant.concentration.rounds !== null
+                                ? ` · ${participant.concentration.rounds}р`
+                                : ''}
+                            </span>
+                            <button onClick={() => clearConcentration(participant.id)}>×</button>
+                          </div>
+                        )}
+                        {participant.conditions.map((condition, index) => (
+                          <div key={`${participant.id}-modal-condition-${index}`} className="chip chip--warn">
+                            <span>
+                              {condition.name}
+                              {condition.rounds !== null ? ` · ${condition.rounds}р` : ''}
+                            </span>
+                            <button onClick={() => removeCondition(participant.id, index)}>×</button>
+                          </div>
+                        ))}
+                        {participant.effects.map((effect, index) => (
+                          <div key={`${participant.id}-modal-effect-${index}`} className="chip">
+                            <span>
+                              {effect.name}
+                              {effect.rounds !== null ? ` · ${effect.rounds}р` : ''}
+                            </span>
+                            <button onClick={() => removeEffect(participant.id, index)}>×</button>
+                          </div>
+                        ))}
+                        {participant.effects.length === 0 &&
+                          participant.conditions.length === 0 &&
+                          !participant.concentration && <div className="empty">Нет эффектов</div>}
+                      </div>
+                      <div className="combat-actions__row">
+                        <input
+                          value={detailConditionName}
+                          onChange={(event) => setDetailConditionName(event.target.value)}
+                          placeholder="Название состояния"
+                        />
+                        <input
+                          value={detailConditionRounds}
+                          onChange={(event) => setDetailConditionRounds(event.target.value)}
+                          placeholder="Раунды"
+                        />
+                        <button
+                          className="button button--ghost"
+                          onClick={() => {
+                            const name = detailConditionName.trim()
+                            if (!name) return
+                            const rounds = detailConditionRounds ? Number(detailConditionRounds) : null
+                            addConditionTo(participant.id, name, Number.isNaN(rounds) ? null : rounds)
+                            setDetailConditionName('')
+                            setDetailConditionRounds('')
+                          }}
+                        >
+                          Добавить состояние
+                        </button>
+                      </div>
+                      <div className="chips">
+                        {conditionPresets.map((preset) => (
+                          <button
+                            key={`detail-condition-preset-${preset}`}
+                            className="chip chip--warn"
+                            onClick={() => addConditionTo(participant.id, preset, null)}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="combat-actions__row">
+                        <input
+                          value={detailEffectName}
+                          onChange={(event) => setDetailEffectName(event.target.value)}
+                          placeholder="Название эффекта"
+                        />
+                        <input
+                          value={detailEffectRounds}
+                          onChange={(event) => setDetailEffectRounds(event.target.value)}
+                          placeholder="Раунды"
+                        />
+                        <button
+                          className="button button--ghost"
+                          onClick={() => {
+                            const name = detailEffectName.trim()
+                            if (!name) return
+                            const rounds = detailEffectRounds ? Number(detailEffectRounds) : null
+                            addEffectTo(participant.id, name, Number.isNaN(rounds) ? null : rounds)
+                            setDetailEffectName('')
+                            setDetailEffectRounds('')
+                          }}
+                        >
+                          Добавить эффект
+                        </button>
+                      </div>
+                      <div className="chips">
+                        {effectPresets.map((preset) => (
+                          <button
+                            key={`detail-effect-preset-${preset}`}
+                            className="chip"
+                            onClick={() => addEffectTo(participant.id, preset, null)}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="combat-actions__row">
+                        <input
+                          value={detailConcentrationName}
+                          onChange={(event) => setDetailConcentrationName(event.target.value)}
+                          placeholder="Заклинание/эффект концентрации"
+                        />
+                        <input
+                          value={detailConcentrationRounds}
+                          onChange={(event) => setDetailConcentrationRounds(event.target.value)}
+                          placeholder="Раунды"
+                        />
+                        <button
+                          className="button button--ghost"
+                          onClick={() => {
+                            const name = detailConcentrationName.trim()
+                            if (!name) return
+                            const rounds = detailConcentrationRounds
+                              ? Number(detailConcentrationRounds)
+                              : null
+                            setConcentrationTo(participant.id, name, Number.isNaN(rounds) ? null : rounds)
+                            setDetailConcentrationName('')
+                            setDetailConcentrationRounds('')
+                          }}
+                        >
+                          Установить концентрацию
+                        </button>
                       </div>
                     </div>
                     <div className="detail__section">
@@ -7703,121 +5863,12 @@ export default function App(): JSX.Element {
         </div>
       )}
       {referenceModal && (
-        <div className="modal" onClick={() => setReferenceModal(null)}>
-          <div className="modal__card" onClick={(event) => event.stopPropagation()}>
-            <div className="modal__header">
-              <h3>{referenceModal.title}</h3>
-              <div className="modal__actions">
-                {referenceModal.kind === 'ttg_rule' && (
-                  <button
-                    type="button"
-                    className={`modal__pin${
-                      referenceModal.slug && ttgPinnedRuleSlugs.includes(referenceModal.slug)
-                        ? ' modal__pin--active'
-                        : ''
-                    }`}
-                    onClick={() => {
-                      const slug = referenceModal.slug
-                      if (slug) toggleRulePin(slug)
-                    }}
-                    title="Закрепить правило"
-                  >
-                    {referenceModal.slug && ttgPinnedRuleSlugs.includes(referenceModal.slug) ? '★' : '☆'}
-                  </button>
-                )}
-                <button className="modal__close" onClick={() => setReferenceModal(null)}>
-                  X
-                </button>
-              </div>
-            </div>
-            {referenceModal.subtitle && <div className="modal__tag">{referenceModal.subtitle}</div>}
-            <div className="modal__content">
-              {referenceModal.columns && referenceModal.columns.length > 0 && (
-                <div className="detail__grid">
-                  {referenceModal.columns.map((column) => (
-                    <div key={column.label}>
-                      <div className="detail__label">{column.label}</div>
-                      <div>{column.value || '—'}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {referenceModal.text && (
-                <div>
-                  <div className="detail__label">Описание</div>
-                  <div className="detail__text">{renderSectionContent('Описание', referenceModal.text)}</div>
-                </div>
-              )}
-              {referenceModal.sections && referenceModal.sections.length > 0 && (
-                <div>
-                  {referenceModal.kind === 'ttg_rule' && (
-                    <div className="chips modal-anchors">
-                      {(['base', 'mechanic', 'exception'] as const).map((bucket) => {
-                        const idx = referenceModal.sections?.findIndex(
-                          (section) => getRuleSectionBucket(section.title) === bucket
-                        )
-                        if (idx === undefined || idx < 0) return null
-                        const label =
-                          bucket === 'base'
-                            ? 'Базово'
-                            : bucket === 'mechanic'
-                              ? 'Механика'
-                              : 'Исключения'
-                        return (
-                          <button
-                            key={bucket}
-                            type="button"
-                            className="chip"
-                            onClick={() => {
-                              const node = document.getElementById(`rule-section-${idx}`)
-                              node?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                            }}
-                          >
-                            {label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                  <div className="detail__label">Структура</div>
-                  <div className="reference-sections">
-                    {referenceModal.sections.map((section, index) => (
-                      <details
-                        key={`${section.title}-${index}`}
-                        id={
-                          referenceModal.kind === 'ttg_rule'
-                            ? `rule-section-${index}`
-                            : undefined
-                        }
-                        className="statblock-section"
-                        open={index < 2}
-                      >
-                        <summary>{section.title}</summary>
-                        <div className="detail__text">{renderSectionContent(section.title, section.content)}</div>
-                      </details>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {referenceModal.related && referenceModal.related.length > 0 && (
-                <div>
-                  <div className="detail__label">Подклассы / подрасы</div>
-                  <div className="detail__entries">
-                    {referenceModal.related.map((related, index) => (
-                      <details key={`${related.title}-${index}`} className="statblock-section">
-                        <summary>{related.title}</summary>
-                        {related.subtitle && <div className="detail__label">{related.subtitle}</div>}
-                        <div className="detail__text">
-                          {related.text ? renderSectionContent(related.title, related.text) : 'Описание отсутствует'}
-                        </div>
-                      </details>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <ReferenceModalDialog
+          modal={referenceModal}
+          pinnedRuleSlugs={ttgPinnedRuleSlugs}
+          onClose={() => setReferenceModal(null)}
+          onToggleRulePin={toggleRulePin}
+        />
       )}
       {customMonsterModalOpen && (
         <div className="modal" onClick={() => setCustomMonsterModalOpen(false)}>
@@ -8096,9 +6147,6 @@ export default function App(): JSX.Element {
     </div>
   )
 }
-
-
-
 
 
 

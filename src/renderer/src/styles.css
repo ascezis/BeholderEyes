@@ -1177,6 +1177,13 @@ body,
   padding: 4px 8px;
 }
 
+.chip--small {
+  padding: 2px 8px;
+  font-size: 11px;
+  gap: 0;
+  cursor: pointer;
+}
+
 .chip__link {
   cursor: pointer;
   text-decoration: underline;
@@ -1423,6 +1430,23 @@ body,
   cursor: pointer;
 }
 
+.combat-card--down {
+  border-color: rgba(181, 52, 52, 0.78);
+  background: linear-gradient(145deg, rgba(110, 28, 28, 0.18), var(--surface-strong));
+  filter: saturate(0.72);
+}
+
+.combat-down-badge {
+  width: fit-content;
+  padding: 2px 7px;
+  border: 1px solid rgba(181, 52, 52, 0.5);
+  border-radius: 999px;
+  color: #d95d5d;
+  background: rgba(110, 28, 28, 0.16);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .combat-card__header {
   display: flex;
   align-items: flex-start;
@@ -1499,6 +1523,12 @@ body,
 .combat-card__target-actions {
   display: flex;
   gap: 6px;
+}
+
+.combat-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .combat-card__basic {
@@ -1758,6 +1788,11 @@ body,
 
 .combat-row--active {
   border-color: rgba(77, 43, 29, 0.35);
+}
+
+.combat-row--down {
+  border-color: rgba(181, 52, 52, 0.68);
+  background: linear-gradient(100deg, rgba(110, 28, 28, 0.16), var(--surface));
 }
 
 .combat-row__summary {
@@ -2664,5 +2699,4 @@ select:-webkit-autofill {
     grid-template-columns: 1fr;
   }
 }
-
 
