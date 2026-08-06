@@ -3075,7 +3075,7 @@ export default function App(): JSX.Element {
       <main className="app__main">
         {activeView === 'home' && <HomeView campaign={campaign} onChangeView={setView} />}
         {activeView !== 'home' && activeView !== 'combat' && (
-          <section className="panel panel--hero">
+          <section className={`panel panel--hero${activeView === 'campaign' ? ' campaign-view' : ''}`}>
             {isEntityLibraryView ? (
               <>
                 <div className="tabs">
@@ -6147,7 +6147,6 @@ export default function App(): JSX.Element {
     </div>
   )
 }
-
 
 
 
