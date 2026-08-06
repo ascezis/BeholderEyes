@@ -177,6 +177,28 @@ body,
   align-items: start;
 }
 
+.app__main--home,
+.app__main--campaign {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app__main--reference {
+  grid-template-columns: minmax(320px, 0.8fr) minmax(480px, 1.2fr);
+}
+
+.app__main--reference > .panel--hero {
+  grid-column: 1 / -1;
+}
+
+.app__main--combat {
+  grid-template-columns: minmax(520px, 1.15fr) minmax(420px, 0.85fr);
+}
+
+.app__main--home > .home,
+.app__main--campaign > .campaign-view {
+  grid-column: 1 / -1;
+}
+
 .panel {
   background: var(--bg-panel);
   border: 1px solid var(--border-soft);
@@ -2365,6 +2387,16 @@ body,
 @media (max-width: 1200px) {
   .app__main {
     grid-template-columns: minmax(320px, 420px) minmax(420px, 1fr);
+  }
+
+  .app__main--home,
+  .app__main--campaign {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app__main--reference,
+  .app__main--combat {
+    grid-template-columns: minmax(320px, 0.85fr) minmax(420px, 1.15fr);
   }
 
   .panel--detail {

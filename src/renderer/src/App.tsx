@@ -3072,7 +3072,7 @@ export default function App(): JSX.Element {
       />
 
 
-      <main className="app__main">
+      <main className={`app__main app__main--${activeView}`}>
         {activeView === 'home' && <HomeView campaign={campaign} onChangeView={setView} />}
         {activeView !== 'home' && activeView !== 'combat' && (
           <section className={`panel panel--hero${activeView === 'campaign' ? ' campaign-view' : ''}`}>
@@ -6147,7 +6147,6 @@ export default function App(): JSX.Element {
     </div>
   )
 }
-
 
 
 
