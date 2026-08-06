@@ -12,6 +12,7 @@ import CombatParticipantCard, {
   type CombatCardPress,
   type CombatCardResize
 } from './components/CombatParticipantCard'
+import CombatParticipantDetailDialog from './components/CombatParticipantDetailDialog'
 import { useTtgOptions } from './hooks/useTtgOptions'
 import './styles.css'
 import { ViewKey, ReferenceSection, EntityKey, MonsterRow, SpellRow, ItemRow, WeaponRow, ArtifactRow, ListRow, ListResponse, DetailResponse, TtgArchetype, TtgClass, TtgSubrace, ReferenceRelated, TtgRace, TtgRule, TtgEntry, ReferenceModal, MonsterEntry, MonsterLegendary, MonsterLair, Campaign, Character, SaveMods, CombatCondition, CombatLogTone, ThemeMode, CombatLogEntry, CombatWeaponOption, CombatParticipant, CustomMonsterRow, CustomWeaponRow, CustomMonsterDraft, CustomMonsterActionDraft, InventoryEntry, CharacterData, defaultResponse, emptyCustomMonsterDraft, customMonsterSizeOptions, createEmptyCustomMonsterAction, entityLabels, rarityLabel, getDisplayName, getSubtitle, getListMeta, getDetailTitle, normalizeEntries, toText, getLocaleValue, getLocaleHtml, getDescriptionHtml, formatMonsterSaves, boolLabel, buildSpellSummary, buildItemSummary, buildWeaponSummary, buildArtifactSummary, getWeaponKey, parseWeaponAttackBonus, parseWeaponDamageExpr, parseDice, scoreToMod, formatMod, abilityKeys, abilityLabels, saveLabelToKey, emptySaves, getProfBonus, getStatMod, buildSaveModsFromCharacter, parseMonsterSaves, parseMonsterHp, parseMonsterAc, extractActionText, normalizeActionText, parseActionAttackBonus, parseActionDamageExpr, htmlToPlainText, stripHtml, renderInlineTokens, renderInlineMarkdown, SpellcastingTable, normalizeDashToken, parseSpellcastingTable, renderSpellcastingTable, renderFormattedText, renderSectionContent, getRuleSectionBucket, injectParagraphBreaks, buildReferenceSections, parseMonsterActions, parseSignedBonus, buildCharacterActions, parseOptionalInt, scoreToSaveMod, parseNamedMonsterEntries, toSignedBonus, attackKindLabel, parseAttackKindFromText, parseDamageTypeFromText, parseRangeFromText, parseTargetFromText, parseSaveFromText, normalizeDamageExpr, buildStructuredMonsterActions, customMonsterActionsFromData, buildCustomMonsterData, customMonsterDataToDraft, rollD20, rollDiceExpr, rollCriticalDamageExpr, getD20Tone, formatModifierDetail, dicePresets, conditionPresets, effectPresets, ensureCharacterData, createDefaultCharacterData, useList, useDetail } from './appSupport'
@@ -218,12 +219,6 @@ export default function App(): JSX.Element {
   const [roundNumber, setRoundNumber] = useState(1)
   const [roundAnchorId, setRoundAnchorId] = useState<string | null>(null)
   const [combatDetailId, setCombatDetailId] = useState<string | null>(null)
-  const [detailConditionName, setDetailConditionName] = useState('')
-  const [detailConditionRounds, setDetailConditionRounds] = useState('')
-  const [detailEffectName, setDetailEffectName] = useState('')
-  const [detailEffectRounds, setDetailEffectRounds] = useState('')
-  const [detailConcentrationName, setDetailConcentrationName] = useState('')
-  const [detailConcentrationRounds, setDetailConcentrationRounds] = useState('')
   const [modal, setModal] = useState<{
     type: 'spells' | 'items' | 'weapons' | 'artifacts'
     id: number
@@ -1623,15 +1618,7 @@ export default function App(): JSX.Element {
   }
 
   const closeModal = () => setModal(null)
-  const closeCombatDetail = () => {
-    setCombatDetailId(null)
-    setDetailConditionName('')
-    setDetailConditionRounds('')
-    setDetailEffectName('')
-    setDetailEffectRounds('')
-    setDetailConcentrationName('')
-    setDetailConcentrationRounds('')
-  }
+  const closeCombatDetail = () => setCombatDetailId(null)
 
   const handleSetEquippedWeapon = async (
     slot: 'primaryWeaponKey' | 'secondaryWeaponKey',
@@ -4816,218 +4803,25 @@ export default function App(): JSX.Element {
           </div>
         </div>
       )}
-      {combatDetailId && (
-        <div className="modal" onClick={closeCombatDetail}>
-          <div className="modal__card modal__card--wide" onClick={(event) => event.stopPropagation()}>
-            {(() => {
-              const participant = getParticipantById(combatDetailId)
-              if (!participant) return null
-              return (
-                <>
-                  <div className="modal__header">
-                    <h3>{participant.name}</h3>
-                    <button className="modal__close" onClick={closeCombatDetail}>
-                      X
-                    </button>
-                  </div>
-                  <div className="modal__tag">
-                    {participant.kind === 'character' ? 'персонаж' : 'монстр'}
-                  </div>
-                  <div className="modal__content">
-                    <div className="detail__grid">
-                      <div>
-                        <div className="detail__label">ХП</div>
-                        <div>
-                          {participant.hpCurrent ?? '—'} / {participant.hpMax ?? '—'}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="detail__label">КД</div>
-                        <div>{participant.ac ?? '—'}</div>
-                      </div>
-                      <div>
-                        <div className="detail__label">Инициатива</div>
-                        <div>{participant.initiative ?? '—'}</div>
-                      </div>
-                      <div>
-                        <div className="detail__label">Цель</div>
-                        <div>{getParticipantById(participant.targetId)?.name ?? '—'}</div>
-                      </div>
-                    </div>
-                    <div className="detail__section">
-                      <div className="detail__label">Состояния и эффекты</div>
-                      <div className="chips">
-                        {participant.concentration && (
-                          <div className="chip chip--accent">
-                            <span>
-                              Конц.: {participant.concentration.name}
-                              {participant.concentration.rounds !== null
-                                ? ` · ${participant.concentration.rounds}р`
-                                : ''}
-                            </span>
-                            <button onClick={() => clearConcentration(participant.id)}>×</button>
-                          </div>
-                        )}
-                        {participant.conditions.map((condition, index) => (
-                          <div key={`${participant.id}-modal-condition-${index}`} className="chip chip--warn">
-                            <span>
-                              {condition.name}
-                              {condition.rounds !== null ? ` · ${condition.rounds}р` : ''}
-                            </span>
-                            <button onClick={() => removeCondition(participant.id, index)}>×</button>
-                          </div>
-                        ))}
-                        {participant.effects.map((effect, index) => (
-                          <div key={`${participant.id}-modal-effect-${index}`} className="chip">
-                            <span>
-                              {effect.name}
-                              {effect.rounds !== null ? ` · ${effect.rounds}р` : ''}
-                            </span>
-                            <button onClick={() => removeEffect(participant.id, index)}>×</button>
-                          </div>
-                        ))}
-                        {participant.effects.length === 0 &&
-                          participant.conditions.length === 0 &&
-                          !participant.concentration && <div className="empty">Нет эффектов</div>}
-                      </div>
-                      <div className="combat-actions__row">
-                        <input
-                          value={detailConditionName}
-                          onChange={(event) => setDetailConditionName(event.target.value)}
-                          placeholder="Название состояния"
-                        />
-                        <input
-                          value={detailConditionRounds}
-                          onChange={(event) => setDetailConditionRounds(event.target.value)}
-                          placeholder="Раунды"
-                        />
-                        <button
-                          className="button button--ghost"
-                          onClick={() => {
-                            const name = detailConditionName.trim()
-                            if (!name) return
-                            const rounds = detailConditionRounds ? Number(detailConditionRounds) : null
-                            addConditionTo(participant.id, name, Number.isNaN(rounds) ? null : rounds)
-                            setDetailConditionName('')
-                            setDetailConditionRounds('')
-                          }}
-                        >
-                          Добавить состояние
-                        </button>
-                      </div>
-                      <div className="chips">
-                        {conditionPresets.map((preset) => (
-                          <button
-                            key={`detail-condition-preset-${preset}`}
-                            className="chip chip--warn"
-                            onClick={() => addConditionTo(participant.id, preset, null)}
-                          >
-                            {preset}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="combat-actions__row">
-                        <input
-                          value={detailEffectName}
-                          onChange={(event) => setDetailEffectName(event.target.value)}
-                          placeholder="Название эффекта"
-                        />
-                        <input
-                          value={detailEffectRounds}
-                          onChange={(event) => setDetailEffectRounds(event.target.value)}
-                          placeholder="Раунды"
-                        />
-                        <button
-                          className="button button--ghost"
-                          onClick={() => {
-                            const name = detailEffectName.trim()
-                            if (!name) return
-                            const rounds = detailEffectRounds ? Number(detailEffectRounds) : null
-                            addEffectTo(participant.id, name, Number.isNaN(rounds) ? null : rounds)
-                            setDetailEffectName('')
-                            setDetailEffectRounds('')
-                          }}
-                        >
-                          Добавить эффект
-                        </button>
-                      </div>
-                      <div className="chips">
-                        {effectPresets.map((preset) => (
-                          <button
-                            key={`detail-effect-preset-${preset}`}
-                            className="chip"
-                            onClick={() => addEffectTo(participant.id, preset, null)}
-                          >
-                            {preset}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="combat-actions__row">
-                        <input
-                          value={detailConcentrationName}
-                          onChange={(event) => setDetailConcentrationName(event.target.value)}
-                          placeholder="Заклинание/эффект концентрации"
-                        />
-                        <input
-                          value={detailConcentrationRounds}
-                          onChange={(event) => setDetailConcentrationRounds(event.target.value)}
-                          placeholder="Раунды"
-                        />
-                        <button
-                          className="button button--ghost"
-                          onClick={() => {
-                            const name = detailConcentrationName.trim()
-                            if (!name) return
-                            const rounds = detailConcentrationRounds
-                              ? Number(detailConcentrationRounds)
-                              : null
-                            setConcentrationTo(participant.id, name, Number.isNaN(rounds) ? null : rounds)
-                            setDetailConcentrationName('')
-                            setDetailConcentrationRounds('')
-                          }}
-                        >
-                          Установить концентрацию
-                        </button>
-                      </div>
-                    </div>
-                    <div className="detail__section">
-                      <div className="detail__label">Действия</div>
-                      {participant.actions && participant.actions.length > 0 ? (
-                        <div className="detail__entries">
-                          {participant.actions.map((action, index) => (
-                            <div key={`${participant.id}-detail-action-${index}`} className="detail__entry">
-                              <div className="detail__entry-title">{action.name}</div>
-                              {action.text && (
-                                <div className="detail__text">{normalizeActionText(action.text)}</div>
-                              )}
-                              <div className="combat-buttons">
-                                <button
-                                  className="button button--ghost"
-                                  onClick={() => performAttackAgainstTarget(participant, action)}
-                                >
-                                  Атака по цели
-                                </button>
-                                <button
-                                  className="button button--ghost"
-                                  onClick={() => rollActionSaveForTarget(participant, action)}
-                                >
-                                  Спасбросок цели
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="empty">Действий нет</div>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )
-            })()}
-          </div>
-        </div>
-      )}
+      {combatDetailId && (() => {
+        const participant = getParticipantById(combatDetailId)
+        if (!participant) return null
+        return (
+          <CombatParticipantDetailDialog
+            participant={participant}
+            targetName={getParticipantById(participant.targetId)?.name}
+            onClose={closeCombatDetail}
+            onAddCondition={addConditionTo}
+            onAddEffect={addEffectTo}
+            onSetConcentration={setConcentrationTo}
+            onClearConcentration={clearConcentration}
+            onRemoveCondition={removeCondition}
+            onRemoveEffect={removeEffect}
+            onAttack={performAttackAgainstTarget}
+            onRollSave={rollActionSaveForTarget}
+          />
+        )
+      })()}
       {modal && (
         <div className="modal" onClick={closeModal}>
           <div className="modal__card" onClick={(event) => event.stopPropagation()}>
@@ -5253,7 +5047,6 @@ export default function App(): JSX.Element {
     </div>
   )
 }
-
 
 
 
