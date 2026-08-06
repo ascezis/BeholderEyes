@@ -8,6 +8,10 @@ import ReferenceModalDialog from './components/ReferenceModalDialog'
 import CustomMonsterDialog from './components/CustomMonsterDialog'
 import CustomWeaponDialog from './components/CustomWeaponDialog'
 import CombatParticipantRow from './components/CombatParticipantRow'
+import CombatParticipantCard, {
+  type CombatCardPress,
+  type CombatCardResize
+} from './components/CombatParticipantCard'
 import { useTtgOptions } from './hooks/useTtgOptions'
 import './styles.css'
 import { ViewKey, ReferenceSection, EntityKey, MonsterRow, SpellRow, ItemRow, WeaponRow, ArtifactRow, ListRow, ListResponse, DetailResponse, TtgArchetype, TtgClass, TtgSubrace, ReferenceRelated, TtgRace, TtgRule, TtgEntry, ReferenceModal, MonsterEntry, MonsterLegendary, MonsterLair, Campaign, Character, SaveMods, CombatCondition, CombatLogTone, ThemeMode, CombatLogEntry, CombatWeaponOption, CombatParticipant, CustomMonsterRow, CustomWeaponRow, CustomMonsterDraft, CustomMonsterActionDraft, InventoryEntry, CharacterData, defaultResponse, emptyCustomMonsterDraft, customMonsterSizeOptions, createEmptyCustomMonsterAction, entityLabels, rarityLabel, getDisplayName, getSubtitle, getListMeta, getDetailTitle, normalizeEntries, toText, getLocaleValue, getLocaleHtml, getDescriptionHtml, formatMonsterSaves, boolLabel, buildSpellSummary, buildItemSummary, buildWeaponSummary, buildArtifactSummary, getWeaponKey, parseWeaponAttackBonus, parseWeaponDamageExpr, parseDice, scoreToMod, formatMod, abilityKeys, abilityLabels, saveLabelToKey, emptySaves, getProfBonus, getStatMod, buildSaveModsFromCharacter, parseMonsterSaves, parseMonsterHp, parseMonsterAc, extractActionText, normalizeActionText, parseActionAttackBonus, parseActionDamageExpr, htmlToPlainText, stripHtml, renderInlineTokens, renderInlineMarkdown, SpellcastingTable, normalizeDashToken, parseSpellcastingTable, renderSpellcastingTable, renderFormattedText, renderSectionContent, getRuleSectionBucket, injectParagraphBreaks, buildReferenceSections, parseMonsterActions, parseSignedBonus, buildCharacterActions, parseOptionalInt, scoreToSaveMod, parseNamedMonsterEntries, toSignedBonus, attackKindLabel, parseAttackKindFromText, parseDamageTypeFromText, parseRangeFromText, parseTargetFromText, parseSaveFromText, normalizeDamageExpr, buildStructuredMonsterActions, customMonsterActionsFromData, buildCustomMonsterData, customMonsterDataToDraft, rollD20, rollDiceExpr, rollCriticalDamageExpr, getD20Tone, formatModifierDetail, dicePresets, conditionPresets, effectPresets, ensureCharacterData, createDefaultCharacterData, useList, useDetail } from './appSupport'
@@ -159,27 +163,13 @@ export default function App(): JSX.Element {
   const [linkDragSourceId, setLinkDragSourceId] = useState<string | null>(null)
   const [linkDragStart, setLinkDragStart] = useState<{ x: number; y: number } | null>(null)
   const [linkDragActive, setLinkDragActive] = useState(false)
-  const [resizingCard, setResizingCard] = useState<{
-    id: string
-    dir: 'e' | 's' | 'se'
-    startX: number
-    startY: number
-    startWidth: number
-    startHeight: number
-  } | null>(null)
+  const [resizingCard, setResizingCard] = useState<CombatCardResize | null>(null)
   const [combatLinks, setCombatLinks] = useState<Array<{ id: string; d: string }>>([])
   const combatBoardRef = useRef<HTMLDivElement | null>(null)
   const combatCardRefs = useRef(new Map<string, HTMLDivElement>())
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
   const dragOffsetRef = useRef({ x: 0, y: 0 })
-  const cardPressRef = useRef<{
-    id: string
-    pointerId: number
-    startX: number
-    startY: number
-    timerId: number | null
-    linkActive: boolean
-  } | null>(null)
+  const cardPressRef = useRef<CombatCardPress | null>(null)
   const [combatQuery, setCombatQuery] = useState('')
   const [combatResults, setCombatResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
   const [combatError, setCombatError] = useState<string | null>(null)
@@ -4247,463 +4237,38 @@ export default function App(): JSX.Element {
                           })()}
                         </svg>
                         <div className="combat-cards">
-                          {visibleParticipants.map((participant, index) => {
-                            const target = getParticipantById(participant.targetId)
-                            const isActive = participant.id === currentTurnId
-                            const isTargeting = targetingSourceId === participant.id
-                            const isSelectable = Boolean(
-                              targetingSourceId && targetingSourceId !== participant.id
-                            )
-                            const baseX = 20 + (index % 4) * 260
-                            const baseY = 20 + Math.floor(index / 4) * 230
-                            const position = participant.position ?? { x: baseX, y: baseY }
-                            return (
-                          <div
-                            key={participant.id}
-                            ref={(el) => {
-                              if (el) {
-                                combatCardRefs.current.set(participant.id, el)
-                              } else {
-                                combatCardRefs.current.delete(participant.id)
-                              }
-                            }}
-                            data-id={participant.id}
-                            className={[
-                              'combat-card',
-                              isActive ? 'combat-card--active' : '',
-                              isTargeting ? 'combat-card--source' : '',
-                              isSelectable ? 'combat-card--selectable' : '',
-                              participant.hpCurrent !== null && participant.hpCurrent <= 0
-                                ? 'combat-card--down'
-                                : '',
-                              impactFlash?.id === participant.id
-                                ? impactFlash.tone === 'hit'
-                                  ? 'combat-card--hit'
-                                  : 'combat-card--miss'
-                                : ''
-                            ]
-                              .filter(Boolean)
-                              .join(' ')}
-                            style={{
-                              left: position.x,
-                              top: position.y,
-                              width: participant.size?.width ?? defaultCardSize.width,
-                              height: participant.size?.height ?? defaultCardSize.height
-                            }}
-                            onContextMenu={(event) => event.preventDefault()}
-                            onPointerDown={(event) => {
-                              if (event.button === 2) {
-                                event.preventDefault()
-                                const board = combatBoardRef.current
-                                if (!board) return
-                                setLinkDragSourceId(participant.id)
-                                setLinkDragStart({ x: event.clientX, y: event.clientY })
-                                setLinkDragActive(true)
-                                setTargetingSourceId(participant.id)
-                                const rect = board.getBoundingClientRect()
-                                setTargetingCursor({
-                                  x: event.clientX - rect.left,
-                                  y: event.clientY - rect.top
-                                })
-                                event.currentTarget.setPointerCapture(event.pointerId)
-                                return
-                              }
-                              if (event.button !== 0) return
-                              if (targetingSourceId) return
-                              const targetEl = event.target as HTMLElement
-                              if (targetEl.closest('input, button, textarea, select')) return
-                              const board = combatBoardRef.current
-                              if (!board) return
-                              const rect = board.getBoundingClientRect()
-                              const timerId = window.setTimeout(() => {
-                                setLinkDragSourceId(participant.id)
-                                setLinkDragStart({ x: event.clientX, y: event.clientY })
-                                setLinkDragActive(true)
-                                setTargetingSourceId(participant.id)
-                                setTargetingCursor({
-                                  x: event.clientX - rect.left,
-                                  y: event.clientY - rect.top
-                                })
-                                const press = cardPressRef.current
-                                if (press) press.linkActive = true
-                              }, 240)
-                              cardPressRef.current = {
-                                id: participant.id,
-                                pointerId: event.pointerId,
-                                startX: event.clientX,
-                                startY: event.clientY,
-                                timerId,
-                                linkActive: false
-                              }
-                            }}
-                            onDoubleClick={(event) => {
-                              event.stopPropagation()
-                              setCombatDetailId(participant.id)
-                            }}
-                                onClick={() => {
-                                  if (!targetingSourceId) return
-                                  if (targetingSourceId === participant.id) {
-                                    setTargetingSourceId(null)
-                                    setTargetingCursor(null)
-                                    setLinkDragSourceId(null)
-                                    setLinkDragStart(null)
-                                    setLinkDragActive(false)
-                                    return
-                                  }
-                                  updateParticipant(targetingSourceId, { targetId: participant.id })
-                                  setTargetingSourceId(null)
-                                  setTargetingCursor(null)
-                                  setLinkDragSourceId(null)
-                                  setLinkDragStart(null)
-                                  setLinkDragActive(false)
-                                }}
-                              >
-                                <div className="combat-card__header">
-                                  <div className="combat-card__title">
-                                    <input
-                                      className="combat-card__name"
-                                      value={participant.name}
-                                      onClick={(event) => event.stopPropagation()}
-                                      onChange={(event) =>
-                                        updateParticipant(participant.id, {
-                                          name: event.target.value
-                                        })
-                                      }
-                                      onBlur={(event) => {
-                                        const nextName = event.target.value.trim()
-                                        if (!nextName) {
-                                          updateParticipant(participant.id, {
-                                            name:
-                                              participant.kind === 'character'
-                                                ? 'Персонаж'
-                                                : 'Монстр'
-                                          })
-                                        } else if (nextName !== participant.name) {
-                                          updateParticipant(participant.id, { name: nextName })
-                                        }
-                                      }}
-                                    />
-                                    <span className="list__subtitle">
-                                      {participant.kind === 'character' ? 'персонаж' : 'монстр'}
-                                    </span>
-                                    {participant.hpCurrent !== null && participant.hpCurrent <= 0 && (
-                                      <span className="combat-down-badge">💀 Без сознания</span>
-                                    )}
-                                  </div>
-                              <div className="combat-card__quick">
-                                <button
-                                  className="chip"
-                                  onClick={(event) => {
-                                    event.stopPropagation()
-                                    rollInitiative(participant)
-                                  }}
-                                >
-                                  Иниц
-                                </button>
-                                <button
-                                  className="chip chip--warn"
-                                  onClick={(event) => {
-                                    event.stopPropagation()
-                                    applyDamage(participant, 5)
-                                  }}
-                                >
-                                  -5
-                                </button>
-                                    <button
-                                      className="chip"
-                                      onClick={(event) => {
-                                        event.stopPropagation()
-                                        applyHeal(participant, 5)
-                                      }}
-                                    >
-                                      +5
-                                    </button>
-                                <button
-                                  className="chip"
-                                  onClick={(event) => {
-                                    event.stopPropagation()
-                                    removeParticipant(participant.id)
-                                  }}
-                                >
-                                  ×
-                                </button>
-                              </div>
-                                </div>
-                                <div className="combat-card__stats">
-                                  <div className="combat-card__stat">
-                                    <label>ХП</label>
-                                    <input
-                                      value={participant.hpCurrent ?? ''}
-                                      onClick={(event) => event.stopPropagation()}
-                                      onChange={(event) =>
-                                        updateParticipant(participant.id, {
-                                          hpCurrent: event.target.value
-                                            ? Number(event.target.value)
-                                            : null
-                                        })
-                                      }
-                                      placeholder="тек"
-                                    />
-                                    <span>/</span>
-                                    <input
-                                      value={participant.hpMax ?? ''}
-                                      onClick={(event) => event.stopPropagation()}
-                                      onChange={(event) =>
-                                        updateParticipant(participant.id, {
-                                          hpMax: event.target.value ? Number(event.target.value) : null
-                                        })
-                                      }
-                                      placeholder="макс"
-                                    />
-                                  </div>
-                                  <div className="combat-card__stat">
-                                    <label>КД</label>
-                                    <input
-                                      value={participant.ac ?? ''}
-                                      onClick={(event) => event.stopPropagation()}
-                                      onChange={(event) =>
-                                        updateParticipant(participant.id, {
-                                          ac: event.target.value ? Number(event.target.value) : null
-                                        })
-                                      }
-                                      placeholder="AC"
-                                    />
-                                  </div>
-                                  <div className="combat-card__stat">
-                                    <label>Иниц</label>
-                                    <input
-                                      value={participant.initiative ?? ''}
-                                      onClick={(event) => event.stopPropagation()}
-                                      onChange={(event) =>
-                                        updateParticipant(participant.id, {
-                                          initiative: event.target.value
-                                            ? Number(event.target.value)
-                                            : null
-                                        })
-                                      }
-                                      placeholder="иниц"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="combat-card__target">
-                                  <span className="combat-card__target-label">
-                                    Цель: {target ? target.name : '—'}
-                                  </span>
-                                  <div className="combat-card__target-actions">
-                                    <button
-                                      className="chip"
-                                      onPointerDown={(event) => {
-                                        event.stopPropagation()
-                                        if (event.button !== 0) return
-                                        setLinkDragSourceId(participant.id)
-                                        setLinkDragStart({ x: event.clientX, y: event.clientY })
-                                        setLinkDragActive(false)
-                                        setTargetingSourceId(participant.id)
-                                        setTargetingCursor(null)
-                                        event.currentTarget.setPointerCapture(event.pointerId)
-                                      }}
-                                      onClick={(event) => {
-                                        event.stopPropagation()
-                                        setTargetingSourceId(participant.id)
-                                        setTargetingCursor(null)
-                                      }}
-                                    >
-                                      {participant.targetId ? 'Сменить' : 'Выбрать'}
-                                    </button>
-                                    {participant.targetId && (
-                                      <button
-                                        className="chip"
-                                        onClick={(event) => {
-                                          event.stopPropagation()
-                                          updateParticipant(participant.id, { targetId: null })
-                                        }}
-                                      >
-                                        Сброс
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                                {(participant.conditions.length > 0 ||
-                                  participant.effects.length > 0 ||
-                                  participant.concentration) && (
-                                  <div className="combat-card__badges">
-                                    {participant.concentration && (
-                                      <span
-                                        className="chip chip--accent chip--small"
-                                        title="Концентрация"
-                                        onClick={(event) => {
-                                          event.stopPropagation()
-                                          clearConcentration(participant.id)
-                                        }}
-                                      >
-                                        🔮 {participant.concentration.name}
-                                        {participant.concentration.rounds !== null
-                                          ? ` · ${participant.concentration.rounds}р`
-                                          : ''}
-                                        {' ×'}
-                                      </span>
-                                    )}
-                                    {participant.conditions.map((condition, index) => (
-                                      <span
-                                        key={`${participant.id}-card-condition-${index}`}
-                                        className="chip chip--warn chip--small"
-                                        onClick={(event) => {
-                                          event.stopPropagation()
-                                          removeCondition(participant.id, index)
-                                        }}
-                                      >
-                                        {condition.name}
-                                        {condition.rounds !== null ? ` · ${condition.rounds}р` : ''}
-                                        {' ×'}
-                                      </span>
-                                    ))}
-                                    {participant.effects.map((effect, index) => (
-                                      <span
-                                        key={`${participant.id}-card-effect-${index}`}
-                                        className="chip chip--small"
-                                        onClick={(event) => {
-                                          event.stopPropagation()
-                                          removeEffect(participant.id, index)
-                                        }}
-                                      >
-                                        {effect.name}
-                                        {effect.rounds !== null ? ` · ${effect.rounds}р` : ''}
-                                        {' ×'}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                                <div className="combat-card__basic">
-                                  {participant.kind === 'character' &&
-                                    participant.weaponOptions &&
-                                    participant.weaponOptions.length > 0 && (
-                                      <select
-                                        value={participant.selectedWeaponKey ?? ''}
-                                        onClick={(event) => event.stopPropagation()}
-                                        onChange={(event) =>
-                                          updateParticipantWeaponSelection(
-                                            participant,
-                                            event.target.value
-                                          )
-                                        }
-                                      >
-                                        <option value="">Оружие: без выбора</option>
-                                        {participant.weaponOptions.map((weapon) => (
-                                          <option key={`${participant.id}-${weapon.key}`} value={weapon.key}>
-                                            {weapon.name}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    )}
-                                  <input
-                                    value={participant.attackBonus ?? ''}
-                                    onClick={(event) => event.stopPropagation()}
-                                    onChange={(event) =>
-                                      updateParticipant(participant.id, {
-                                        attackBonus: event.target.value ? Number(event.target.value) : null
-                                      })
-                                    }
-                                    placeholder="бонус атаки"
-                                  />
-                                  <input
-                                    value={participant.damageExpr}
-                                    onClick={(event) => event.stopPropagation()}
-                                    onChange={(event) =>
-                                      updateParticipant(participant.id, { damageExpr: event.target.value })
-                                    }
-                                    placeholder="урон"
-                                  />
-                                  <button
-                                    className="button button--ghost"
-                                    onClick={(event) => {
-                                      event.stopPropagation()
-                                      performAttackAgainstTarget(participant, {
-                                        name: 'Базовая атака',
-                                        text: '',
-                                        attackBonus: participant.attackBonus,
-                                        damageExpr: participant.damageExpr
-                                      })
-                                    }}
-                                  >
-                                    Атака
-                                  </button>
-                                </div>
-                                {participant.actions && participant.actions.length > 0 && (
-                                  <div className="combat-card__actions">
-                                    {participant.actions.map((action, index) => (
-                                      <button
-                                        key={`${participant.id}-card-action-${index}`}
-                                        className="chip"
-                                        onClick={(event) => {
-                                          event.stopPropagation()
-                                          performAttackAgainstTarget(participant, action)
-                                        }}
-                                        title={stripHtml(action.text || '')}
-                                      >
-                                        {action.name}
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                                {impactFlash?.id === participant.id && impactFlash.value != null && (
-                                  <div className="combat-card__impact">
-                                    -{impactFlash.value}
-                                  </div>
-                                )}
-                                <div
-                                  className="combat-card__resize combat-card__resize--e"
-                                  onPointerDown={(event) => {
-                                    event.stopPropagation()
-                                    if (event.button !== 0) return
-                                    setResizingCard({
-                                      id: participant.id,
-                                      dir: 'e',
-                                      startX: event.clientX,
-                                      startY: event.clientY,
-                                      startWidth:
-                                        participant.size?.width ?? defaultCardSize.width,
-                                      startHeight:
-                                        participant.size?.height ?? defaultCardSize.height
-                                    })
-                                  }}
-                                />
-                                <div
-                                  className="combat-card__resize combat-card__resize--s"
-                                  onPointerDown={(event) => {
-                                    event.stopPropagation()
-                                    if (event.button !== 0) return
-                                    setResizingCard({
-                                      id: participant.id,
-                                      dir: 's',
-                                      startX: event.clientX,
-                                      startY: event.clientY,
-                                      startWidth:
-                                        participant.size?.width ?? defaultCardSize.width,
-                                      startHeight:
-                                        participant.size?.height ?? defaultCardSize.height
-                                    })
-                                  }}
-                                />
-                                <div
-                                  className="combat-card__resize combat-card__resize--se"
-                                  onPointerDown={(event) => {
-                                    event.stopPropagation()
-                                    if (event.button !== 0) return
-                                    setResizingCard({
-                                      id: participant.id,
-                                      dir: 'se',
-                                      startX: event.clientX,
-                                      startY: event.clientY,
-                                      startWidth:
-                                        participant.size?.width ?? defaultCardSize.width,
-                                      startHeight:
-                                        participant.size?.height ?? defaultCardSize.height
-                                    })
-                                  }}
-                                />
-                              </div>
-                            )
-                          })}
+                          {visibleParticipants.map((participant, index) => (
+                            <CombatParticipantCard
+                              key={participant.id}
+                              participant={participant}
+                              target={getParticipantById(participant.targetId)}
+                              index={index}
+                              active={participant.id === currentTurnId}
+                              targetingSourceId={targetingSourceId}
+                              impactFlash={impactFlash}
+                              defaultSize={defaultCardSize}
+                              boardRef={combatBoardRef}
+                              cardRefs={combatCardRefs}
+                              cardPressRef={cardPressRef}
+                              onUpdate={updateParticipant}
+                              onOpenDetails={setCombatDetailId}
+                              onRollInitiative={rollInitiative}
+                              onDamage={applyDamage}
+                              onHeal={applyHeal}
+                              onRemove={removeParticipant}
+                              onWeaponSelect={updateParticipantWeaponSelection}
+                              onAttack={performAttackAgainstTarget}
+                              onClearConcentration={clearConcentration}
+                              onRemoveCondition={removeCondition}
+                              onRemoveEffect={removeEffect}
+                              setLinkDragSourceId={setLinkDragSourceId}
+                              setLinkDragStart={setLinkDragStart}
+                              setLinkDragActive={setLinkDragActive}
+                              setTargetingSourceId={setTargetingSourceId}
+                              setTargetingCursor={setTargetingCursor}
+                              setResizingCard={setResizingCard}
+                            />
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -5688,7 +5253,6 @@ export default function App(): JSX.Element {
     </div>
   )
 }
-
 
 
 
