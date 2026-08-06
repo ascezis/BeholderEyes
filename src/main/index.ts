@@ -284,10 +284,7 @@ const mapImportedCharacterTemplate = (raw: any) => {
 }
 
 const getDbPath = (): string => {
-  if (app.isPackaged) {
-    return join(app.getPath('userData'), 'beholder.sqlite')
-  }
-  return join(app.getAppPath(), 'data', 'beholder.sqlite')
+  return join(app.getPath('userData'), 'beholder.sqlite')
 }
 
 const ensureDbFile = (): { path: string; shouldCreate: boolean } => {
@@ -298,6 +295,9 @@ const ensureDbFile = (): { path: string; shouldCreate: boolean } => {
 
   mkdirSync(dirname(targetPath), { recursive: true })
   const candidateSources = [
+    // In development this is also the legacy writable database location.
+    // Copying it on the first run preserves existing campaigns while keeping
+    // all subsequent writes outside the repository.
     join(app.getAppPath(), 'data', 'beholder.sqlite'),
     join(process.resourcesPath, 'data', 'beholder.sqlite'),
     join(process.resourcesPath, 'app.asar.unpacked', 'data', 'beholder.sqlite'),
@@ -1652,7 +1652,6 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
-
 
 
 
