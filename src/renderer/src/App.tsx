@@ -5,6 +5,8 @@ import type { PlayerCharacterTemplateV1 } from './characterTemplate'
 import AppHeader from './components/AppHeader'
 import HomeView from './components/HomeView'
 import ReferenceModalDialog from './components/ReferenceModalDialog'
+import CustomMonsterDialog from './components/CustomMonsterDialog'
+import CustomWeaponDialog from './components/CustomWeaponDialog'
 import { useTtgOptions } from './hooks/useTtgOptions'
 import './styles.css'
 import { ViewKey, ReferenceSection, EntityKey, MonsterRow, SpellRow, ItemRow, WeaponRow, ArtifactRow, ListRow, ListResponse, DetailResponse, TtgArchetype, TtgClass, TtgSubrace, ReferenceRelated, TtgRace, TtgRule, TtgEntry, ReferenceModal, MonsterEntry, MonsterLegendary, MonsterLair, Campaign, Character, SaveMods, CombatCondition, CombatLogTone, ThemeMode, CombatLogEntry, CombatWeaponOption, CombatParticipant, CustomMonsterRow, CustomWeaponRow, CustomMonsterDraft, CustomMonsterActionDraft, InventoryEntry, CharacterData, defaultResponse, emptyCustomMonsterDraft, customMonsterSizeOptions, createEmptyCustomMonsterAction, entityLabels, rarityLabel, getDisplayName, getSubtitle, getListMeta, getDetailTitle, normalizeEntries, toText, getLocaleValue, getLocaleHtml, getDescriptionHtml, formatMonsterSaves, boolLabel, buildSpellSummary, buildItemSummary, buildWeaponSummary, buildArtifactSummary, getWeaponKey, parseWeaponAttackBonus, parseWeaponDamageExpr, parseDice, scoreToMod, formatMod, abilityKeys, abilityLabels, saveLabelToKey, emptySaves, getProfBonus, getStatMod, buildSaveModsFromCharacter, parseMonsterSaves, parseMonsterHp, parseMonsterAc, extractActionText, normalizeActionText, parseActionAttackBonus, parseActionDamageExpr, htmlToPlainText, stripHtml, renderInlineTokens, renderInlineMarkdown, SpellcastingTable, normalizeDashToken, parseSpellcastingTable, renderSpellcastingTable, renderFormattedText, renderSectionContent, getRuleSectionBucket, injectParagraphBreaks, buildReferenceSections, parseMonsterActions, parseSignedBonus, buildCharacterActions, parseOptionalInt, scoreToSaveMod, parseNamedMonsterEntries, toSignedBonus, attackKindLabel, parseAttackKindFromText, parseDamageTypeFromText, parseRangeFromText, parseTargetFromText, parseSaveFromText, normalizeDamageExpr, buildStructuredMonsterActions, customMonsterActionsFromData, buildCustomMonsterData, customMonsterDataToDraft, rollD20, rollDiceExpr, rollCriticalDamageExpr, getD20Tone, formatModifierDetail, dicePresets, conditionPresets, effectPresets, ensureCharacterData, createDefaultCharacterData, useList, useDetail } from './appSupport'
@@ -5871,263 +5873,34 @@ export default function App(): JSX.Element {
         />
       )}
       {customMonsterModalOpen && (
-        <div className="modal" onClick={() => setCustomMonsterModalOpen(false)}>
-          <div className="modal__card modal__card--wide" onClick={(event) => event.stopPropagation()}>
-            <div className="modal__header">
-              <h3>{editingCustomMonsterId ? 'Редактирование кастомного монстра' : 'Создание кастомного монстра (D&D 5e)'}</h3>
-              <button className="modal__close" onClick={() => setCustomMonsterModalOpen(false)}>
-                X
-              </button>
-            </div>
-            <div className="modal__content custom-monster-modal">
-              <div className="custom-monster-panel">
-                <div className="detail__label">Базовые данные</div>
-                <div className="form custom-monster-grid">
-                  <input
-                    value={customMonsterDraft.name}
-                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, name: event.target.value }))}
-                    placeholder="Имя монстра"
-                  />
-                  <select
-                    value={customMonsterDraft.size}
-                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, size: event.target.value }))}
-                  >
-                    {customMonsterSizeOptions.map((size) => (
-                      <option key={size} value={size}>{size}</option>
-                    ))}
-                  </select>
-                  <input
-                    value={customMonsterDraft.type}
-                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, type: event.target.value }))}
-                    placeholder="Тип (humanoid, dragon...)"
-                  />
-                  <input
-                    value={customMonsterDraft.alignment}
-                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, alignment: event.target.value }))}
-                    placeholder="Мировоззрение"
-                  />
-                  <input
-                    value={customMonsterDraft.cr}
-                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, cr: event.target.value }))}
-                    placeholder="CR"
-                  />
-                  <input
-                    value={customMonsterDraft.ac}
-                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, ac: event.target.value }))}
-                    placeholder="AC"
-                  />
-                  <input
-                    value={customMonsterDraft.hp}
-                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, hp: event.target.value }))}
-                    placeholder="HP (например 84 (13d8+26))"
-                  />
-                  <input
-                    value={customMonsterDraft.speed}
-                    onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, speed: event.target.value }))}
-                    placeholder="Скорость"
-                  />
-                </div>
-              </div>
-              <div className="custom-monster-panel">
-                <div className="detail__label">Характеристики и защиты</div>
-                <div className="combat-grid custom-monster-stats">
-                  <input value={customMonsterDraft.str} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, str: event.target.value }))} placeholder="СИЛ" />
-                  <input value={customMonsterDraft.dex} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, dex: event.target.value }))} placeholder="ЛВК" />
-                  <input value={customMonsterDraft.con} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, con: event.target.value }))} placeholder="ТЕЛ" />
-                  <input value={customMonsterDraft.int} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, int: event.target.value }))} placeholder="ИНТ" />
-                  <input value={customMonsterDraft.wis} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, wis: event.target.value }))} placeholder="МДР" />
-                  <input value={customMonsterDraft.cha} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, cha: event.target.value }))} placeholder="ХАР" />
-                </div>
-                <div className="form custom-monster-grid">
-                  <input value={customMonsterDraft.savesText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, savesText: event.target.value }))} placeholder="Спасброски (опц.)" />
-                  <input value={customMonsterDraft.skillsText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, skillsText: event.target.value }))} placeholder="Навыки (опц.)" />
-                  <input value={customMonsterDraft.vulnerabilities} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, vulnerabilities: event.target.value }))} placeholder="Уязвимости через запятую" />
-                  <input value={customMonsterDraft.resistances} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, resistances: event.target.value }))} placeholder="Сопротивления через запятую" />
-                  <input value={customMonsterDraft.immunities} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, immunities: event.target.value }))} placeholder="Иммунитеты к урону" />
-                  <input value={customMonsterDraft.conditionImmunities} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, conditionImmunities: event.target.value }))} placeholder="Иммунитеты к состояниям" />
-                  <input value={customMonsterDraft.senses} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, senses: event.target.value }))} placeholder="Чувства" />
-                  <input value={customMonsterDraft.languages} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, languages: event.target.value }))} placeholder="Языки" />
-                </div>
-              </div>
-              <div className="custom-monster-panel">
-                <div className="detail__label">Структурированные действия</div>
-                <div className="custom-actions-list">
-                  {customMonsterActions.map((action) => (
-                    <div key={action.id} className="custom-action-row">
-                      <div className="form custom-monster-grid">
-                        <input
-                          value={action.name}
-                          onChange={(event) => updateCustomActionRow(action.id, 'name', event.target.value)}
-                          placeholder="Название действия (например, Когти)"
-                        />
-                        <select
-                          value={action.attackKind}
-                          onChange={(event) =>
-                            updateCustomActionRow(action.id, 'attackKind', event.target.value)
-                          }
-                        >
-                          <option value="melee">Рукопашная</option>
-                          <option value="ranged">Дальнобойная</option>
-                          <option value="spell">Заклинанием</option>
-                          <option value="melee_or_ranged">Рукопашная/дальнобойная</option>
-                        </select>
-                        <input
-                          value={action.attackBonus}
-                          onChange={(event) => updateCustomActionRow(action.id, 'attackBonus', event.target.value)}
-                          placeholder="Бонус атаки (например, 7)"
-                        />
-                        <input
-                          value={action.rangeText}
-                          onChange={(event) => updateCustomActionRow(action.id, 'rangeText', event.target.value)}
-                          placeholder="Досягаемость/дистанция (например, 3 клетки)"
-                        />
-                        <input
-                          value={action.targetText}
-                          onChange={(event) => updateCustomActionRow(action.id, 'targetText', event.target.value)}
-                          placeholder="Цель (например, одна цель)"
-                        />
-                        <input
-                          value={action.damageExpr}
-                          onChange={(event) => updateCustomActionRow(action.id, 'damageExpr', event.target.value)}
-                          placeholder="Кость урона (например, 2d6+4)"
-                        />
-                        <input
-                          value={action.damageType}
-                          onChange={(event) => updateCustomActionRow(action.id, 'damageType', event.target.value)}
-                          placeholder="Тип урона (колющий/огонь...)"
-                        />
-                        <input
-                          value={action.saveDc}
-                          onChange={(event) => updateCustomActionRow(action.id, 'saveDc', event.target.value)}
-                          placeholder="СЛ спасброска (например, 15)"
-                        />
-                        <select
-                          value={action.saveAbility}
-                          onChange={(event) =>
-                            updateCustomActionRow(action.id, 'saveAbility', event.target.value)
-                          }
-                        >
-                          <option value="">Без спасброска</option>
-                          <option value="СИЛ">СИЛ</option>
-                          <option value="ЛВК">ЛВК</option>
-                          <option value="ТЕЛ">ТЕЛ</option>
-                          <option value="ИНТ">ИНТ</option>
-                          <option value="МДР">МДР</option>
-                          <option value="ХАР">ХАР</option>
-                        </select>
-                        <input
-                          value={action.saveFailText}
-                          onChange={(event) => updateCustomActionRow(action.id, 'saveFailText', event.target.value)}
-                          placeholder="Эффект при провале"
-                        />
-                        <input
-                          value={action.saveSuccessText}
-                          onChange={(event) => updateCustomActionRow(action.id, 'saveSuccessText', event.target.value)}
-                          placeholder="Эффект при успехе"
-                        />
-                        <input
-                          value={action.extraText}
-                          onChange={(event) => updateCustomActionRow(action.id, 'extraText', event.target.value)}
-                          placeholder="Доп. текст (эффекты/КС/условия)"
-                        />
-                      </div>
-                      <div className="search-result__actions">
-                        <button className="chip chip--warn" onClick={() => removeCustomActionRow(action.id)}>
-                          Удалить действие
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="form">
-                  <button className="button button--ghost" onClick={addCustomActionRow}>
-                    Добавить действие
-                  </button>
-                </div>
-              </div>
-              <div className="custom-monster-panel">
-                <div className="detail__label">Текстовые секции</div>
-                <div className="form custom-monster-grid">
-                  <textarea value={customMonsterDraft.traitsText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, traitsText: event.target.value }))} placeholder="Черты: Название: описание (по одной на строку)" rows={4} />
-                  <textarea value={customMonsterDraft.actionsText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, actionsText: event.target.value }))} placeholder="Доп. действия текстом: Название: описание" rows={4} />
-                  <textarea value={customMonsterDraft.reactionsText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, reactionsText: event.target.value }))} placeholder="Реакции" rows={3} />
-                  <textarea value={customMonsterDraft.legendaryText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, legendaryText: event.target.value }))} placeholder="Легендарные действия" rows={3} />
-                  <textarea value={customMonsterDraft.lairText} onChange={(event) => setCustomMonsterDraft((prev) => ({ ...prev, lairText: event.target.value }))} placeholder="Действия логова" rows={3} />
-                </div>
-              </div>
-              {customMonsterError && <div className="error">{customMonsterError}</div>}
-              <div className="form">
-                <button className="button" onClick={saveCustomMonster} disabled={savingCustomMonster || !campaign}>
-                  {editingCustomMonsterId ? 'Сохранить изменения' : 'Создать монстра'}
-                </button>
-                <button className="button button--ghost" onClick={resetCustomMonsterForm} disabled={savingCustomMonster}>
-                  Очистить форму
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CustomMonsterDialog
+          draft={customMonsterDraft}
+          actions={customMonsterActions}
+          error={customMonsterError}
+          editing={editingCustomMonsterId !== null}
+          saving={savingCustomMonster}
+          campaignAvailable={campaign !== null}
+          onClose={() => setCustomMonsterModalOpen(false)}
+          onDraftChange={(key, value) => setCustomMonsterDraft((prev) => ({ ...prev, [key]: value }))}
+          onActionChange={updateCustomActionRow}
+          onAddAction={addCustomActionRow}
+          onRemoveAction={removeCustomActionRow}
+          onSave={() => void saveCustomMonster()}
+          onReset={resetCustomMonsterForm}
+        />
       )}
       {customWeaponModalOpen && (
-        <div className="modal" onClick={() => setCustomWeaponModalOpen(false)}>
-          <div className="modal__card" onClick={(event) => event.stopPropagation()}>
-            <div className="modal__header">
-              <h3>{editingCustomWeaponId ? 'Редактирование кастомного оружия' : 'Создание кастомного оружия'}</h3>
-              <button className="modal__close" onClick={() => setCustomWeaponModalOpen(false)}>
-                X
-              </button>
-            </div>
-            <div className="modal__content">
-              <div className="form custom-monster-grid">
-                <input
-                  value={customWeaponDraft.name}
-                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, name: event.target.value }))}
-                  placeholder="Название оружия"
-                />
-                <input
-                  value={customWeaponDraft.kind}
-                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, kind: event.target.value }))}
-                  placeholder="Тип (меч, лук, посох...)"
-                />
-                <input
-                  value={customWeaponDraft.attackBonus}
-                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, attackBonus: event.target.value }))}
-                  placeholder="Бонус атаки (например, 7)"
-                />
-                <input
-                  value={customWeaponDraft.damage}
-                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, damage: event.target.value }))}
-                  placeholder="Кость урона (например, 1d8+4)"
-                />
-                <input
-                  value={customWeaponDraft.damageType}
-                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, damageType: event.target.value }))}
-                  placeholder="Тип урона"
-                />
-                <input
-                  value={customWeaponDraft.rangeText}
-                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, rangeText: event.target.value }))}
-                  placeholder="Дальность/досягаемость"
-                />
-                <textarea
-                  value={customWeaponDraft.notes}
-                  onChange={(event) => setCustomWeaponDraft((prev) => ({ ...prev, notes: event.target.value }))}
-                  placeholder="Заметки"
-                  rows={3}
-                />
-              </div>
-              {customWeaponError && <div className="error">{customWeaponError}</div>}
-              <div className="form">
-                <button className="button" onClick={saveCustomWeapon} disabled={savingCustomWeapon || !campaign}>
-                  {editingCustomWeaponId ? 'Сохранить изменения' : 'Создать оружие'}
-                </button>
-                <button className="button button--ghost" onClick={resetCustomWeaponForm} disabled={savingCustomWeapon}>
-                  Очистить форму
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CustomWeaponDialog
+          draft={customWeaponDraft}
+          error={customWeaponError}
+          editing={editingCustomWeaponId !== null}
+          saving={savingCustomWeapon}
+          campaignAvailable={campaign !== null}
+          onClose={() => setCustomWeaponModalOpen(false)}
+          onChange={(key, value) => setCustomWeaponDraft((prev) => ({ ...prev, [key]: value }))}
+          onSave={() => void saveCustomWeapon()}
+          onReset={resetCustomWeaponForm}
+        />
       )}
       {rollOverlay && (
         <div className={`roll-overlay roll-overlay--${rollOverlay.tone}`} role="status" aria-live="polite">
