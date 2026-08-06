@@ -268,11 +268,6 @@ declare global {
       combatPanel: {
         open: () => Promise<{ ok: true }>
       }
-      zoom: {
-        set: (factor: number) => Promise<number>
-        get: () => Promise<number>
-      }
     }
   }
 }
-

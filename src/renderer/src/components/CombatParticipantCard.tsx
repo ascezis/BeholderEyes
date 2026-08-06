@@ -33,6 +33,7 @@ type Props = {
   boardRef: RefObject<HTMLDivElement | null>
   cardRefs: MutableRefObject<Map<string, HTMLDivElement>>
   cardPressRef: MutableRefObject<CombatCardPress | null>
+  scale: number
   onUpdate: (id: string, patch: Partial<CombatParticipant>) => void
   onOpenDetails: (id: string) => void
   onRollInitiative: (participant: CombatParticipant) => void
@@ -63,6 +64,7 @@ export default function CombatParticipantCard({
   boardRef,
   cardRefs,
   cardPressRef,
+  scale,
   onUpdate,
   onOpenDetails,
   onRollInitiative,
@@ -106,7 +108,10 @@ export default function CombatParticipantCard({
     const board = boardRef.current
     if (activeLink && board) {
       const rect = board.getBoundingClientRect()
-      setTargetingCursor({ x: event.clientX - rect.left, y: event.clientY - rect.top })
+      setTargetingCursor({
+        x: (event.clientX - rect.left) / scale,
+        y: (event.clientY - rect.top) / scale
+      })
     } else {
       setTargetingCursor(null)
     }

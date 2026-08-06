@@ -157,10 +157,5 @@ contextBridge.exposeInMainWorld('beholder', {
   },
   combatPanel: {
     open: (): Promise<{ ok: true }> => ipcRenderer.invoke('combatPanel:open')
-  },
-  zoom: {
-    set: (factor: number): Promise<number> => ipcRenderer.invoke('window:setZoomFactor', factor),
-    get: (): Promise<number> => ipcRenderer.invoke('window:getZoomFactor')
   }
 })
-

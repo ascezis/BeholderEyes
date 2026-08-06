@@ -54,7 +54,6 @@ export default function App(): JSX.Element {
       const factor = Math.min(1.5, Math.max(0.6, Math.round(next * 10) / 10))
       setCombatBoardZoom(factor)
       window.localStorage.setItem('beholder-combat-board-zoom', String(factor))
-      void window.beholder.zoom.set(factor)
     }
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (!event.ctrlKey && !event.metaKey) return
@@ -74,7 +73,6 @@ export default function App(): JSX.Element {
       event.preventDefault()
       applyZoom(combatBoardZoom + (event.deltaY < 0 ? 0.1 : -0.1))
     }
-    void window.beholder.zoom.set(combatBoardZoom)
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
@@ -2153,10 +2151,10 @@ export default function App(): JSX.Element {
       if (!sourceEl || !targetEl) continue
       const fromRect = sourceEl.getBoundingClientRect()
       const toRect = targetEl.getBoundingClientRect()
-      const fromX = fromRect.left - boardRect.left + fromRect.width / 2
-      const fromY = fromRect.top - boardRect.top + fromRect.height / 2
-      const toX = toRect.left - boardRect.left + toRect.width / 2
-      const toY = toRect.top - boardRect.top + toRect.height / 2
+      const fromX = (fromRect.left - boardRect.left + fromRect.width / 2) / combatBoardZoom
+      const fromY = (fromRect.top - boardRect.top + fromRect.height / 2) / combatBoardZoom
+      const toX = (toRect.left - boardRect.left + toRect.width / 2) / combatBoardZoom
+      const toY = (toRect.top - boardRect.top + toRect.height / 2) / combatBoardZoom
       const dx = toX - fromX
       const dy = toY - fromY
       const curve = Math.min(140, Math.max(40, Math.abs(dx) * 0.25 + Math.abs(dy) * 0.15))
@@ -2233,7 +2231,7 @@ export default function App(): JSX.Element {
 
   useLayoutEffect(() => {
     updateCombatLinks()
-  }, [combatParticipants, combatFilter, combatSearch, currentTurnId])
+  }, [combatParticipants, combatFilter, combatSearch, currentTurnId, combatBoardZoom])
 
   useEffect(() => {
     const handleResize = () => updateCombatLinks()
@@ -2250,10 +2248,10 @@ export default function App(): JSX.Element {
       const boardRect = board.getBoundingClientRect()
       const cardRect = card.getBoundingClientRect()
       const offset = dragOffsetRef.current
-      let nextX = event.clientX - boardRect.left - offset.x
-      let nextY = event.clientY - boardRect.top - offset.y
-      const maxX = Math.max(0, boardRect.width - cardRect.width)
-      const maxY = Math.max(0, boardRect.height - cardRect.height)
+      let nextX = (event.clientX - boardRect.left) / combatBoardZoom - offset.x
+      let nextY = (event.clientY - boardRect.top) / combatBoardZoom - offset.y
+      const maxX = Math.max(0, board.clientWidth / combatBoardZoom - cardRect.width / combatBoardZoom)
+      const maxY = Math.max(0, board.clientHeight / combatBoardZoom - cardRect.height / combatBoardZoom)
       nextX = Math.max(0, Math.min(nextX, maxX))
       nextY = Math.max(0, Math.min(nextY, maxY))
       updateParticipant(draggingCardId, { position: { x: nextX, y: nextY } })
@@ -2265,7 +2263,7 @@ export default function App(): JSX.Element {
       window.removeEventListener('pointermove', handleMove)
       window.removeEventListener('pointerup', handleUp)
     }
-  }, [draggingCardId])
+  }, [combatBoardZoom, draggingCardId])
 
   useEffect(() => {
     const handleMove = (event: PointerEvent) => {
@@ -2282,8 +2280,8 @@ export default function App(): JSX.Element {
       const cardRect = card.getBoundingClientRect()
       setDraggingCardId(press.id)
       dragOffsetRef.current = {
-        x: event.clientX - cardRect.left,
-        y: event.clientY - cardRect.top
+        x: (event.clientX - cardRect.left) / combatBoardZoom,
+        y: (event.clientY - cardRect.top) / combatBoardZoom
       }
       card.setPointerCapture(press.pointerId)
       cardPressRef.current = null
@@ -2301,13 +2299,13 @@ export default function App(): JSX.Element {
       window.removeEventListener('pointermove', handleMove)
       window.removeEventListener('pointerup', handleUp)
     }
-  }, [])
+  }, [combatBoardZoom])
 
   useEffect(() => {
     if (!resizingCard) return
     const handleMove = (event: PointerEvent) => {
-      const dx = event.clientX - resizingCard.startX
-      const dy = event.clientY - resizingCard.startY
+      const dx = (event.clientX - resizingCard.startX) / combatBoardZoom
+      const dy = (event.clientY - resizingCard.startY) / combatBoardZoom
       const minW = 220
       const minH = 180
       let nextWidth = resizingCard.startWidth
@@ -2329,7 +2327,7 @@ export default function App(): JSX.Element {
       window.removeEventListener('pointermove', handleMove)
       window.removeEventListener('pointerup', handleUp)
     }
-  }, [resizingCard])
+  }, [combatBoardZoom, resizingCard])
 
   useEffect(() => {
     // Keep currentTurnId/roundAnchorId valid: clear them when combat is empty,
@@ -3074,14 +3072,6 @@ export default function App(): JSX.Element {
         onChangeView={setView}
         onToggleTheme={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
       />
-
-      {isCombatBoardMode && (
-        <div className="combat-zoom-controls" aria-label="Масштаб боевого стола">
-          <button className="chip" onClick={() => setCombatBoardZoom((value) => Math.max(0.6, Math.round((value - 0.1) * 10) / 10))}>−</button>
-          <button className="combat-zoom-controls__value" onClick={() => setCombatBoardZoom(1)} title="Сбросить масштаб (Ctrl+0)">{Math.round(combatBoardZoom * 100)}%</button>
-          <button className="chip" onClick={() => setCombatBoardZoom((value) => Math.min(1.5, Math.round((value + 0.1) * 10) / 10))}>+</button>
-        </div>
-      )}
 
 
       <main className={`app__main app__main--${activeView}`}>
@@ -4187,11 +4177,11 @@ export default function App(): JSX.Element {
                           if (!linkDragActive) return
                           const board = combatBoardRef.current
                           if (!board) return
-                          const rect = board.getBoundingClientRect()
-                          setTargetingCursor({
-                            x: event.clientX - rect.left,
-                            y: event.clientY - rect.top
-                          })
+                           const rect = board.getBoundingClientRect()
+                           setTargetingCursor({
+                            x: (event.clientX - rect.left) / combatBoardZoom,
+                            y: (event.clientY - rect.top) / combatBoardZoom
+                           })
                         }}
                         onPointerLeave={() => {
                           if (targetingSourceId) setTargetingCursor(null)
@@ -4214,7 +4204,35 @@ export default function App(): JSX.Element {
                           setLinkDragStart(null)
                           setLinkDragActive(false)
                         }}
-                      >
+                       >
+                        <div className="combat-board__zoom" aria-label="Масштаб поля карточек">
+                          <button
+                            type="button"
+                            className="combat-board__zoom-button"
+                            onClick={() => setCombatBoardZoom((value) => Math.max(0.6, Math.round((value - 0.1) * 10) / 10))}
+                            title={`Уменьшить масштаб · ${Math.round(combatBoardZoom * 100)}% · Ctrl−`}
+                            aria-label="Уменьшить масштаб"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6" /><path d="m15 15 5 5M7 10h6" /></svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="combat-board__zoom-button"
+                            onClick={() => setCombatBoardZoom((value) => Math.min(1.5, Math.round((value + 0.1) * 10) / 10))}
+                            title={`Увеличить масштаб · ${Math.round(combatBoardZoom * 100)}% · Ctrl+`}
+                            aria-label="Увеличить масштаб"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6" /><path d="m15 15 5 5M7 10h6M10 7v6" /></svg>
+                          </button>
+                        </div>
+                        <div
+                          className="combat-board__canvas"
+                          style={{
+                            zoom: combatBoardZoom,
+                            width: `${100 / combatBoardZoom}%`,
+                            minHeight: `${100 / combatBoardZoom}%`
+                          }}
+                        >
                         <svg className="combat-links" aria-hidden="true">
                           <defs>
                             <marker
@@ -4242,8 +4260,8 @@ export default function App(): JSX.Element {
                             if (!sourceCard || !board) return null
                             const boardRect = board.getBoundingClientRect()
                             const sourceRect = sourceCard.getBoundingClientRect()
-                            const startX = sourceRect.left - boardRect.left + sourceRect.width
-                            const startY = sourceRect.top - boardRect.top + sourceRect.height / 2
+                            const startX = (sourceRect.left - boardRect.left + sourceRect.width) / combatBoardZoom
+                            const startY = (sourceRect.top - boardRect.top + sourceRect.height / 2) / combatBoardZoom
                             const endX = targetingCursor.x
                             const endY = targetingCursor.y
                             const midX = startX + (endX - startX) * 0.5
@@ -4274,6 +4292,7 @@ export default function App(): JSX.Element {
                               boardRef={combatBoardRef}
                               cardRefs={combatCardRefs}
                               cardPressRef={cardPressRef}
+                              scale={combatBoardZoom}
                               onUpdate={updateParticipant}
                               onOpenDetails={setCombatDetailId}
                               onRollInitiative={rollInitiative}
@@ -4293,6 +4312,7 @@ export default function App(): JSX.Element {
                               setResizingCard={setResizingCard}
                             />
                           ))}
+                        </div>
                         </div>
                       </div>
                     </div>
