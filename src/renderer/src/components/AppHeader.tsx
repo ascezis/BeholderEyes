@@ -56,10 +56,14 @@ export default function AppHeader({
             data={[
               { label: 'Главная', value: 'home' },
               { label: 'Кампания', value: 'campaign' },
-              { label: 'Бой', value: 'combat' },
               { label: 'Справочник', value: 'reference' }
             ]}
           />
+        )}
+        {!detachedMode && (
+          <button className="button button--ghost" onClick={() => window.beholder.combatBoard.open()}>
+            Боевой стол
+          </button>
         )}
         {!detachedMode && (
           <button className="button button--ghost" onClick={() => window.beholder.referenceWindow.open()}>

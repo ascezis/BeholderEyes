@@ -15,7 +15,6 @@ export default function HomeView({ campaign, onChangeView }: HomeViewProps): JSX
       <div className="home__actions">
         <button className="button" onClick={() => onChangeView('campaign')}>Кампания</button>
         <button className="button" onClick={() => window.beholder.combatBoard.open()}>Боевой стол</button>
-        <button className="button button--ghost" onClick={() => onChangeView('combat')}>Сессии боя</button>
         <button className="button button--ghost" onClick={() => onChangeView('reference')}>Справочник</button>
         <button
           className="button button--ghost"

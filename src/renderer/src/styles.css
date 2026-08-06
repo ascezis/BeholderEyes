@@ -2310,6 +2310,30 @@ body,
   animation: slideInOverlay 0.28s var(--ease-smooth);
 }
 
+.combat-zoom-controls {
+  position: fixed;
+  top: 82px;
+  right: 24px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--bg-panel-strong);
+  box-shadow: var(--shadow-lift);
+}
+
+.combat-zoom-controls__value {
+  min-width: 58px;
+  border: 0;
+  background: transparent;
+  color: var(--text-main);
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .roll-overlay--crit {
   border-color: var(--success-line);
   background: var(--success-bg);

@@ -29,6 +29,10 @@ export default function App(): JSX.Element {
     const stored = window.localStorage.getItem('beholder-theme')
     return stored === 'light' ? 'light' : 'dark'
   })
+  const [combatBoardZoom, setCombatBoardZoom] = useState(() => {
+    const stored = Number(window.localStorage.getItem('beholder-combat-board-zoom'))
+    return Number.isFinite(stored) && stored >= 0.6 && stored <= 1.5 ? stored : 1
+  })
   const [view, setView] = useState<ViewKey>(isCombatBoardMode ? 'combat' : isCombatPanelMode ? 'combat' : isReferenceWindowMode ? 'reference' : 'home')
   const activeView: ViewKey = isCombatBoardMode ? 'combat' : isCombatPanelMode ? 'combat' : isReferenceWindowMode ? 'reference' : view
 
@@ -43,6 +47,41 @@ export default function App(): JSX.Element {
       setView('reference')
     }
   }, [isCombatBoardMode, isCombatPanelMode, isReferenceWindowMode, view])
+
+  useEffect(() => {
+    if (!isCombatBoardMode) return
+    const applyZoom = (next: number): void => {
+      const factor = Math.min(1.5, Math.max(0.6, Math.round(next * 10) / 10))
+      setCombatBoardZoom(factor)
+      window.localStorage.setItem('beholder-combat-board-zoom', String(factor))
+      void window.beholder.zoom.set(factor)
+    }
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (!event.ctrlKey && !event.metaKey) return
+      if (event.key === '+' || event.key === '=') {
+        event.preventDefault()
+        applyZoom(combatBoardZoom + 0.1)
+      } else if (event.key === '-') {
+        event.preventDefault()
+        applyZoom(combatBoardZoom - 0.1)
+      } else if (event.key === '0') {
+        event.preventDefault()
+        applyZoom(1)
+      }
+    }
+    const handleWheel = (event: WheelEvent): void => {
+      if (!event.ctrlKey && !event.metaKey) return
+      event.preventDefault()
+      applyZoom(combatBoardZoom + (event.deltaY < 0 ? 0.1 : -0.1))
+    }
+    void window.beholder.zoom.set(combatBoardZoom)
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('wheel', handleWheel)
+    }
+  }, [combatBoardZoom, isCombatBoardMode])
   const [referenceSection, setReferenceSection] = useState<ReferenceSection>('ttg_classes')
   const [ttgKind, setTtgKind] = useState<'classes' | 'races' | 'rules'>('classes')
   const [ttgQuery, setTtgQuery] = useState('')
@@ -89,6 +128,10 @@ export default function App(): JSX.Element {
   const [charactersError, setCharactersError] = useState<string | null>(null)
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
+  const [characterSections, setCharacterSections] = useState({
+    currency: false,
+    inventory: false
+  })
   const [editCharacter, setEditCharacter] = useState({
     name: '',
     race: '',
@@ -3032,6 +3075,14 @@ export default function App(): JSX.Element {
         onToggleTheme={() => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'))}
       />
 
+      {isCombatBoardMode && (
+        <div className="combat-zoom-controls" aria-label="Масштаб боевого стола">
+          <button className="chip" onClick={() => setCombatBoardZoom((value) => Math.max(0.6, Math.round((value - 0.1) * 10) / 10))}>−</button>
+          <button className="combat-zoom-controls__value" onClick={() => setCombatBoardZoom(1)} title="Сбросить масштаб (Ctrl+0)">{Math.round(combatBoardZoom * 100)}%</button>
+          <button className="chip" onClick={() => setCombatBoardZoom((value) => Math.min(1.5, Math.round((value + 0.1) * 10) / 10))}>+</button>
+        </div>
+      )}
+
 
       <main className={`app__main app__main--${activeView}`}>
         {activeView === 'home' && <HomeView campaign={campaign} onChangeView={setView} />}
@@ -3324,7 +3375,11 @@ export default function App(): JSX.Element {
                                 </button>
                               </div>
                             </details>
-                            <details className="library-list campaign-character-card">
+                            <details
+                              className="library-list campaign-character-card"
+                              open={characterSections.currency}
+                              onToggle={(event) => setCharacterSections((current) => ({ ...current, currency: event.currentTarget.open }))}
+                            >
                               <summary className="library-list__summary">Валюта</summary>
                               <div className="campaign-currency-grid">
                                 {(
@@ -3365,7 +3420,11 @@ export default function App(): JSX.Element {
                                 ))}
                               </div>
                             </details>
-                            <details className="library-list campaign-character-card">
+                            <details
+                              className="library-list campaign-character-card"
+                              open={characterSections.inventory}
+                              onToggle={(event) => setCharacterSections((current) => ({ ...current, inventory: event.currentTarget.open }))}
+                            >
                               <summary className="library-list__summary">Инвентарь, оружие и заклинания</summary>
                               <div className="form">
                                 <input

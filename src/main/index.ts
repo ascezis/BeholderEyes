@@ -1479,6 +1479,14 @@ const registerIpc = (): void => {
     createCombatPanelWindow()
     return { ok: true }
   })
+
+  ipcMain.handle('window:setZoomFactor', (event, rawFactor: number) => {
+    const factor = Math.min(1.5, Math.max(0.6, Number(rawFactor) || 1))
+    event.sender.setZoomFactor(factor)
+    return factor
+  })
+
+  ipcMain.handle('window:getZoomFactor', (event) => event.sender.getZoomFactor())
 }
 
 const createWindow = (): void => {
@@ -1652,7 +1660,6 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
-
 
 
 
