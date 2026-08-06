@@ -30,7 +30,7 @@ export default function App(): JSX.Element {
     return stored === 'light' ? 'light' : 'dark'
   })
   const [combatBoardZoom, setCombatBoardZoom] = useState(() => {
-    const stored = Number(window.localStorage.getItem('beholder-combat-board-zoom'))
+    const stored = Number(window.localStorage.getItem('beholder-combat-card-zoom'))
     return Number.isFinite(stored) && stored >= 0.6 && stored <= 1.5 ? stored : 1
   })
   const [view, setView] = useState<ViewKey>(isCombatBoardMode ? 'combat' : isCombatPanelMode ? 'combat' : isReferenceWindowMode ? 'reference' : 'home')
@@ -53,7 +53,7 @@ export default function App(): JSX.Element {
     const applyZoom = (next: number): void => {
       const factor = Math.min(1.5, Math.max(0.6, Math.round(next * 10) / 10))
       setCombatBoardZoom(factor)
-      window.localStorage.setItem('beholder-combat-board-zoom', String(factor))
+      window.localStorage.setItem('beholder-combat-card-zoom', String(factor))
     }
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (!event.ctrlKey && !event.metaKey) return
@@ -214,6 +214,7 @@ export default function App(): JSX.Element {
   const [resizingCard, setResizingCard] = useState<CombatCardResize | null>(null)
   const [combatLinks, setCombatLinks] = useState<Array<{ id: string; d: string }>>([])
   const combatBoardRef = useRef<HTMLDivElement | null>(null)
+  const combatCanvasRef = useRef<HTMLDivElement | null>(null)
   const combatCardRefs = useRef(new Map<string, HTMLDivElement>())
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
   const dragOffsetRef = useRef({ x: 0, y: 0 })
@@ -2137,24 +2138,21 @@ export default function App(): JSX.Element {
     id ? combatParticipants.find((p) => p.id === id) : undefined
 
   const updateCombatLinks = () => {
-    const board = combatBoardRef.current
-    if (!board) {
+    const canvas = combatCanvasRef.current
+    if (!canvas) {
       setCombatLinks([])
       return
     }
-    const boardRect = board.getBoundingClientRect()
     const nextLinks: Array<{ id: string; d: string }> = []
     for (const participant of combatParticipants) {
       if (!participant.targetId) continue
       const sourceEl = combatCardRefs.current.get(participant.id)
       const targetEl = combatCardRefs.current.get(participant.targetId)
       if (!sourceEl || !targetEl) continue
-      const fromRect = sourceEl.getBoundingClientRect()
-      const toRect = targetEl.getBoundingClientRect()
-      const fromX = (fromRect.left - boardRect.left + fromRect.width / 2) / combatBoardZoom
-      const fromY = (fromRect.top - boardRect.top + fromRect.height / 2) / combatBoardZoom
-      const toX = (toRect.left - boardRect.left + toRect.width / 2) / combatBoardZoom
-      const toY = (toRect.top - boardRect.top + toRect.height / 2) / combatBoardZoom
+      const fromX = sourceEl.offsetLeft + sourceEl.offsetWidth / 2
+      const fromY = sourceEl.offsetTop + sourceEl.offsetHeight / 2
+      const toX = targetEl.offsetLeft + targetEl.offsetWidth / 2
+      const toY = targetEl.offsetTop + targetEl.offsetHeight / 2
       const dx = toX - fromX
       const dy = toY - fromY
       const curve = Math.min(140, Math.max(40, Math.abs(dx) * 0.25 + Math.abs(dy) * 0.15))
@@ -2243,15 +2241,16 @@ export default function App(): JSX.Element {
     if (!draggingCardId) return
     const handleMove = (event: PointerEvent) => {
       const board = combatBoardRef.current
+      const canvas = combatCanvasRef.current
       const card = combatCardRefs.current.get(draggingCardId)
-      if (!board || !card) return
-      const boardRect = board.getBoundingClientRect()
+      if (!board || !canvas || !card) return
+      const canvasRect = canvas.getBoundingClientRect()
       const cardRect = card.getBoundingClientRect()
       const offset = dragOffsetRef.current
-      let nextX = (event.clientX - boardRect.left) / combatBoardZoom - offset.x
-      let nextY = (event.clientY - boardRect.top) / combatBoardZoom - offset.y
-      const maxX = Math.max(0, board.clientWidth / combatBoardZoom - cardRect.width / combatBoardZoom)
-      const maxY = Math.max(0, board.clientHeight / combatBoardZoom - cardRect.height / combatBoardZoom)
+      let nextX = (event.clientX - canvasRect.left) / combatBoardZoom - offset.x
+      let nextY = (event.clientY - canvasRect.top) / combatBoardZoom - offset.y
+      const maxX = Math.max(0, canvas.offsetWidth - cardRect.width / combatBoardZoom)
+      const maxY = Math.max(0, canvas.offsetHeight - cardRect.height / combatBoardZoom)
       nextX = Math.max(0, Math.min(nextX, maxX))
       nextY = Math.max(0, Math.min(nextY, maxY))
       updateParticipant(draggingCardId, { position: { x: nextX, y: nextY } })
@@ -4177,7 +4176,9 @@ export default function App(): JSX.Element {
                           if (!linkDragActive) return
                           const board = combatBoardRef.current
                           if (!board) return
-                           const rect = board.getBoundingClientRect()
+                           const canvas = combatCanvasRef.current
+                           if (!canvas) return
+                           const rect = canvas.getBoundingClientRect()
                            setTargetingCursor({
                             x: (event.clientX - rect.left) / combatBoardZoom,
                             y: (event.clientY - rect.top) / combatBoardZoom
@@ -4227,6 +4228,7 @@ export default function App(): JSX.Element {
                         </div>
                         <div
                           className="combat-board__canvas"
+                          ref={combatCanvasRef}
                           style={{
                             zoom: combatBoardZoom,
                             width: `${100 / combatBoardZoom}%`,
@@ -4256,12 +4258,9 @@ export default function App(): JSX.Element {
                           ))}
                           {targetingSourceId && targetingCursor && (() => {
                             const sourceCard = combatCardRefs.current.get(targetingSourceId)
-                            const board = combatBoardRef.current
-                            if (!sourceCard || !board) return null
-                            const boardRect = board.getBoundingClientRect()
-                            const sourceRect = sourceCard.getBoundingClientRect()
-                            const startX = (sourceRect.left - boardRect.left + sourceRect.width) / combatBoardZoom
-                            const startY = (sourceRect.top - boardRect.top + sourceRect.height / 2) / combatBoardZoom
+                            if (!sourceCard) return null
+                            const startX = sourceCard.offsetLeft + sourceCard.offsetWidth
+                            const startY = sourceCard.offsetTop + sourceCard.offsetHeight / 2
                             const endX = targetingCursor.x
                             const endY = targetingCursor.y
                             const midX = startX + (endX - startX) * 0.5
@@ -4290,6 +4289,7 @@ export default function App(): JSX.Element {
                               impactFlash={impactFlash}
                               defaultSize={defaultCardSize}
                               boardRef={combatBoardRef}
+                              canvasRef={combatCanvasRef}
                               cardRefs={combatCardRefs}
                               cardPressRef={cardPressRef}
                               scale={combatBoardZoom}

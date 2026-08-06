@@ -1528,6 +1528,10 @@ const createCombatBoardWindow = (): void => {
     combatBoardWindow.maximize()
   }
 
+  combatBoardWindow.webContents.on('did-finish-load', () => {
+    combatBoardWindow?.webContents.setZoomFactor(1)
+  })
+
 
   combatBoardWindow.on('close', () => {
     if (combatBoardWindow) {
@@ -1653,6 +1657,5 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
-
 
 

@@ -31,6 +31,7 @@ type Props = {
   impactFlash: { id: string; tone: 'hit' | 'miss'; value?: number | null } | null
   defaultSize: { width: number; height: number }
   boardRef: RefObject<HTMLDivElement | null>
+  canvasRef: RefObject<HTMLDivElement | null>
   cardRefs: MutableRefObject<Map<string, HTMLDivElement>>
   cardPressRef: MutableRefObject<CombatCardPress | null>
   scale: number
@@ -62,6 +63,7 @@ export default function CombatParticipantCard({
   impactFlash,
   defaultSize,
   boardRef,
+  canvasRef,
   cardRefs,
   cardPressRef,
   scale,
@@ -105,9 +107,9 @@ export default function CombatParticipantCard({
     setLinkDragStart({ x: event.clientX, y: event.clientY })
     setLinkDragActive(activeLink)
     setTargetingSourceId(participant.id)
-    const board = boardRef.current
-    if (activeLink && board) {
-      const rect = board.getBoundingClientRect()
+    const canvas = canvasRef.current
+    if (activeLink && canvas) {
+      const rect = canvas.getBoundingClientRect()
       setTargetingCursor({
         x: (event.clientX - rect.left) / scale,
         y: (event.clientY - rect.top) / scale
