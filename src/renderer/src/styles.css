@@ -684,6 +684,28 @@ body,
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
 
+.form--grid > *,
+.player-field,
+.player-field input,
+.player-field select {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.campaign-name-input {
+  min-width: min(320px, 100%);
+  -webkit-app-region: no-drag;
+}
+
+.custom-weapon-grid textarea {
+  grid-column: 1 / -1;
+}
+
+.custom-weapon-damage {
+  min-width: 220px;
+}
+
 .app--player-form .layout--player {
   display: grid;
   grid-template-columns: repeat(2, minmax(320px, 1fr));

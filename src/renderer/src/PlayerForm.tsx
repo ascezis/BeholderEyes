@@ -467,7 +467,13 @@ const PlayerForm = ({ onSaveCharacter, embedded = false }: PlayerFormProps = {})
         if (!response.ok) return
         const payload = (await response.json()) as RaceCatalogItem[]
         if (!cancelled && Array.isArray(payload) && payload.length > 0) {
-          setRaceCatalog(payload)
+          const labels = new Set<string>()
+          setRaceCatalog(payload.filter((race) => {
+            const label = race.label.trim().toLocaleLowerCase('ru')
+            if (!label || labels.has(label)) return false
+            labels.add(label)
+            return true
+          }))
         }
       } catch {
         // fallback to manual race input

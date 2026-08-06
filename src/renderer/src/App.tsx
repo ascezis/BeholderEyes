@@ -155,7 +155,12 @@ export default function App(): JSX.Element {
   const [itemQuery, setItemQuery] = useState('')
   const [itemResults, setItemResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
   const [weaponQuery, setWeaponQuery] = useState('')
-  const [weaponResults, setWeaponResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
+  const [weaponResults, setWeaponResults] = useState<Array<{
+    id: number
+    name: string
+    name_ru: string | null
+    catalog: 'items' | 'weapons'
+  }>>([])
   const [artifactQuery, setArtifactQuery] = useState('')
   const [artifactResults, setArtifactResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
   const [newAmmo, setNewAmmo] = useState({ name: '', qty: '1' })
@@ -668,11 +673,26 @@ export default function App(): JSX.Element {
       return
     }
     const handle = setTimeout(() => {
-      window.beholder.weapons
-        .list({ query: weaponQuery.trim(), limit: 6, offset: 0 })
-        .then((res) => {
-          setWeaponResults(res.items as any)
+      const query = weaponQuery.trim()
+      Promise.all([
+        window.beholder.weapons.list({ query, limit: 8, offset: 0 }),
+        window.beholder.items.list({ query, limit: 20, offset: 0 })
+      ]).then(([weapons, items]) => {
+        const itemWeapons = (items.items as any[]).filter((item) => {
+          const searchable = `${item.type ?? ''} ${item.data_json ?? ''}`.toLocaleLowerCase('ru')
+          return searchable.includes('оруж') || searchable.includes('weapon')
         })
+        const merged = [
+          ...(weapons.items as any[]).map((item) => ({ ...item, catalog: 'weapons' as const })),
+          ...itemWeapons.map((item) => ({ ...item, catalog: 'items' as const }))
+        ]
+        const unique = new Map<string, (typeof merged)[number]>()
+        for (const item of merged) {
+          const key = (item.name_ru ?? item.name ?? '').trim().toLocaleLowerCase('ru')
+          if (key && !unique.has(key)) unique.set(key, item)
+        }
+        setWeaponResults([...unique.values()].slice(0, 10))
+      })
     }, 200)
     return () => clearTimeout(handle)
   }, [weaponQuery])
@@ -1480,23 +1500,27 @@ export default function App(): JSX.Element {
     const name = (detail.name_ru ?? detail.name ?? '').trim()
     if (!name) return
     const data = ensureCharacterData(selectedCharacter.data)
+    const detailText = `${detail?.type ?? ''} ${JSON.stringify(detail?.data ?? {})}`.toLocaleLowerCase('ru')
+    const itemIsWeapon =
+      kind === 'items' && (detailText.includes('оруж') || detailText.includes('weapon'))
+    const effectiveKind = itemIsWeapon ? 'weapons' : kind
     const notes =
-      kind === 'items'
+      effectiveKind === 'items'
         ? buildItemSummary(detail.data)
-        : kind === 'weapons'
+        : effectiveKind === 'weapons'
           ? buildWeaponSummary(detail.data)
           : buildArtifactSummary(detail.data)
     data.inventory = addInventoryEntry(data.inventory, {
       name,
       qty: 1,
       notes,
-      category: kind === 'items' ? 'item' : kind === 'weapons' ? 'weapon' : 'artifact'
+      category: effectiveKind === 'items' ? 'item' : effectiveKind === 'weapons' ? 'weapon' : 'artifact'
     })
-    if (kind === 'items') {
+    if (effectiveKind === 'items') {
       data.items = [...data.items, { id, name, summary: buildItemSummary(detail.data) }]
       setItemQuery('')
       setItemResults([])
-    } else if (kind === 'weapons') {
+    } else if (effectiveKind === 'weapons') {
       const rawDamage = detail?.data?.en?.damageVal ?? detail?.data?.ru?.damageVal ?? detail?.data?.damage
       data.weapons = [
         ...data.weapons,
@@ -1513,6 +1537,10 @@ export default function App(): JSX.Element {
       ]
       setWeaponQuery('')
       setWeaponResults([])
+      if (kind === 'items') {
+        setItemQuery('')
+        setItemResults([])
+      }
     } else {
       data.artifacts = [...data.artifacts, { id, name, summary: buildArtifactSummary(detail.data) }]
       setArtifactQuery('')
@@ -3183,11 +3211,10 @@ export default function App(): JSX.Element {
                 {!campaign && (
                   <div className="form">
                     <input
+                      className="campaign-name-input"
                       value={campaignName}
                       onChange={(event) => setCampaignName(event.target.value)}
-                      onInput={(event) =>
-                        setCampaignName((event.currentTarget as HTMLInputElement).value)
-                      }
+                      autoFocus
                       autoComplete="off"
                       placeholder="Название кампании"
                     />
@@ -3204,11 +3231,9 @@ export default function App(): JSX.Element {
                     </div>
                     <div className="form">
                       <input
+                        className="campaign-name-input"
                         value={campaignName}
                         onChange={(event) => setCampaignName(event.target.value)}
-                        onInput={(event) =>
-                          setCampaignName((event.currentTarget as HTMLInputElement).value)
-                        }
                         autoComplete="off"
                         placeholder="Новое название кампании"
                       />
@@ -3243,7 +3268,7 @@ export default function App(): JSX.Element {
                       <label className="player-field"><span>Раса</span><select value={characterCreateRace} onChange={(event) => setCharacterCreateRace(event.target.value)}><option value="">Не выбрана</option>{ttgRaceOptions.map((option) => <option key={option.key} value={option.label}>{option.label}</option>)}</select></label>
                       <label className="player-field"><span>Класс</span><select value={characterCreateClass} onChange={(event) => setCharacterCreateClass(event.target.value)}><option value="">Не выбран</option>{ttgClassOptions.map((option) => <option key={option.key} value={option.label}>{option.label}</option>)}</select></label>
                       <label className="player-field"><span>Уровень</span><input type="number" min={1} value={characterCreateLevel} onChange={(event) => setCharacterCreateLevel(event.target.value)} /></label>
-                      <label className="player-field"><span>Максимальные ХП</span><input type="number" value={characterCreateHpMax} onChange={(event) => setCharacterCreateHpMax(event.target.value)} /></label>
+                      <label className="player-field"><span>Максимальные ХП</span><input type="number" value={characterCreateHpMax} onChange={(event) => { const value = event.target.value; setCharacterCreateHpMax(value); if (!characterCreateHpCurrent || characterCreateHpCurrent === characterCreateHpMax) setCharacterCreateHpCurrent(value) }} /></label>
                       <label className="player-field"><span>Текущие ХП</span><input type="number" value={characterCreateHpCurrent} onChange={(event) => setCharacterCreateHpCurrent(event.target.value)} placeholder="Равны максимальным" /></label>
                       <label className="player-field"><span>Класс доспеха</span><input type="number" value={characterCreateAc} onChange={(event) => setCharacterCreateAc(event.target.value)} /></label>
                       <label className="player-field"><span>Инициатива</span><input type="number" value={characterCreateInit} onChange={(event) => setCharacterCreateInit(event.target.value)} /></label>
@@ -3407,7 +3432,7 @@ export default function App(): JSX.Element {
                                       <button
                                         key={`inv-weapon-${weapon.id}`}
                                         className="search-result"
-                                        onClick={() => void handleAddInventoryFromLibrary('weapons', weapon.id)}
+                                        onClick={() => void handleAddInventoryFromLibrary(weapon.catalog, weapon.id)}
                                       >
                                         {weapon.name_ru ?? weapon.name}
                                       </button>

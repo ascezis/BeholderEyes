@@ -5,10 +5,15 @@ export type TtgSelectOption = { key: string; label: string }
 
 const buildOptions = (items: Array<TtgClass | TtgRace>): TtgSelectOption[] => {
   const unique = new Map<string, TtgSelectOption>()
+  const labels = new Set<string>()
   for (const item of items) {
     const key = item.slug?.trim()
     const label = (item.name_ru ?? item.name_en ?? '').trim()
-    if (key && label && !unique.has(key)) unique.set(key, { key, label })
+    const normalizedLabel = label.toLocaleLowerCase('ru')
+    if (key && label && !unique.has(key) && !labels.has(normalizedLabel)) {
+      unique.set(key, { key, label })
+      labels.add(normalizedLabel)
+    }
   }
   return [...unique.values()].sort((a, b) => a.label.localeCompare(b.label, 'ru'))
 }
