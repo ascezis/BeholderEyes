@@ -217,12 +217,19 @@ export default function App(): JSX.Element {
   const combatCanvasRef = useRef<HTMLDivElement | null>(null)
   const combatCardRefs = useRef(new Map<string, HTMLDivElement>())
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
-  const dragOffsetRef = useRef({ x: 0, y: 0 })
+  const dragOffsetRef = useRef({
+    pointerX: 0,
+    pointerY: 0,
+    positionX: 0,
+    positionY: 0
+  })
   const cardPressRef = useRef<CombatCardPress | null>(null)
   const [combatQuery, setCombatQuery] = useState('')
   const [combatResults, setCombatResults] = useState<Array<{ id: number; name: string; name_ru: string | null }>>([])
   const [combatError, setCombatError] = useState<string | null>(null)
   const [combatStatus, setCombatStatus] = useState<string | null>(null)
+  const combatAutosaveTimerRef = useRef<number | null>(null)
+  const combatAutosaveInFlightRef = useRef(false)
   const [customMonsterDraft, setCustomMonsterDraft] = useState<CustomMonsterDraft>(emptyCustomMonsterDraft)
   const [customMonsterActions, setCustomMonsterActions] = useState<CustomMonsterActionDraft[]>([
     createEmptyCustomMonsterAction()
@@ -2244,11 +2251,10 @@ export default function App(): JSX.Element {
       const canvas = combatCanvasRef.current
       const card = combatCardRefs.current.get(draggingCardId)
       if (!board || !canvas || !card) return
-      const canvasRect = canvas.getBoundingClientRect()
       const cardRect = card.getBoundingClientRect()
-      const offset = dragOffsetRef.current
-      let nextX = (event.clientX - canvasRect.left) / combatBoardZoom - offset.x
-      let nextY = (event.clientY - canvasRect.top) / combatBoardZoom - offset.y
+      const origin = dragOffsetRef.current
+      let nextX = origin.positionX + (event.clientX - origin.pointerX) / combatBoardZoom
+      let nextY = origin.positionY + (event.clientY - origin.pointerY) / combatBoardZoom
       const maxX = Math.max(0, canvas.offsetWidth - cardRect.width / combatBoardZoom)
       const maxY = Math.max(0, canvas.offsetHeight - cardRect.height / combatBoardZoom)
       nextX = Math.max(0, Math.min(nextX, maxX))
@@ -2276,11 +2282,12 @@ export default function App(): JSX.Element {
       }
       const card = combatCardRefs.current.get(press.id)
       if (!card) return
-      const cardRect = card.getBoundingClientRect()
       setDraggingCardId(press.id)
       dragOffsetRef.current = {
-        x: (event.clientX - cardRect.left) / combatBoardZoom,
-        y: (event.clientY - cardRect.top) / combatBoardZoom
+        pointerX: event.clientX,
+        pointerY: event.clientY,
+        positionX: card.offsetLeft,
+        positionY: card.offsetTop
       }
       card.setPointerCapture(press.pointerId)
       cardPressRef.current = null
@@ -2699,6 +2706,10 @@ export default function App(): JSX.Element {
 
   const saveCombatSession = async () => {
     if (!campaign) return
+    if (combatAutosaveTimerRef.current !== null) {
+      window.clearTimeout(combatAutosaveTimerRef.current)
+      combatAutosaveTimerRef.current = null
+    }
     try {
       const payload = {
         campaignId: campaign.id,
@@ -2720,6 +2731,56 @@ export default function App(): JSX.Element {
       setCombatStatus(error?.message ?? 'Не удалось сохранить бой')
     }
   }
+
+  useEffect(() => {
+    if (!isCombatBoardMode || !campaign || combatParticipants.length === 0) return
+    if (combatAutosaveTimerRef.current !== null) {
+      window.clearTimeout(combatAutosaveTimerRef.current)
+    }
+    combatAutosaveTimerRef.current = window.setTimeout(async () => {
+      combatAutosaveTimerRef.current = null
+      if (combatAutosaveInFlightRef.current) return
+      combatAutosaveInFlightRef.current = true
+      const name = combatName.trim() || 'Сессия боя'
+      try {
+        const result = await window.beholder.combats.save({
+          campaignId: campaign.id,
+          name,
+          data: {
+            participants: combatParticipants,
+            currentTurnId,
+            roundNumber,
+            roundAnchorId,
+            log: combatLog
+          },
+          combatId: selectedCombatId ?? undefined
+        })
+        setSelectedCombatId(result.id)
+        setCombatStatus(`Автосохранено: ${name}`)
+        await loadCombatSessions()
+      } catch (error: any) {
+        setCombatStatus(error?.message ?? 'Ошибка автосохранения боя')
+      } finally {
+        combatAutosaveInFlightRef.current = false
+      }
+    }, 1200)
+    return () => {
+      if (combatAutosaveTimerRef.current !== null) {
+        window.clearTimeout(combatAutosaveTimerRef.current)
+        combatAutosaveTimerRef.current = null
+      }
+    }
+  }, [
+    campaign,
+    combatLog,
+    combatName,
+    combatParticipants,
+    currentTurnId,
+    isCombatBoardMode,
+    roundAnchorId,
+    roundNumber,
+    selectedCombatId
+  ])
 
   const normalizeSaves = (value: any): SaveMods => {
     if (!value || typeof value !== 'object') return { ...emptySaves }
