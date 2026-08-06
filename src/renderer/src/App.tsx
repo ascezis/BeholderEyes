@@ -7,6 +7,7 @@ import HomeView from './components/HomeView'
 import ReferenceModalDialog from './components/ReferenceModalDialog'
 import CustomMonsterDialog from './components/CustomMonsterDialog'
 import CustomWeaponDialog from './components/CustomWeaponDialog'
+import CombatParticipantRow from './components/CombatParticipantRow'
 import { useTtgOptions } from './hooks/useTtgOptions'
 import './styles.css'
 import { ViewKey, ReferenceSection, EntityKey, MonsterRow, SpellRow, ItemRow, WeaponRow, ArtifactRow, ListRow, ListResponse, DetailResponse, TtgArchetype, TtgClass, TtgSubrace, ReferenceRelated, TtgRace, TtgRule, TtgEntry, ReferenceModal, MonsterEntry, MonsterLegendary, MonsterLair, Campaign, Character, SaveMods, CombatCondition, CombatLogTone, ThemeMode, CombatLogEntry, CombatWeaponOption, CombatParticipant, CustomMonsterRow, CustomWeaponRow, CustomMonsterDraft, CustomMonsterActionDraft, InventoryEntry, CharacterData, defaultResponse, emptyCustomMonsterDraft, customMonsterSizeOptions, createEmptyCustomMonsterAction, entityLabels, rarityLabel, getDisplayName, getSubtitle, getListMeta, getDetailTitle, normalizeEntries, toText, getLocaleValue, getLocaleHtml, getDescriptionHtml, formatMonsterSaves, boolLabel, buildSpellSummary, buildItemSummary, buildWeaponSummary, buildArtifactSummary, getWeaponKey, parseWeaponAttackBonus, parseWeaponDamageExpr, parseDice, scoreToMod, formatMod, abilityKeys, abilityLabels, saveLabelToKey, emptySaves, getProfBonus, getStatMod, buildSaveModsFromCharacter, parseMonsterSaves, parseMonsterHp, parseMonsterAc, extractActionText, normalizeActionText, parseActionAttackBonus, parseActionDamageExpr, htmlToPlainText, stripHtml, renderInlineTokens, renderInlineMarkdown, SpellcastingTable, normalizeDashToken, parseSpellcastingTable, renderSpellcastingTable, renderFormattedText, renderSectionContent, getRuleSectionBucket, injectParagraphBreaks, buildReferenceSections, parseMonsterActions, parseSignedBonus, buildCharacterActions, parseOptionalInt, scoreToSaveMod, parseNamedMonsterEntries, toSignedBonus, attackKindLabel, parseAttackKindFromText, parseDamageTypeFromText, parseRangeFromText, parseTargetFromText, parseSaveFromText, normalizeDamageExpr, buildStructuredMonsterActions, customMonsterActionsFromData, buildCustomMonsterData, customMonsterDataToDraft, rollD20, rollDiceExpr, rollCriticalDamageExpr, getD20Tone, formatModifierDetail, dicePresets, conditionPresets, effectPresets, ensureCharacterData, createDefaultCharacterData, useList, useDetail } from './appSupport'
@@ -4709,260 +4710,27 @@ export default function App(): JSX.Element {
                   ) : (
                     <div className="combat-list">
                       {visibleParticipants.map((participant) => (
-                        <details
+                        <CombatParticipantRow
                           key={participant.id}
-                          className={[
-                            'combat-row',
-                            participant.id === currentTurnId ? 'combat-row--active' : '',
-                            participant.hpCurrent !== null && participant.hpCurrent <= 0
-                              ? 'combat-row--down'
-                              : ''
-                          ].filter(Boolean).join(' ')}
-                        >
-                          <summary className="combat-row__summary">
-                            <div className="combat-row__title">
-                              <strong>{participant.name}</strong>
-                              <span className="list__subtitle">
-                                {participant.kind === 'character' ? 'персонаж' : 'монстр'}
-                              </span>
-                              {participant.hpCurrent !== null && participant.hpCurrent <= 0 && (
-                                <span className="combat-down-badge">💀 Без сознания</span>
-                              )}
-                            </div>
-                            <div className="combat-row__stats">
-                              <span>Иниц: {participant.initiative ?? '—'}</span>
-                              <span>
-                                ХП: {participant.hpCurrent ?? '—'}/{participant.hpMax ?? '—'}
-                              </span>
-                              <span>КД: {participant.ac ?? '—'}</span>
-                            </div>
-                            <div className="combat-row__quick">
-                              <button
-                                className="chip"
-                                title="Бросить инициативу"
-                                aria-label={`Бросить инициативу: ${participant.name}`}
-                                onClick={(event) => {
-                                  event.preventDefault()
-                                  event.stopPropagation()
-                                  rollInitiative(participant)
-                                }}
-                              >
-                                🎲
-                              </button>
-                              <button
-                                className="chip chip--warn"
-                                onClick={(event) => {
-                                  event.preventDefault()
-                                  event.stopPropagation()
-                                  applyDamage(participant, 5)
-                                }}
-                              >
-                                -5
-                              </button>
-                              <button
-                                className="chip"
-                                onClick={(event) => {
-                                  event.preventDefault()
-                                  event.stopPropagation()
-                                  applyHeal(participant, 5)
-                                }}
-                              >
-                                +5
-                              </button>
-                              <button
-                                className="chip"
-                                onClick={(event) => {
-                                  event.preventDefault()
-                                  event.stopPropagation()
-                                  removeParticipant(participant.id)
-                                }}
-                              >
-                                ×
-                              </button>
-                            </div>
-                          </summary>
-                          <div className="combat-grid">
-                            <input
-                              value={participant.name}
-                              onChange={(event) =>
-                                updateParticipant(participant.id, { name: event.target.value })
-                              }
-                              onBlur={(event) => {
-                                const nextName = event.target.value.trim()
-                                if (!nextName) {
-                                  updateParticipant(participant.id, {
-                                    name:
-                                      participant.kind === 'character' ? 'Персонаж' : 'Монстр'
-                                  })
-                                  return
-                                }
-                                if (nextName !== participant.name) {
-                                  updateParticipant(participant.id, { name: nextName })
-                                }
-                              }}
-                              placeholder="Имя в бою"
-                            />
-                            <input
-                              value={participant.hpCurrent ?? ''}
-                              onChange={(event) =>
-                                updateParticipant(participant.id, {
-                                  hpCurrent: event.target.value ? Number(event.target.value) : null
-                                })
-                              }
-                              placeholder="ХП"
-                            />
-                            <input
-                              value={participant.hpMax ?? ''}
-                              onChange={(event) =>
-                                updateParticipant(participant.id, {
-                                  hpMax: event.target.value ? Number(event.target.value) : null
-                                })
-                              }
-                              placeholder="ХП макс"
-                            />
-                            <input
-                              value={participant.ac ?? ''}
-                              onChange={(event) =>
-                                updateParticipant(participant.id, {
-                                  ac: event.target.value ? Number(event.target.value) : null
-                                })
-                              }
-                              placeholder="КД"
-                            />
-                            <input
-                              value={participant.initiative ?? ''}
-                              onChange={(event) =>
-                                updateParticipant(participant.id, {
-                                  initiative: event.target.value ? Number(event.target.value) : null
-                                })
-                              }
-                              placeholder="Иниц"
-                            />
-                            {participant.kind === 'character' &&
-                              participant.weaponOptions &&
-                              participant.weaponOptions.length > 0 && (
-                                <select
-                                  value={participant.selectedWeaponKey ?? ''}
-                                  onChange={(event) =>
-                                    updateParticipantWeaponSelection(participant, event.target.value)
-                                  }
-                                >
-                                  <option value="">Оружие: без выбора</option>
-                                  {participant.weaponOptions.map((weapon) => (
-                                    <option key={`${participant.id}-row-${weapon.key}`} value={weapon.key}>
-                                      {weapon.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              )}
-                            <input
-                              value={participant.attackBonus ?? ''}
-                              onChange={(event) =>
-                                updateParticipant(participant.id, {
-                                  attackBonus: event.target.value ? Number(event.target.value) : null
-                                })
-                              }
-                              placeholder="Бонус"
-                            />
-                            <input
-                              value={participant.damageExpr}
-                              onChange={(event) =>
-                                updateParticipant(participant.id, { damageExpr: event.target.value })
-                              }
-                              placeholder="Урон"
-                            />
-                            <div className="combat-buttons">
-                              <button
-                                className="button button--ghost"
-                                onClick={() => rollInitiative(participant)}
-                              >
-                                Инициатива
-                              </button>
-                              <button
-                                className="button button--ghost"
-                                onClick={() => rollAttack(participant)}
-                              >
-                                Атака
-                              </button>
-                              <button
-                                className="button button--ghost"
-                                onClick={() => rollDamage(participant)}
-                              >
-                                Урон
-                              </button>
-                              <button
-                                className="button button--ghost"
-                                onClick={() => removeParticipant(participant.id)}
-                              >
-                                Удалить
-                              </button>
-                            </div>
-                          </div>
-                          <div className="combat-saves">
-                            {abilityKeys.map((key) => (
-                              <div key={`${participant.id}-${key}`} className="combat-save">
-                                <span>{abilityLabels[key]}</span>
-                                <input
-                                  value={participant.saves[key] ?? ''}
-                                  onChange={(event) =>
-                                    updateParticipant(participant.id, {
-                                      saves: {
-                                        ...participant.saves,
-                                        [key]: event.target.value
-                                          ? Number(event.target.value)
-                                          : null
-                                      }
-                                    })
-                                  }
-                                  placeholder="мод"
-                                />
-                                <button
-                                  className="button button--ghost"
-                                  onClick={() => rollSave(participant, key)}
-                                >
-                                  d20
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                          {participant.actions && participant.actions.length > 0 && (
-                            <div className="combat-actions__list">
-                              <div className="detail__label">Действия монстра</div>
-                              {participant.actions.map((action, index) => (
-                                <div
-                                  key={`${participant.id}-action-${index}`}
-                                  className="combat-action-card"
-                                >
-                                  <div className="combat-action-card__name">{action.name}</div>
-                                  {action.text && (
-                                    <div className="combat-action-card__text">
-                                      {stripHtml(action.text)}
-                                    </div>
-                                  )}
-                                  <div className="combat-buttons">
-                                    <button
-                                      className="button button--ghost"
-                                      onClick={() => performAction(participant, action)}
-                                    >
-                                      Атака: {action.name}
-                                    </button>
-                                    <button
-                                      className="button button--ghost"
-                                      onClick={() => rollActionSaveForTarget(participant, action)}
-                                    >
-                                      Спасбросок цели
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </details>
+                          participant={participant}
+                          active={participant.id === currentTurnId}
+                          onUpdate={updateParticipant}
+                          onWeaponSelect={updateParticipantWeaponSelection}
+                          onRollInitiative={rollInitiative}
+                          onRollAttack={rollAttack}
+                          onRollDamage={rollDamage}
+                          onRollSave={rollSave}
+                          onPerformAction={performAction}
+                          onRollActionSave={rollActionSaveForTarget}
+                          onDamage={applyDamage}
+                          onHeal={applyHeal}
+                          onRemove={removeParticipant}
+                        />
                       ))}
                     </div>
                   ))}
-</div>
-            </section>
+                </div>
+              </section>
             <section className="panel panel--detail">
               <div className="detail__header">
                 <h2>Ход боя</h2>
