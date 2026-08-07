@@ -22,11 +22,18 @@ export type CombatCardPress = {
 
 type CombatAction = NonNullable<CombatParticipant['actions']>[number]
 
+const optionalFiniteNumber = (value: string): number | null => {
+  if (!value.trim()) return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 type Props = {
   participant: CombatParticipant
   target: CombatParticipant | undefined
   index: number
   active: boolean
+  selected: boolean
   targetingSourceId: string | null
   impactFlash: { id: string; tone: 'hit' | 'miss'; value?: number | null } | null
   defaultSize: { width: number; height: number }
@@ -37,6 +44,7 @@ type Props = {
   scale: number
   onUpdate: (id: string, patch: Partial<CombatParticipant>) => void
   onOpenDetails: (id: string) => void
+  onSelect: (id: string) => void
   onRollInitiative: (participant: CombatParticipant) => void
   onDamage: (participant: CombatParticipant, amount: number) => void
   onHeal: (participant: CombatParticipant, amount: number) => void
@@ -59,6 +67,7 @@ export default function CombatParticipantCard({
   target,
   index,
   active,
+  selected,
   targetingSourceId,
   impactFlash,
   defaultSize,
@@ -69,6 +78,7 @@ export default function CombatParticipantCard({
   scale,
   onUpdate,
   onOpenDetails,
+  onSelect,
   onRollInitiative,
   onDamage,
   onHeal,
@@ -142,6 +152,7 @@ export default function CombatParticipantCard({
       className={[
         'combat-card',
         active ? 'combat-card--active' : '',
+        selected ? 'combat-card--selected' : '',
         isTargeting ? 'combat-card--source' : '',
         isSelectable ? 'combat-card--selectable' : '',
         participant.hpCurrent !== null && participant.hpCurrent <= 0 ? 'combat-card--down' : '',
@@ -183,7 +194,10 @@ export default function CombatParticipantCard({
         onOpenDetails(participant.id)
       }}
       onClick={() => {
-        if (!targetingSourceId) return
+        if (!targetingSourceId) {
+          onSelect(participant.id)
+          return
+        }
         if (targetingSourceId !== participant.id) {
           onUpdate(targetingSourceId, { targetId: participant.id })
         }
@@ -211,6 +225,7 @@ export default function CombatParticipantCard({
           <span className="list__subtitle">
             {participant.kind === 'character' ? 'персонаж' : 'монстр'}
           </span>
+          {active && <span className="combat-turn-crown" title="Сейчас ход">♛</span>}
           {participant.hpCurrent !== null && participant.hpCurrent <= 0 && (
             <span className="combat-down-badge">💀 Без сознания</span>
           )}
@@ -225,17 +240,17 @@ export default function CombatParticipantCard({
       <div className="combat-card__stats">
         <div className="combat-card__stat">
           <label>ХП</label>
-          <input value={participant.hpCurrent ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { hpCurrent: event.target.value ? Number(event.target.value) : null })} placeholder="тек" />
+          <input type="number" value={participant.hpCurrent ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { hpCurrent: optionalFiniteNumber(event.target.value) })} placeholder="тек" />
           <span>/</span>
-          <input value={participant.hpMax ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { hpMax: event.target.value ? Number(event.target.value) : null })} placeholder="макс" />
+          <input type="number" value={participant.hpMax ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { hpMax: optionalFiniteNumber(event.target.value) })} placeholder="макс" />
         </div>
         <div className="combat-card__stat">
           <label>КД</label>
-          <input value={participant.ac ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { ac: event.target.value ? Number(event.target.value) : null })} placeholder="AC" />
+          <input type="number" value={participant.ac ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { ac: optionalFiniteNumber(event.target.value) })} placeholder="AC" />
         </div>
         <div className="combat-card__stat">
           <label>Иниц</label>
-          <input value={participant.initiative ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { initiative: event.target.value ? Number(event.target.value) : null })} placeholder="иниц" />
+          <input type="number" value={participant.initiative ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { initiative: optionalFiniteNumber(event.target.value) })} placeholder="иниц" />
         </div>
       </div>
       <div className="combat-card__target">
@@ -282,7 +297,7 @@ export default function CombatParticipantCard({
             {participant.weaponOptions.map((weapon) => <option key={`${participant.id}-${weapon.key}`} value={weapon.key}>{weapon.name}</option>)}
           </select>
         )}
-        <input value={participant.attackBonus ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { attackBonus: event.target.value ? Number(event.target.value) : null })} placeholder="бонус атаки" />
+        <input type="number" value={participant.attackBonus ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { attackBonus: optionalFiniteNumber(event.target.value) })} placeholder="бонус атаки" />
         <input value={participant.damageExpr} onClick={(event) => event.stopPropagation()} onChange={(event) => onUpdate(participant.id, { damageExpr: event.target.value })} placeholder="урон" />
         <button className="button button--ghost" onClick={(event) => { event.stopPropagation(); onAttack(participant, { name: 'Базовая атака', text: '', attackBonus: participant.attackBonus, damageExpr: participant.damageExpr, saveDc: null, saveAbility: '' }) }}>Атака</button>
       </div>

@@ -20,7 +20,11 @@ type Props = {
   onRemove: (id: string) => void
 }
 
-const optionalNumber = (value: string): number | null => value ? Number(value) : null
+const optionalNumber = (value: string): number | null => {
+  if (!value.trim()) return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
 
 export default function CombatParticipantRow({ participant, active, ...actions }: Props): JSX.Element {
   const down = participant.hpCurrent !== null && participant.hpCurrent <= 0
@@ -32,6 +36,7 @@ export default function CombatParticipantRow({ participant, active, ...actions }
         <div className="combat-row__title">
           <strong>{participant.name}</strong>
           <span className="list__subtitle">{participant.kind === 'character' ? 'персонаж' : 'монстр'}</span>
+          {active && <span className="combat-turn-crown" title="Сейчас ход">♛</span>}
           {down && <span className="combat-down-badge">💀 Без сознания</span>}
         </div>
         <div className="combat-row__stats">

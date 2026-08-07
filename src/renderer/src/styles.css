@@ -1547,6 +1547,22 @@ body,
   border-color: var(--accent);
 }
 
+.combat-card--selected {
+  outline: 2px solid color-mix(in srgb, var(--accent) 80%, white);
+  outline-offset: 3px;
+}
+
+.combat-turn-crown {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  color: #ffd166;
+  font-size: 18px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 5px rgba(255, 181, 46, 0.35));
+}
+
 .combat-card--source {
   border-color: var(--accent-strong);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow-lift);

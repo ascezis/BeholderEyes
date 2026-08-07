@@ -217,6 +217,7 @@ export default function App(): JSX.Element {
   const combatCanvasRef = useRef<HTMLDivElement | null>(null)
   const combatCardRefs = useRef(new Map<string, HTMLDivElement>())
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
+  const [selectedCombatCardId, setSelectedCombatCardId] = useState<string | null>(null)
   const dragOffsetRef = useRef({
     pointerX: 0,
     pointerY: 0,
@@ -2124,8 +2125,18 @@ export default function App(): JSX.Element {
   }
 
   const updateParticipant = (id: string, patch: Partial<CombatParticipant>) => {
+    const numericKeys: Array<keyof CombatParticipant> = [
+      'hpMax', 'hpCurrent', 'ac', 'initiative', 'attackBonus'
+    ]
+    const safePatch = { ...patch }
+    for (const key of numericKeys) {
+      const value = safePatch[key]
+      if (typeof value === 'number' && !Number.isFinite(value)) {
+        delete safePatch[key]
+      }
+    }
     setCombatParticipants((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...patch } : p))
+      prev.map((p) => (p.id === id ? { ...p, ...safePatch } : p))
     )
   }
 
@@ -2174,12 +2185,26 @@ export default function App(): JSX.Element {
   }
 
   const removeParticipant = (id: string) => {
+    if (selectedCombatCardId === id) setSelectedCombatCardId(null)
     setCombatParticipants((prev) =>
       prev
         .filter((p) => p.id !== id)
         .map((p) => (p.targetId === id ? { ...p, targetId: null } : p))
     )
   }
+
+  useEffect(() => {
+    if (!isCombatBoardMode || !selectedCombatCardId) return
+    const handleDelete = (event: KeyboardEvent): void => {
+      if (event.key !== 'Delete') return
+      const target = event.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      event.preventDefault()
+      removeParticipant(selectedCombatCardId)
+    }
+    window.addEventListener('keydown', handleDelete)
+    return () => window.removeEventListener('keydown', handleDelete)
+  }, [isCombatBoardMode, selectedCombatCardId])
 
   const defaultCardSize = { width: 300, height: 230 }
 
@@ -2756,8 +2781,12 @@ export default function App(): JSX.Element {
           combatId: selectedCombatId ?? undefined
         })
         setSelectedCombatId(result.id)
-        setCombatStatus(`Автосохранено: ${name}`)
-        await loadCombatSessions()
+        setCombatSessions((sessions) => {
+          const exists = sessions.some((session) => session.id === result.id)
+          return exists
+            ? sessions.map((session) => session.id === result.id ? { ...session, name } : session)
+            : [{ id: result.id, name }, ...sessions]
+        })
       } catch (error: any) {
         setCombatStatus(error?.message ?? 'Ошибка автосохранения боя')
       } finally {
@@ -4346,6 +4375,7 @@ export default function App(): JSX.Element {
                               target={getParticipantById(participant.targetId)}
                               index={index}
                               active={participant.id === currentTurnId}
+                              selected={participant.id === selectedCombatCardId}
                               targetingSourceId={targetingSourceId}
                               impactFlash={impactFlash}
                               defaultSize={defaultCardSize}
@@ -4356,6 +4386,7 @@ export default function App(): JSX.Element {
                               scale={combatBoardZoom}
                               onUpdate={updateParticipant}
                               onOpenDetails={setCombatDetailId}
+                              onSelect={setSelectedCombatCardId}
                               onRollInitiative={rollInitiative}
                               onDamage={applyDamage}
                               onHeal={applyHeal}
